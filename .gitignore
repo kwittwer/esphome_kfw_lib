@@ -1,0 +1,42 @@
+# ESPHome secrets
+secrets.yaml
+
+# ESPHome build directory
+.esphome/
+
+# ESPHome compiled binaries and cache
+**/.pioenvs/
+**/.piolibdeps/
+**/build/
+**/.pio/
+
+# PlatformIO
+.pio/
+.pioenvs/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Editor / OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
