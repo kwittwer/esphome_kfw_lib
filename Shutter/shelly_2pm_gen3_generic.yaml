@@ -1,6 +1,6 @@
 substitutions:
-  device_name: shelly-2-pm-gen3_1
-  friendly_name: Shelly 2 PM Gen3 1
+  device_name: shelly-2-pm-gen3
+  friendly_name: Shelly 2 PM Gen3
   # Friendly name for each switch
   channel_1_name: Switch 1
   channel_2_name: Switch 2

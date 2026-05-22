@@ -1,0 +1,704 @@
+# ============================================================
+# raffstore_cover.yaml  —  Lib for Shelly 2PM Gen3 Raffstore
+# ============================================================
+# Required substitutions in the instance file:
+#   cover_name        – name shown in Home Assistant
+#   device_name       – ESPHome device name (for notifications)
+#   max_temp          – motor over-temperature shut-off (°C)
+#   travel_time_up    – default upward travel time in ms
+#   travel_time_down  – default downward travel time in ms
+#   tilt_time         – full tilt cycle time in ms
+#   current_threshold – end-stop current threshold in A
+#
+# Pin mapping (Shelly 2PM Gen3):
+#   GPIO5  – relay channel A → motor UP
+#   GPIO3  – relay channel B → motor DOWN
+#   GPIO18 – button / input channel A  (hold = drive up)
+#   GPIO10 – button / input channel B  (hold = drive down)
+#   GPIO19 – reset button
+#   GPIO6  – I²C SDA (ADE7953)
+#   GPIO7  – I²C SCL (ADE7953)
+#   GPIO1  – ADE7953 IRQ
+#   GPIO4  – NTC ADC
+#   GPIO2  – status LED (inverted)
+#
+# Cover semantics:
+#   position 0.0 = blind fully closed (down)
+#   position 1.0 = blind fully open  (up)
+#   tilt     0.0 = slats fully closed
+#   tilt     1.0 = slats fully open
+#   Tilt target is ALWAYS approached from below (upward direction)
+# ============================================================
+
+i2c:
+  sda: GPIO6
+  scl: GPIO7
+
+status_led:
+  pin:
+    number: GPIO2
+    inverted: true
+    ignore_strapping_warning: true
+
+# ─────────────────────────────────────────────────────────────
+# Globals
+# ─────────────────────────────────────────────────────────────
+globals:
+  # Current blind position: 0.0 = closed, 1.0 = open
+  - id: g_position
+    type: float
+    restore_value: true
+    initial_value: '0.5'
+
+  # Current slat tilt: 0.0 = closed, 1.0 = open
+  - id: g_tilt
+    type: float
+    restore_value: true
+    initial_value: '0.0'
+
+  # Last movement direction: true = last move was upward
+  - id: g_last_dir_up
+    type: bool
+    restore_value: true
+    initial_value: 'false'
+
+  # Current movement: 0 = idle, 1 = moving up, 2 = moving down
+  - id: g_direction
+    type: int
+    restore_value: false
+    initial_value: '0'
+
+  # Wall-clock millisecond timestamp when current movement started
+  - id: g_move_start_ms
+    type: uint32_t
+    restore_value: false
+    initial_value: '0'
+
+  # Position value at the moment movement started (for delta calculation)
+  - id: g_pos_at_start
+    type: float
+    restore_value: false
+    initial_value: '0.0'
+
+  # When true, position is NOT updated by movement (tilt-only adjustment)
+  - id: g_tilt_only
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
+  # Current sensing enabled (false during motor start-up inrush)
+  - id: g_sensing_active
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
+  # Calibrated travel time going up (ms)  — persisted after calibration
+  - id: g_travel_ms_up
+    type: int
+    restore_value: true
+    initial_value: '${travel_time_up}'
+
+  # Calibrated travel time going down (ms) — persisted after calibration
+  - id: g_travel_ms_down
+    type: int
+    restore_value: true
+    initial_value: '${travel_time_down}'
+
+  # Full slat tilt cycle time (ms) — persisted after calibration
+  - id: g_tilt_ms
+    type: int
+    restore_value: true
+    initial_value: '${tilt_time}'
+
+  # True while calibration sequence is running
+  - id: g_calibrating
+    type: bool
+    restore_value: false
+    initial_value: 'false'
+
+  # Timestamp used to measure calibration travel times
+  - id: g_calib_start_ms
+    type: uint32_t
+    restore_value: false
+    initial_value: '0'
+
+# ─────────────────────────────────────────────────────────────
+# Relay switches  (internal – not exposed to HA)
+# ─────────────────────────────────────────────────────────────
+switch:
+  - platform: gpio
+    id: relay_up
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin:
+      number: GPIO5
+      mode:
+        output: true
+
+  - platform: gpio
+    id: relay_down
+    internal: true
+    restore_mode: ALWAYS_OFF
+    pin:
+      number: GPIO3
+      mode:
+        output: true
+
+# ─────────────────────────────────────────────────────────────
+# Power monitoring  (ADE7953)  +  temperature
+# ─────────────────────────────────────────────────────────────
+sensor:
+  - platform: ade7953_i2c
+    irq_pin: GPIO1
+    update_interval: 500ms
+
+    voltage:
+      name: "${cover_name} Voltage"
+      id: grid_voltage
+      icon: mdi:alpha-v-circle-outline
+      device_class: voltage
+
+    frequency:
+      name: "${cover_name} Frequency"
+      id: grid_frequency
+      accuracy_decimals: 2
+      icon: mdi:cosine-wave
+      device_class: frequency
+
+    # Channel A → relay_up (motor UP)
+    current_a:
+      name: "${cover_name} Current Up"
+      id: current_up
+      icon: mdi:alpha-a-circle-outline
+      device_class: current
+      on_value:
+        - if:
+            condition:
+              and:
+                - switch.is_on: relay_up
+                - lambda: 'return id(g_sensing_active);'
+                - lambda: 'return x < ${current_threshold};'
+            then:
+              - logger.log: "End-stop TOP detected (current drop on UP relay)"
+              - script.execute: script_endstop_up
+
+    # Channel B → relay_down (motor DOWN)
+    current_b:
+      name: "${cover_name} Current Down"
+      id: current_down
+      icon: mdi:alpha-a-circle-outline
+      device_class: current
+      on_value:
+        - if:
+            condition:
+              and:
+                - switch.is_on: relay_down
+                - lambda: 'return id(g_sensing_active);'
+                - lambda: 'return x < ${current_threshold};'
+            then:
+              - logger.log: "End-stop BOTTOM detected (current drop on DOWN relay)"
+              - script.execute: script_endstop_down
+
+    active_power_a:
+      name: "${cover_name} Power Up"
+      id: power_up
+      icon: mdi:power
+      device_class: power
+      filters:
+        - multiply: -1
+
+    active_power_b:
+      name: "${cover_name} Power Down"
+      id: power_down
+      icon: mdi:power
+      device_class: power
+      filters:
+        - multiply: -1
+
+  # ── NTC temperature sensor ──────────────────────────────────
+  - platform: ntc
+    sensor: temp_resistance_reading
+    name: "${cover_name} Temperature"
+    id: temperature
+    icon: mdi:thermometer
+    calibration:
+      b_constant: 3350
+      reference_resistance: 10kOhm
+      reference_temperature: 298.15K
+    on_value_range:
+      - above: ${max_temp}
+        then:
+          - script.execute: script_stop_motor
+          - logger.log: "Motor stopped — temperature exceeded ${max_temp} °C"
+          - homeassistant.service:
+              service: persistent_notification.create
+              data:
+                title: "Warnung: ${device_name}"
+              data_template:
+                message: "Motor gestoppt — Temperatur über ${max_temp} °C"
+
+  - platform: resistance
+    id: temp_resistance_reading
+    sensor: temp_analog_reading
+    configuration: DOWNSTREAM
+    resistor: 32kOhm
+
+  - platform: adc
+    id: temp_analog_reading
+    pin: GPIO4
+
+# ─────────────────────────────────────────────────────────────
+# Cover
+# ─────────────────────────────────────────────────────────────
+cover:
+  - platform: template
+    name: "${cover_name}"
+    id: raffstore_cover
+    device_class: blind
+    has_position: true
+    optimistic: false
+
+    # Position is read from g_position (updated in real-time by interval)
+    lambda: |-
+      return id(g_position);
+
+    # Tilt is read from g_tilt
+    tilt_lambda: |-
+      return id(g_tilt);
+
+    open_action:
+      - script.execute: script_stop_motor
+      - script.execute:
+          id: script_run_up
+          target_ms: !lambda |-
+            return (int)((1.0f - id(g_position)) * id(g_travel_ms_up)) + 1000;
+
+    close_action:
+      - script.execute: script_stop_motor
+      - script.execute:
+          id: script_run_down
+          target_ms: !lambda |-
+            return (int)(id(g_position) * id(g_travel_ms_down)) + 1000;
+
+    stop_action:
+      - script.execute: script_stop_motor
+
+    position_action:
+      - script.execute: script_stop_motor
+      - script.execute:
+          id: script_go_to_position
+          target: !lambda return pos;
+
+    tilt_action:
+      - script.execute: script_stop_motor
+      - script.execute:
+          id: script_go_to_tilt
+          target: !lambda return tilt;
+
+# ─────────────────────────────────────────────────────────────
+# Interval — update g_position in real-time during movement
+#            and push periodic cover state to HA
+# ─────────────────────────────────────────────────────────────
+interval:
+  - interval: 300ms
+    then:
+      - lambda: |-
+          if (id(g_direction) == 0) return;
+          float elapsed_s = (millis() - id(g_move_start_ms)) / 1000.0f;
+          if (!id(g_tilt_only)) {
+            float pos;
+            if (id(g_direction) == 1) {
+              pos = id(g_pos_at_start) + elapsed_s / (id(g_travel_ms_up) / 1000.0f);
+              if (pos > 1.0f) pos = 1.0f;
+            } else {
+              pos = id(g_pos_at_start) - elapsed_s / (id(g_travel_ms_down) / 1000.0f);
+              if (pos < 0.0f) pos = 0.0f;
+            }
+            id(g_position) = pos;
+          }
+      - if:
+          condition:
+            lambda: 'return id(g_direction) != 0;'
+          then:
+            - cover.template.publish:
+                id: raffstore_cover
+                current_operation: !lambda |-
+                  return id(g_direction) == 1
+                    ? COVER_OPERATION_OPENING
+                    : COVER_OPERATION_CLOSING;
+
+# ─────────────────────────────────────────────────────────────
+# Scripts
+# ─────────────────────────────────────────────────────────────
+script:
+
+  # ── Stop motor, update position, publish state ────────────
+  - id: script_stop_motor
+    mode: single
+    then:
+      - script.stop: script_run_up
+      - script.stop: script_run_down
+      - switch.turn_off: relay_up
+      - switch.turn_off: relay_down
+      - lambda: |-
+          if (id(g_direction) != 0 && !id(g_tilt_only)) {
+            // Final position calculation
+            float elapsed_s = (millis() - id(g_move_start_ms)) / 1000.0f;
+            float pos;
+            if (id(g_direction) == 1) {
+              pos = id(g_pos_at_start) + elapsed_s / (id(g_travel_ms_up) / 1000.0f);
+              if (pos > 1.0f) pos = 1.0f;
+            } else {
+              pos = id(g_pos_at_start) - elapsed_s / (id(g_travel_ms_down) / 1000.0f);
+              if (pos < 0.0f) pos = 0.0f;
+            }
+            id(g_position) = pos;
+          }
+          id(g_direction)       = 0;
+          id(g_sensing_active)  = false;
+          id(g_tilt_only)       = false;
+      - cover.template.publish:
+          id: raffstore_cover
+          current_operation: IDLE
+
+  # ── Low-level: run UP relay for target_ms milliseconds ────
+  - id: script_run_up
+    mode: single
+    parameters:
+      target_ms: int
+    then:
+      # Interlock: ensure down relay is off before engaging up
+      - if:
+          condition:
+            switch.is_on: relay_down
+          then:
+            - switch.turn_off: relay_down
+            - delay: 200ms
+      - lambda: |-
+          id(g_pos_at_start)   = id(g_position);
+          id(g_move_start_ms)  = millis();
+          id(g_direction)      = 1;
+          id(g_last_dir_up)    = true;
+          id(g_sensing_active) = false;
+      - switch.turn_on: relay_up
+      # Wait for inrush current to settle before enabling end-stop sensing
+      - delay: 800ms
+      - lambda: 'id(g_sensing_active) = true;'
+      - delay: !lambda 'return (uint32_t)(target_ms > 800 ? target_ms - 800 : 1);'
+      - script.execute: script_stop_motor
+
+  # ── Low-level: run DOWN relay for target_ms milliseconds ──
+  - id: script_run_down
+    mode: single
+    parameters:
+      target_ms: int
+    then:
+      # Interlock: ensure up relay is off before engaging down
+      - if:
+          condition:
+            switch.is_on: relay_up
+          then:
+            - switch.turn_off: relay_up
+            - delay: 200ms
+      - lambda: |-
+          id(g_pos_at_start)   = id(g_position);
+          id(g_move_start_ms)  = millis();
+          id(g_direction)      = 2;
+          id(g_last_dir_up)    = false;
+          id(g_sensing_active) = false;
+      - switch.turn_on: relay_down
+      - delay: 800ms
+      - lambda: 'id(g_sensing_active) = true;'
+      - delay: !lambda 'return (uint32_t)(target_ms > 800 ? target_ms - 800 : 1);'
+      - script.execute: script_stop_motor
+
+  # ── End-stop reached: TOP ────────────────────────────────
+  - id: script_endstop_up
+    mode: single
+    then:
+      - script.stop: script_run_up
+      - switch.turn_off: relay_up
+      - lambda: |-
+          if (id(g_calibrating)) {
+            int ms = (int)(millis() - id(g_calib_start_ms));
+            id(g_travel_ms_up) = ms;
+            ESP_LOGI("raffstore", "Calibrated travel_up = %d ms", ms);
+          }
+          id(g_position)      = 1.0f;
+          id(g_tilt)          = 1.0f;
+          id(g_direction)     = 0;
+          id(g_sensing_active) = false;
+          id(g_tilt_only)     = false;
+      - cover.template.publish:
+          id: raffstore_cover
+          current_operation: IDLE
+
+  # ── End-stop reached: BOTTOM ─────────────────────────────
+  - id: script_endstop_down
+    mode: single
+    then:
+      - script.stop: script_run_down
+      - switch.turn_off: relay_down
+      - lambda: |-
+          if (id(g_calibrating)) {
+            int ms = (int)(millis() - id(g_calib_start_ms));
+            id(g_travel_ms_down) = ms;
+            ESP_LOGI("raffstore", "Calibrated travel_down = %d ms", ms);
+          }
+          id(g_position)      = 0.0f;
+          id(g_tilt)          = 0.0f;
+          id(g_direction)     = 0;
+          id(g_sensing_active) = false;
+          id(g_tilt_only)     = false;
+      - cover.template.publish:
+          id: raffstore_cover
+          current_operation: IDLE
+
+  # ── Move to absolute position (0.0 – 1.0) ────────────────
+  - id: script_go_to_position
+    mode: single
+    parameters:
+      target: float
+    then:
+      - lambda: |-
+          float delta = target - id(g_position);
+          ESP_LOGI("raffstore", "go_to_position  current=%.2f  target=%.2f  delta=%.2f",
+                   id(g_position), target, delta);
+      - if:
+          condition:
+            lambda: 'return (target - id(g_position)) > 0.01f;'
+          then:
+            - lambda: 'id(g_tilt) = 1.0f;'   # slats open after upward travel
+            - script.execute:
+                id: script_run_up
+                target_ms: !lambda |-
+                  return (int)((target - id(g_position)) * id(g_travel_ms_up));
+      - if:
+          condition:
+            lambda: 'return (id(g_position) - target) > 0.01f;'
+          then:
+            - lambda: 'id(g_tilt) = 0.0f;'   # slats close during downward travel
+            - script.execute:
+                id: script_run_down
+                target_ms: !lambda |-
+                  return (int)((id(g_position) - target) * id(g_travel_ms_down));
+
+  # ── Set tilt, always approaching from BELOW (upward) ──────
+  #
+  # Logic:
+  #   A) If current tilt > target  OR  last move was upward
+  #      → first drive DOWN to close slats below target,
+  #        then drive UP to target  (ensures final approach = upward)
+  #   B) If current tilt ≤ target AND last move was downward
+  #      → drive directly UP to target (already below)
+  # ──────────────────────────────────────────────────────────
+  - id: script_go_to_tilt
+    mode: single
+    parameters:
+      target: float
+    then:
+      - lambda: |-
+          ESP_LOGI("raffstore", "go_to_tilt  current=%.2f  target=%.2f  last_up=%d",
+                   id(g_tilt), target, (int)id(g_last_dir_up));
+          id(g_tilt_only) = true;   // position must not change during tilt adjustment
+      # Step 1 — if needed, close slats below target first
+      - if:
+          condition:
+            lambda: 'return id(g_tilt) > target + 0.05f || id(g_last_dir_up);'
+          then:
+            # Drive DOWN for (current_tilt + 15 % margin) × tilt_ms, capped at full tilt_ms
+            - script.execute:
+                id: script_run_down
+                target_ms: !lambda |-
+                  float close_fraction = id(g_tilt) + 0.15f;
+                  if (close_fraction > 1.0f) close_fraction = 1.0f;
+                  return (int)(close_fraction * id(g_tilt_ms));
+            - wait_until:
+                condition:
+                  lambda: 'return id(g_direction) == 0;'
+                timeout: 15s
+            - lambda: 'id(g_tilt) = 0.0f;'
+      # Step 2 — drive UP to target tilt
+      - if:
+          condition:
+            lambda: 'return target > 0.02f;'
+          then:
+            - script.execute:
+                id: script_run_up
+                target_ms: !lambda |-
+                  return (int)(target * id(g_tilt_ms));
+            - wait_until:
+                condition:
+                  lambda: 'return id(g_direction) == 0;'
+                timeout: 15s
+      # Finalise
+      - lambda: |-
+          id(g_tilt)      = target;
+          id(g_tilt_only) = false;
+          ESP_LOGI("raffstore", "Tilt set to %.2f", target);
+      - cover.template.publish:
+          id: raffstore_cover
+          current_operation: IDLE
+
+  # ── Calibration sequence ──────────────────────────────────
+  #   1. Drive fully DOWN   → end-stop saves travel_ms_down
+  #   2. Drive fully UP     → end-stop saves travel_ms_up
+  #   Calibration timing is recorded via g_calib_start_ms +
+  #   script_endstop_up / script_endstop_down callbacks.
+  # ──────────────────────────────────────────────────────────
+  - id: script_calibrate
+    mode: single
+    then:
+      - logger.log: "Calibration sequence started"
+      - lambda: |-
+          id(g_calibrating) = true;
+          id(g_tilt_only)   = false;
+
+      # Phase 1 — drive fully DOWN (2 min timeout; end-stop fires first)
+      - lambda: 'id(g_calib_start_ms) = millis();'
+      - script.execute:
+          id: script_run_down
+          target_ms: 120000
+      - wait_until:
+          condition:
+            lambda: 'return id(g_direction) == 0;'
+          timeout: 125s
+      - delay: 1s
+
+      # Phase 2 — drive fully UP
+      - lambda: 'id(g_calib_start_ms) = millis();'
+      - script.execute:
+          id: script_run_up
+          target_ms: 120000
+      - wait_until:
+          condition:
+            lambda: 'return id(g_direction) == 0;'
+          timeout: 125s
+
+      - lambda: |-
+          id(g_calibrating) = false;
+          id(g_position)    = 1.0f;
+          id(g_tilt)        = 1.0f;
+          ESP_LOGI("raffstore", "Calibration complete. Up: %d ms  Down: %d ms",
+                   id(g_travel_ms_up), id(g_travel_ms_down));
+      - cover.template.publish:
+          id: raffstore_cover
+          current_operation: IDLE
+      - homeassistant.service:
+          service: persistent_notification.create
+          data:
+            title: "Kalibrierung abgeschlossen — ${device_name}"
+            message: >-
+              Kalibrierung erfolgreich. Die ermittelten Fahrtzeiten wurden
+              gespeichert und sind unter den Einstellungs-Entitäten einsehbar.
+
+# ─────────────────────────────────────────────────────────────
+# Physical buttons
+# ─────────────────────────────────────────────────────────────
+binary_sensor:
+  # Button 1  (GPIO18) — hold = drive UP, release = stop
+  - platform: gpio
+    pin:
+      number: GPIO18
+    name: "${cover_name} Button Up"
+    id: btn_up
+    filters:
+      - delayed_on_off: 50ms
+    on_press:
+      then:
+        - script.execute: script_stop_motor
+        - script.execute:
+            id: script_run_up
+            target_ms: !lambda 'return id(g_travel_ms_up) + 3000;'
+    on_release:
+      then:
+        - script.execute: script_stop_motor
+
+  # Button 2  (GPIO10) — hold = drive DOWN, release = stop
+  - platform: gpio
+    pin:
+      number: GPIO10
+    name: "${cover_name} Button Down"
+    id: btn_down
+    filters:
+      - delayed_on_off: 50ms
+    on_press:
+      then:
+        - script.execute: script_stop_motor
+        - script.execute:
+            id: script_run_down
+            target_ms: !lambda 'return id(g_travel_ms_down) + 3000;'
+    on_release:
+      then:
+        - script.execute: script_stop_motor
+
+  # Reset button (GPIO19)
+  - platform: gpio
+    name: "${cover_name} Reset Button"
+    id: btn_reset
+    pin:
+      number: GPIO19
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+
+# ─────────────────────────────────────────────────────────────
+# Calibration button (Home Assistant)
+# ─────────────────────────────────────────────────────────────
+button:
+  - platform: template
+    name: "${cover_name} Kalibrierung starten"
+    icon: mdi:cog-sync-outline
+    on_press:
+      then:
+        - script.execute: script_calibrate
+
+# ─────────────────────────────────────────────────────────────
+# Travel-time numbers  (editable from HA — no re-flash needed)
+# ─────────────────────────────────────────────────────────────
+number:
+  - platform: template
+    name: "${cover_name} Fahrtzeit Hoch (ms)"
+    id: num_travel_up
+    icon: mdi:timer-outline
+    unit_of_measurement: ms
+    mode: box
+    min_value: 1000
+    max_value: 120000
+    step: 100
+    lambda: 'return (float)id(g_travel_ms_up);'
+    set_action:
+      - lambda: |-
+          id(g_travel_ms_up) = (int)x;
+          ESP_LOGI("raffstore", "travel_ms_up set to %d ms", id(g_travel_ms_up));
+
+  - platform: template
+    name: "${cover_name} Fahrtzeit Runter (ms)"
+    id: num_travel_down
+    icon: mdi:timer-outline
+    unit_of_measurement: ms
+    mode: box
+    min_value: 1000
+    max_value: 120000
+    step: 100
+    lambda: 'return (float)id(g_travel_ms_down);'
+    set_action:
+      - lambda: |-
+          id(g_travel_ms_down) = (int)x;
+          ESP_LOGI("raffstore", "travel_ms_down set to %d ms", id(g_travel_ms_down));
+
+  - platform: template
+    name: "${cover_name} Tilt-Zeit (ms)"
+    id: num_tilt_ms
+    icon: mdi:blinds
+    unit_of_measurement: ms
+    mode: box
+    min_value: 500
+    max_value: 10000
+    step: 50
+    lambda: 'return (float)id(g_tilt_ms);'
+    set_action:
+      - lambda: |-
+          id(g_tilt_ms) = (int)x;
+          ESP_LOGI("raffstore", "tilt_ms set to %d ms", id(g_tilt_ms));

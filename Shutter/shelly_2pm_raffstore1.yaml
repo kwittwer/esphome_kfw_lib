@@ -1,0 +1,50 @@
+substitutions:
+  device_name: shelly_2_pm_gen3_1
+  friendly_name: Shelly 2 PM Gen3 1
+  cover_name: Raffstore 1
+  max_power: "2000.0"   # watt
+  max_temp: "70.0"      # °C
+  # Default travel times in ms — overwritten by calibration (stored in globals)
+  travel_time_up: "25000"
+  travel_time_down: "25000"
+  tilt_time: "2500"
+  # Current threshold below which motor is considered stopped (end-stop reached)
+  current_threshold: "0.3"   # ampere
+
+esphome:
+  name: ${device_name}
+  name_add_mac_suffix: false
+  friendly_name: ${friendly_name}
+
+esp32:
+  variant: esp32c3
+  flash_size: 8MB
+  framework:
+    type: esp-idf
+    version: recommended
+    sdkconfig_options:
+      COMPILER_OPTIMIZATION_SIZE: y
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_enc
+
+ota:
+  - platform: esphome
+    password: !secret ota_pwd
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "${friendly_name}"
+    password: !secret ap_pwd
+
+captive_portal:
+
+packages:
+  raffstore: !include Lib/raffstore_cover.yaml

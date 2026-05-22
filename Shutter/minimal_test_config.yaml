@@ -1,0 +1,18 @@
+esphome:
+  name: minimal-test-config
+
+esp32:
+  board: esp32dev
+
+logger:
+
+api:
+
+ota:
+  platform: esphome
+
+wifi:
+  ssid: "test-ssid"
+  password: "test-password"
+
+captive_portal:
