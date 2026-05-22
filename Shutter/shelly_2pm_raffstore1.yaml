@@ -1,5 +1,5 @@
 substitutions:
-  device_name: shelly_2_pm_gen3_1
+  device_name: shelly-2-pm-gen3-1
   friendly_name: Shelly 2 PM Gen3 1
   cover_name: Raffstore 1
   max_power: "2000.0"   # watt
