@@ -9,7 +9,7 @@ substitutions:
   travel_time_down: "25000"
   tilt_time: "2500"
   # Current threshold below which motor is considered stopped (end-stop reached)
-  current_threshold: "0.3"   # ampere
+  current_threshold: "0.05"   # ampere
 
 esphome:
   name: ${device_name}

@@ -116,6 +116,12 @@ globals:
     restore_value: false
     initial_value: 'false'
 
+  # Saved tilt value — restored after position travel if sw_restore_tilt is on
+  - id: g_saved_tilt
+    type: float
+    restore_value: false
+    initial_value: '0.0'
+
   # Timestamp used to measure calibration travel times
   - id: g_calib_start_ms
     type: uint32_t
@@ -143,6 +149,15 @@ switch:
       number: GPIO3
       mode:
         output: true
+
+  # Option: restore previous tilt after position travel
+  - platform: template
+    name: "${cover_name} Tilt wiederherstellen"
+    id: sw_restore_tilt
+    icon: mdi:restore
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
 
 # ─────────────────────────────────────────────────────────────
 # Power monitoring  (ADE7953)  +  temperature
@@ -269,16 +284,14 @@ cover:
     open_action:
       - script.execute: script_stop_motor
       - script.execute:
-          id: script_run_up
-          target_ms: !lambda |-
-            return (int)((1.0f - id(g_position)) * id(g_travel_ms_up)) + 1000;
+          id: script_go_to_position
+          target: 1.0
 
     close_action:
       - script.execute: script_stop_motor
       - script.execute:
-          id: script_run_down
-          target_ms: !lambda |-
-            return (int)(id(g_position) * id(g_travel_ms_down)) + 1000;
+          id: script_go_to_position
+          target: 0.0
 
     stop_action:
       - script.execute: script_stop_motor
@@ -455,15 +468,21 @@ script:
           current_operation: IDLE
 
   # ── Move to absolute position (0.0 – 1.0) ────────────────
+  #   If sw_restore_tilt is ON the previous tilt value is
+  #   automatically re-applied after the position travel.
+  # ──────────────────────────────────────────────────────────
   - id: script_go_to_position
     mode: single
     parameters:
       target: float
     then:
+      # Save current tilt before travel (for optional restore)
       - lambda: |-
+          id(g_saved_tilt) = id(g_tilt);
           float delta = target - id(g_position);
-          ESP_LOGI("raffstore", "go_to_position  current=%.2f  target=%.2f  delta=%.2f",
-                   id(g_position), target, delta);
+          ESP_LOGI("raffstore", "go_to_position  current=%.2f  target=%.2f  delta=%.2f  saved_tilt=%.2f",
+                   id(g_position), target, delta, id(g_saved_tilt));
+      # Move UP
       - if:
           condition:
             lambda: 'return (target - id(g_position)) > 0.01f;'
@@ -472,7 +491,12 @@ script:
             - script.execute:
                 id: script_run_up
                 target_ms: !lambda |-
-                  return (int)((target - id(g_position)) * id(g_travel_ms_up));
+                  return (int)((target - id(g_position)) * id(g_travel_ms_up)) + 1000;
+            - wait_until:
+                condition:
+                  lambda: 'return id(g_direction) == 0;'
+                timeout: 130s
+      # Move DOWN
       - if:
           condition:
             lambda: 'return (id(g_position) - target) > 0.01f;'
@@ -481,16 +505,31 @@ script:
             - script.execute:
                 id: script_run_down
                 target_ms: !lambda |-
-                  return (int)((id(g_position) - target) * id(g_travel_ms_down));
+                  return (int)((id(g_position) - target) * id(g_travel_ms_down)) + 1000;
+            - wait_until:
+                condition:
+                  lambda: 'return id(g_direction) == 0;'
+                timeout: 130s
+      # Restore previous tilt if enabled
+      - if:
+          condition:
+            switch.is_on: sw_restore_tilt
+          then:
+            - lambda: |-
+                ESP_LOGI("raffstore", "Restoring tilt to %.2f", id(g_saved_tilt));
+            - script.execute:
+                id: script_go_to_tilt
+                target: !lambda 'return id(g_saved_tilt);'
+            - wait_until:
+                condition:
+                  lambda: 'return id(g_direction) == 0;'
+                timeout: 15s
 
-  # ── Set tilt, always approaching from BELOW (upward) ──────
+  # ── Set tilt — ALWAYS drive to 0 % first, then UP to target ─
   #
   # Logic:
-  #   A) If current tilt > target  OR  last move was upward
-  #      → first drive DOWN to close slats below target,
-  #        then drive UP to target  (ensures final approach = upward)
-  #   B) If current tilt ≤ target AND last move was downward
-  #      → drive directly UP to target (already below)
+  #   1. Always drive DOWN for full g_tilt_ms → slats fully closed (0 %)
+  #   2. If target > 0 → drive UP for target × g_tilt_ms → slats at target
   # ──────────────────────────────────────────────────────────
   - id: script_go_to_tilt
     mode: single
@@ -498,26 +537,18 @@ script:
       target: float
     then:
       - lambda: |-
-          ESP_LOGI("raffstore", "go_to_tilt  current=%.2f  target=%.2f  last_up=%d",
-                   id(g_tilt), target, (int)id(g_last_dir_up));
+          ESP_LOGI("raffstore", "go_to_tilt  current=%.2f  target=%.2f",
+                   id(g_tilt), target);
           id(g_tilt_only) = true;   // position must not change during tilt adjustment
-      # Step 1 — if needed, close slats below target first
-      - if:
+      # Step 1 — always close slats fully (drive DOWN for full tilt duration)
+      - script.execute:
+          id: script_run_down
+          target_ms: !lambda 'return id(g_tilt_ms);'
+      - wait_until:
           condition:
-            lambda: 'return id(g_tilt) > target + 0.05f || id(g_last_dir_up);'
-          then:
-            # Drive DOWN for (current_tilt + 15 % margin) × tilt_ms, capped at full tilt_ms
-            - script.execute:
-                id: script_run_down
-                target_ms: !lambda |-
-                  float close_fraction = id(g_tilt) + 0.15f;
-                  if (close_fraction > 1.0f) close_fraction = 1.0f;
-                  return (int)(close_fraction * id(g_tilt_ms));
-            - wait_until:
-                condition:
-                  lambda: 'return id(g_direction) == 0;'
-                timeout: 15s
-            - lambda: 'id(g_tilt) = 0.0f;'
+            lambda: 'return id(g_direction) == 0;'
+          timeout: 15s
+      - lambda: 'id(g_tilt) = 0.0f;'
       # Step 2 — drive UP to target tilt
       - if:
           condition:
