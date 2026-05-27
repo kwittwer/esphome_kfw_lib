@@ -1,0 +1,130 @@
+[2026-05-27 14:09:30] [Warning] Output-Verzeichnis existiert bereits, räume auf...
+[2026-05-27 14:09:30] [Success] Output-Verzeichnis erstellt
+[2026-05-27 14:09:30] [Info] Verarbeite: NSPanel\nspanel_1.yaml [1/13]
+[2026-05-27 14:09:30] [Info] Starte Compilation...
+[2026-05-27 14:12:42] [Success] Compilation erfolgreich
+[2026-05-27 14:12:42] [Info] Suche Binaries in: C:\e\.pioenvs\nspanel1
+[2026-05-27 14:12:42] [Success] Kopiert: nspanel_1-firmware.bin
+[2026-05-27 14:12:42] [Success] Kopiert: nspanel_1-firmware.factory.bin
+[2026-05-27 14:12:42] [Success] Kopiert: nspanel_1-firmware.ota.bin
+[2026-05-27 14:12:43] [Success] Fertig: NSPanel\nspanel_1.yaml erfolgreich verarbeitet
+[2026-05-27 14:12:43] [Info] Verarbeite: NSPanel\nspanel_2.yaml [2/13]
+[2026-05-27 14:12:43] [Info] Starte Compilation...
+[2026-05-27 14:15:59] [Success] Compilation erfolgreich
+[2026-05-27 14:15:59] [Info] Suche Binaries in: C:\e\.pioenvs\nspanel2
+[2026-05-27 14:15:59] [Success] Kopiert: nspanel_2-firmware.bin
+[2026-05-27 14:15:59] [Success] Kopiert: nspanel_2-firmware.factory.bin
+[2026-05-27 14:15:59] [Success] Kopiert: nspanel_2-firmware.ota.bin
+[2026-05-27 14:15:59] [Success] Fertig: NSPanel\nspanel_2.yaml erfolgreich verarbeitet
+[2026-05-27 14:15:59] [Info] Verarbeite: NSPanel\nspanel_3.yaml [3/13]
+[2026-05-27 14:15:59] [Info] Starte Compilation...
+[2026-05-27 14:19:12] [Success] Compilation erfolgreich
+[2026-05-27 14:19:12] [Info] Suche Binaries in: C:\e\.pioenvs\nspanel3
+[2026-05-27 14:19:12] [Success] Kopiert: nspanel_3-firmware.bin
+[2026-05-27 14:19:12] [Success] Kopiert: nspanel_3-firmware.factory.bin
+[2026-05-27 14:19:12] [Success] Kopiert: nspanel_3-firmware.ota.bin
+[2026-05-27 14:19:12] [Success] Fertig: NSPanel\nspanel_3.yaml erfolgreich verarbeitet
+[2026-05-27 14:19:12] [Info] Verarbeite: NSPanel\nspanel_4.yaml [4/13]
+[2026-05-27 14:19:12] [Info] Starte Compilation...
+[2026-05-27 14:22:25] [Success] Compilation erfolgreich
+[2026-05-27 14:22:25] [Info] Suche Binaries in: C:\e\.pioenvs\nspanel4
+[2026-05-27 14:22:25] [Success] Kopiert: nspanel_4-firmware.bin
+[2026-05-27 14:22:25] [Success] Kopiert: nspanel_4-firmware.factory.bin
+[2026-05-27 14:22:25] [Success] Kopiert: nspanel_4-firmware.ota.bin
+[2026-05-27 14:22:25] [Success] Fertig: NSPanel\nspanel_4.yaml erfolgreich verarbeitet
+[2026-05-27 14:22:25] [Info] Verarbeite: NSPanel\nspanel_5.yaml [5/13]
+[2026-05-27 14:22:25] [Info] Starte Compilation...
+[2026-05-27 14:25:49] [Success] Compilation erfolgreich
+[2026-05-27 14:25:49] [Info] Suche Binaries in: C:\e\.pioenvs\nspanel5
+[2026-05-27 14:25:49] [Success] Kopiert: nspanel_5-firmware.bin
+[2026-05-27 14:25:49] [Success] Kopiert: nspanel_5-firmware.factory.bin
+[2026-05-27 14:25:49] [Success] Kopiert: nspanel_5-firmware.ota.bin
+[2026-05-27 14:25:49] [Success] Fertig: NSPanel\nspanel_5.yaml erfolgreich verarbeitet
+[2026-05-27 14:25:49] [Info] Verarbeite: NSPanel\nspanel_6.yaml [6/13]
+[2026-05-27 14:25:49] [Info] Starte Compilation...
+[2026-05-27 14:29:31] [Success] Compilation erfolgreich
+[2026-05-27 14:29:31] [Info] Suche Binaries in: C:\e\.pioenvs\nspanel6
+[2026-05-27 14:29:31] [Success] Kopiert: nspanel_6-firmware.bin
+[2026-05-27 14:29:31] [Success] Kopiert: nspanel_6-firmware.factory.bin
+[2026-05-27 14:29:31] [Success] Kopiert: nspanel_6-firmware.ota.bin
+[2026-05-27 14:29:31] [Success] Fertig: NSPanel\nspanel_6.yaml erfolgreich verarbeitet
+[2026-05-27 14:29:31] [Info] Verarbeite: NSPanel\nspanel_7.yaml [7/13]
+[2026-05-27 14:29:31] [Info] Starte Compilation...
+[2026-05-27 14:33:10] [Success] Compilation erfolgreich
+[2026-05-27 14:33:10] [Info] Suche Binaries in: C:\e\.pioenvs\nspanel7
+[2026-05-27 14:33:10] [Success] Kopiert: nspanel_7-firmware.bin
+[2026-05-27 14:33:10] [Success] Kopiert: nspanel_7-firmware.factory.bin
+[2026-05-27 14:33:10] [Success] Kopiert: nspanel_7-firmware.ota.bin
+[2026-05-27 14:33:10] [Success] Fertig: NSPanel\nspanel_7.yaml erfolgreich verarbeitet
+[2026-05-27 14:33:10] [Info] Verarbeite: NSPanel\nspanel_8.yaml [8/13]
+[2026-05-27 14:33:10] [Info] Starte Compilation...
+[2026-05-27 14:36:52] [Success] Compilation erfolgreich
+[2026-05-27 14:36:52] [Info] Suche Binaries in: C:\e\.pioenvs\nspanel8
+[2026-05-27 14:36:52] [Success] Kopiert: nspanel_8-firmware.bin
+[2026-05-27 14:36:52] [Success] Kopiert: nspanel_8-firmware.factory.bin
+[2026-05-27 14:36:52] [Success] Kopiert: nspanel_8-firmware.ota.bin
+[2026-05-27 14:36:52] [Success] Fertig: NSPanel\nspanel_8.yaml erfolgreich verarbeitet
+[2026-05-27 14:36:52] [Info] Verarbeite: NSPanel\nspanel_9.yaml [9/13]
+[2026-05-27 14:36:52] [Info] Starte Compilation...
+[2026-05-27 14:40:32] [Success] Compilation erfolgreich
+[2026-05-27 14:40:32] [Info] Suche Binaries in: C:\e\.pioenvs\nspanel9
+[2026-05-27 14:40:33] [Success] Kopiert: nspanel_9-firmware.bin
+[2026-05-27 14:40:33] [Success] Kopiert: nspanel_9-firmware.factory.bin
+[2026-05-27 14:40:33] [Success] Kopiert: nspanel_9-firmware.ota.bin
+[2026-05-27 14:40:33] [Success] Fertig: NSPanel\nspanel_9.yaml erfolgreich verarbeitet
+[2026-05-27 14:40:33] [Info] Verarbeite: Shutter\shelly_2pm_raffstore1.yaml [10/13]
+[2026-05-27 14:40:33] [Info] Starte Compilation...
+[2026-05-27 14:40:33] [Error] Compilation fehlgeschlagen (Exit Code: 2)
+[2026-05-27 14:40:33] [Warning] Error Output: INFO ESPHome 2026.5.1
+INFO Reading configuration Shutter\shelly_2pm_raffstore1.yaml...
+Failed config
+
+packages: [source Shutter\shelly_2pm_raffstore1.yaml:50]
+  
+  Error including file 'Lib\raffstore_cover.yaml': Error reading file Shutter\Lib\raffstore_cover.yaml: [Errno 2] No such file or directory: 'Shutter\\Lib\\raffstore_cover.yaml'
+  In: packages->raffstore in Shutter\shelly_2pm_raffstore1.yaml 50:3.
+  raffstore: IncludeFile(Lib/raffstore_cover.yaml)
+[2026-05-27 14:40:33] [Info] Verarbeite: Shutter\shelly_2pm_raffstore2.yaml [11/13]
+[2026-05-27 14:40:33] [Info] Starte Compilation...
+[2026-05-27 14:40:33] [Error] Compilation fehlgeschlagen (Exit Code: 2)
+[2026-05-27 14:40:33] [Warning] Error Output: INFO ESPHome 2026.5.1
+INFO Reading configuration Shutter\shelly_2pm_raffstore2.yaml...
+Failed config
+
+packages: [source Shutter\shelly_2pm_raffstore2.yaml:50]
+  
+  Error including file 'Lib\raffstore_cover.yaml': Error reading file Shutter\Lib\raffstore_cover.yaml: [Errno 2] No such file or directory: 'Shutter\\Lib\\raffstore_cover.yaml'
+  In: packages->raffstore in Shutter\shelly_2pm_raffstore2.yaml 50:3.
+  raffstore: IncludeFile(Lib/raffstore_cover.yaml)
+[2026-05-27 14:40:33] [Info] Verarbeite: Shutter\shelly_2pm_raffstore3.yaml [12/13]
+[2026-05-27 14:40:33] [Info] Starte Compilation...
+[2026-05-27 14:40:33] [Error] Compilation fehlgeschlagen (Exit Code: 2)
+[2026-05-27 14:40:33] [Warning] Error Output: INFO ESPHome 2026.5.1
+INFO Reading configuration Shutter\shelly_2pm_raffstore3.yaml...
+Failed config
+
+packages: [source Shutter\shelly_2pm_raffstore3.yaml:50]
+  
+  Error including file 'Lib\raffstore_cover.yaml': Error reading file Shutter\Lib\raffstore_cover.yaml: [Errno 2] No such file or directory: 'Shutter\\Lib\\raffstore_cover.yaml'
+  In: packages->raffstore in Shutter\shelly_2pm_raffstore3.yaml 50:3.
+  raffstore: IncludeFile(Lib/raffstore_cover.yaml)
+[2026-05-27 14:40:34] [Info] Verarbeite: Shutter\shelly_2pm_raffstore4.yaml [13/13]
+[2026-05-27 14:40:34] [Info] Starte Compilation...
+[2026-05-27 14:40:34] [Error] Compilation fehlgeschlagen (Exit Code: 2)
+[2026-05-27 14:40:34] [Warning] Error Output: INFO ESPHome 2026.5.1
+INFO Reading configuration Shutter\shelly_2pm_raffstore4.yaml...
+Failed config
+
+packages: [source Shutter\shelly_2pm_raffstore4.yaml:50]
+  
+  Error including file 'Lib\raffstore_cover.yaml': Error reading file Shutter\Lib\raffstore_cover.yaml: [Errno 2] No such file or directory: 'Shutter\\Lib\\raffstore_cover.yaml'
+  In: packages->raffstore in Shutter\shelly_2pm_raffstore4.yaml 50:3.
+  raffstore: IncludeFile(Lib/raffstore_cover.yaml)
+[2026-05-27 14:40:34] [Info] Gesamt:       13
+[2026-05-27 14:40:34] [Success] Erfolgreich:  9
+[2026-05-27 14:40:34] [Error] Fehlgeschlagen: 4
+[2026-05-27 14:40:34] [Warning] Uebersprungen: 0
+[2026-05-27 14:40:34] [Success] Firmware-Dateien im Output-Ordner: 0
+[2026-05-27 14:40:34] [Info] 
+[2026-05-27 14:40:34] [Info] Binaries sind verfügbar unter:
+[2026-05-27 14:40:34] [Error] Script beendet mit FEHLERN (siehe Log: C:\Users\kwitt\Documents\gittea\esphome_kfw_lib\build_log.txt)

@@ -1,7 +1,7 @@
 substitutions:
-  device_name: raffstore1
-  friendly_name: Raffstore 1
-  cover_name: Raffstore 1
+  device_name: raffstore3
+  friendly_name: Raffstore 3
+  cover_name: Raffstore 3
   max_power: "2000.0"   # watt
   max_temp: "70.0"      # °C
   # Default travel times in ms — overwritten by calibration (stored in globals)
