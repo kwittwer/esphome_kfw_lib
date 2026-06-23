@@ -1,0 +1,69 @@
+﻿# ============================================
+# Thermostat Template
+# Parametrisiertes Template für einen einzelnen Thermostat
+# 
+# Vars (müssen in Peripherie/Thermostate.yaml definiert sein):
+#   - thermostat_id: eindeutige ID (z.B. 1, 2, etc.)
+#   - thermostat_name: Anzeigename (z.B. "Wohnzimmer")
+#   - thermostat_fallback_sensor: Fallback sensor ID (aus setup YAML)
+#   - thermostat_fallback_humidity_sensor: Fallback humidity sensor ID
+#   - thermostat_valve_switch: DO ID (z.B. "DO1")
+#   - Thermostat_external_sensor_timeout: Timeout in Sekunden
+#
+# Primary Sensor: Wird NICHT hier definiert - wird automatisch aus
+# dem Primary Sensor Link im Setup derived
+# ============================================
+
+climate:
+  - platform: dummy_thermostat
+    name: "${thermostat_name}"
+    id: thermostat${thermostat_id}
+    fallback_sensor: ${thermostat_fallback_sensor}
+    sensor_timeout: ${Thermostat_external_sensor_timeout}
+    fallback_humidity_sensor: ${thermostat_fallback_humidity_sensor}
+    humidity_sensor_timeout: ${Thermostat_external_sensor_timeout}
+    valve_switch: ${thermostat_valve_switch}
+    valve_update_timeout: 300
+    valve_control_enabled: !lambda |-
+      return id(heating_master_switch).state && id(hw_master_sw).state;
+    use_local_valve_control: !lambda |-
+      return id(local_control_switch).state;
+    heating_deadband: 0.5
+    heating_overrun: 0.1
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+
+binary_sensor:
+  - platform: template
+    name: "${thermostat_name} Fallback active - Temperature Sensor"
+    id: t${thermostat_id}_fallback_temp_active
+    entity_category: diagnostic
+    lambda: |-
+      return id(thermostat${thermostat_id}).is_using_fallback_temperature();
+
+api:
+  services:
+    - service: set_current_temperature_thermostat${thermostat_id}
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat${thermostat_id}).set_current_temperature(wert);
+
+    - service: set_current_humidity_thermostat${thermostat_id}
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat${thermostat_id}).set_current_humidity(wert);
+
+    - service: set_valve_state_thermostat${thermostat_id}
+      variables:
+        valve: bool
+      then:
+        - lambda: |-
+            id(thermostat${thermostat_id}).set_valve_state(valve);

@@ -1,0 +1,508 @@
+# ============================================
+# B16M Hardware Configuration
+# Konsolidierte Hardware-Komponenten:
+# - Digital Inputs (16x via PCF8575)
+# - Digital Outputs (16x via PCF8575)
+# - Analog Inputs (4x via ADS1115)
+# - OneWire DHT Sensoren
+# - Display (SSD1306 OLED)
+# - Anemometer
+# ============================================
+
+# ============================================
+# I/O Expander: PCF8574 für DI/DO
+# ============================================
+
+pcf8574:
+  - id: 'pcf8574_hub_in_1'
+    i2c_id: bus_a
+    address: 0x24
+    pcf8575: true
+    
+  - id: 'pcf8574_hub_out_1'
+    i2c_id: bus_a
+    address: 0x25
+    pcf8575: true
+
+# ============================================
+# Digital Inputs (DI1-DI16)
+# ============================================
+
+binary_sensor:
+  - platform: gpio
+    name: "DI1"
+    id: DI1
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 0
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI2"
+    id: DI2
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 1
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI3"
+    id: DI3
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 2
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI4"
+    id: DI4
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 3
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI5"
+    id: DI5
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 4
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI6"
+    id: DI6
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 5
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI7"
+    id: DI7
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 6
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI8"
+    id: DI8
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 7
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI9"
+    id: DI9
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 8
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI10"
+    id: DI10
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 9
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI11"
+    id: DI11
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 10
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI12"
+    id: DI12
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 11
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI13"
+    id: DI13
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 12
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI14"
+    id: DI14
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 13
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI15"
+    id: DI15
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 14
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI16"
+    id: DI16
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 15
+      mode: INPUT
+      inverted: true
+
+# ============================================
+# Digital Outputs (DO1-DO16)
+# ============================================
+
+switch:
+  - platform: gpio
+    name: "DO1"
+    id: DO1
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 0
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO2"
+    id: DO2
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 1
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO3"
+    id: DO3
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 2
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO4"
+    id: DO4
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 3
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO5"
+    id: DO5
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 4
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO6"
+    id: DO6
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 5
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO7"
+    id: DO7
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 6
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO8"
+    id: DO8
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 7
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO9"
+    id: DO9
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 8
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO10"
+    id: DO10
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 9
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO11"
+    id: DO11
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 10
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO12"
+    id: DO12
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 11
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO13"
+    id: DO13
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 12
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO14"
+    id: DO14
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 13
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO15"
+    id: DO15
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 14
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO16"
+    id: DO16
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 15
+      mode: OUTPUT
+      inverted: true
+
+# ============================================
+# Analog Inputs (AI1-AI4 via ADS1115)
+# ============================================
+
+ads1115:
+  - address: 0x48
+
+sensor:
+  - platform: ads1115
+    multiplexer: 'A0_GND'
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_1
+    name: "AI 1"
+    internal: true
+    unit_of_measurement: "V"
+    update_interval: 5s
+    
+  - platform: ads1115
+    multiplexer: 'A1_GND'
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_2
+    name: "AI 2"
+    internal: true
+    unit_of_measurement: "V"
+    update_interval: 5s
+    
+  - platform: ads1115
+    multiplexer: 'A2_GND'
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_3
+    unit_of_measurement: "mA"
+    accuracy_decimals: 2
+    internal: true
+    update_interval: 5s
+    filters:
+      - calibrate_linear:
+          - 0.0 -> 0.0
+          - 0.59 -> 3.95
+    
+  - platform: ads1115
+    multiplexer: 'A3_GND'
+    name: "Strom AI_4"
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_4
+    unit_of_measurement: "mA"
+    accuracy_decimals: 2
+    internal: true
+    update_interval: 5s
+    filters:
+      - calibrate_linear:
+          - 0.0 -> 0.0
+          - 0.59 -> 3.95
+
+# ============================================
+# OneWire DHT Sensoren (T1-T4)
+# ============================================
+
+  - platform: dht
+    pin: 40
+    id: T1
+    temperature:
+      name: "${T1_name} Temperature"
+      id: ${T1_name}_temperature
+    humidity:
+      name: "${T1_name} Humidity"
+      id: ${T1_name}_humidity
+    update_interval: 10s
+    
+  - platform: dht
+    pin: 15
+    id: T2
+    temperature:
+      name: "${T2_name} Temperature"
+      id: ${T2_name}_temperature
+    humidity:
+      name: "${T2_name} Humidity"
+      id: ${T2_name}_humidity
+    update_interval: 1s
+
+  - platform: dht
+    pin: 48
+    id: T3
+    temperature:
+      name: "${T3_name} Temperature"
+      id: ${T3_name}_temperature
+    humidity:
+      name: "${T3_name} Humidity"
+      id: ${T3_name}_humidity
+    update_interval: 10s
+
+  - platform: dht
+    pin: 47
+    id: T4
+    temperature:
+      name: "${T4_name} Temperature"
+      id: ${T4_name}_temperature
+    humidity:
+      name: "${T4_name} Humidity"
+      id: ${T4_name}_humidity
+    update_interval: 10s
+
+# ============================================
+# Anemometer (Wind Speed Sensor)
+# ============================================
+
+  - id: !extend AI_3
+    internal: true
+
+  - platform: template
+    name: Windspeed Sensor
+    id: wind_speed
+    lambda: |-
+      return id(AI_4).state;
+    update_interval: 1s
+    unit_of_measurement: m/s
+    device_class: "wind_speed"
+    filters:
+      - calibrate_linear:
+          - 3.95 ->  0.0
+          - 20 -> 30.0
+
+# ============================================
+# Display (SSD1306 OLED 128x64) mit Fonts
+# ============================================
+
+font:
+  - file:
+      type: gfonts
+      family: "Open+Sans"
+      weight: 400
+    id: tiny
+    size: 9
+
+  - file:
+      type: gfonts
+      family: "Open+Sans"
+      weight: 400
+    id: small
+    size: 12
+
+  - file:
+      type: gfonts
+      family: "Open+Sans"
+      weight: 400
+    id: large
+    size: 20
+
+  - file:
+      type: gfonts
+      family: "Open+Sans"
+      weight: 700
+    id: bold
+    size: 10
+
+  - file: "B16M_components/materialdesignicons-webfont.ttf"
+    id: icon
+    size: 16
+    glyphs: [
+        "\U000F02D1",  # mdi-heart
+        "\U000F05D4",  # mdi-airplane-landing
+        "\U000F0159",  # mdi-alert
+        "\U000F012F",  # mdi-checkbox-blank-circle
+        "\U000F0133",  # mdi-checkbox-marked-circle
+        "\U000F012E",  # mdi-checkbox-blank
+        "\U000F0132",  # mdi-checkbox-marked
+        "\U000F0319",  # mdi-lan-disconnect
+        "\U000F0318",  # mdi-lan-connect
+      ]
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    id: oled_display
+    i2c_id: bus_a
+    address: 0x3c
+    pages:
+      - id: page1
+        lambda: |-
+          it.printf(0, 0, id(small), "B16M");
+          it.printf(0, 16, id(tiny), "Ready");

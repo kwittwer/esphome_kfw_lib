@@ -1,0 +1,31 @@
+# ============================================
+# Thermostat API Services Template
+# Parametrisiertes Template für API-Services eines Thermostats
+# 
+# Substitutions (müssen in top-level YAML definiert sein):
+#   - thermostat_id: eindeutige ID (z.B. "1", "2", etc.)
+#   - thermostat_name_id: ID für Lambda (z.B. "thermostat1")
+# ============================================
+
+api:
+  services:
+    - service: set_current_temperature_thermostat${thermostat_id}
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(${thermostat_name_id}).set_current_temperature(wert);
+
+    - service: set_current_humidity_thermostat${thermostat_id}
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(${thermostat_name_id}).set_current_humidity(wert);
+
+    - service: set_valve_state_thermostat${thermostat_id}
+      variables:
+        valve: bool
+      then:
+        - lambda: |-
+            id(${thermostat_name_id}).set_valve_state(valve);

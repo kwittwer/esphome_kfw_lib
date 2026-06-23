@@ -65,11 +65,6 @@ ethernet:
   interrupt_pin: GPIO2
   reset_pin: GPIO1
 
-  manual_ip:
-    static_ip: ${staticip}
-    gateway: 192.168.178.1
-    subnet: 255.255.255.0
-
   
 
 # Example configuration entry
