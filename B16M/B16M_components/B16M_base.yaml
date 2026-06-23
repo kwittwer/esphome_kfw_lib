@@ -1,0 +1,699 @@
+# ============================================
+# B16M Base Configuration Template
+#
+# Konsolidiertes Package-Template für den B16M Controller.
+# Alle Hardwareeinstellungen sind als Variablen mit Standardwerten definiert.
+# Überschreibe nur die Werte, die von den Standardwerten abweichen.
+#
+# Verwendung in einem Setup-File:
+#   packages:
+#     base: !include
+#       file: B16M_components/B16M_base.yaml
+#       vars:
+#         device_name: mein_b16m
+#         friendly_name: "Mein B16M"
+#         ...
+# ============================================
+
+# ============================================
+# DEFAULTS – Standardwerte (überschreibbar via vars:)
+# ============================================
+defaults:
+  # --- Gerät ---
+  device_name: b16m
+  friendly_name: "B16M Panel"
+  version: "2025.12.10.1"
+  project_name: "Konrad.B16M_Heimsteuerung"
+  timezone: "Europe/Berlin"
+  rtc_update_interval: 1h
+  web_server_port: "80"
+
+  # --- Ethernet W5500 ---
+  eth_clk_pin: GPIO42
+  eth_mosi_pin: GPIO43
+  eth_miso_pin: GPIO44
+  eth_cs_pin: GPIO41
+  eth_int_pin: GPIO2
+  eth_rst_pin: GPIO1
+
+  # --- I2C Bus ---
+  i2c_sda_pin: "38"
+  i2c_scl_pin: "39"
+  i2c_frequency: 400kHz
+
+  # --- I/O Expander Adressen (PCF8575, ADS1115, Display) ---
+  pcf_in_address: "0x24"
+  pcf_out_address: "0x25"
+  ads_address: "0x48"
+  display_address: "0x3c"
+
+  # --- DHT Sensor Pins ---
+  dht1_pin: "40"
+  dht2_pin: "15"
+  dht3_pin: "48"
+  dht4_pin: "47"
+
+  # --- DHT Sensor Update-Intervalle ---
+  dht1_update_interval: 10s
+  dht2_update_interval: 1s
+  dht3_update_interval: 10s
+  dht4_update_interval: 10s
+
+  # --- DHT Sensor Namen (für HA-Entitäten und Sensor-IDs) ---
+  T1_name: "Temp1"
+  T2_name: "Temp2"
+  T3_name: "Temp3"
+  T4_name: "Temp4"
+
+  # --- Logger / Debug ---
+  logger_level: INFO
+  debug_update_interval: 10s
+
+
+# ============================================
+# LOGGER
+# ============================================
+logger:
+  level: ${logger_level}
+
+debug:
+  update_interval: ${debug_update_interval}
+
+
+# ============================================
+# ESP32-S3
+# ============================================
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+  platformio_options:
+    board_build.flash_mode: dio
+  project:
+    name: ${project_name}
+    version: "${version}"
+  on_boot:
+    then:
+      ds1307.read_time:
+
+esp32:
+  board: esp32-s3-devkitc-1
+  cpu_frequency: 240MHz
+  flash_size: 16MB
+  variant: esp32s3
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FATFS_LFN_STACK: "y"
+    advanced:
+      execute_from_psram: true
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+
+# ============================================
+# ETHERNET (W5500)
+# ============================================
+ethernet:
+  type: W5500
+  clk_pin: ${eth_clk_pin}
+  mosi_pin: ${eth_mosi_pin}
+  miso_pin: ${eth_miso_pin}
+  cs_pin: ${eth_cs_pin}
+  interrupt_pin: ${eth_int_pin}
+  reset_pin: ${eth_rst_pin}
+
+
+# ============================================
+# WEB SERVER
+# ============================================
+web_server:
+  port: ${web_server_port}
+  version: 3
+
+
+# ============================================
+# TIME (DS1307 RTC + Home Assistant)
+# ============================================
+time:
+  - platform: ds1307
+    id: rtc_time
+    timezone: ${timezone}
+    update_interval: ${rtc_update_interval}
+  - platform: homeassistant
+    timezone: ${timezone}
+    on_time_sync:
+      then:
+        ds1307.write_time:
+
+
+# ============================================
+# I2C BUS
+# ============================================
+i2c:
+  - id: bus_a
+    sda: ${i2c_sda_pin}
+    scl: ${i2c_scl_pin}
+    scan: false
+    frequency: ${i2c_frequency}
+
+
+# ============================================
+# I/O EXPANDER (PCF8575)
+# ============================================
+pcf8574:
+  - id: 'pcf8574_hub_in_1'
+    i2c_id: bus_a
+    address: ${pcf_in_address}
+    pcf8575: true
+
+  - id: 'pcf8574_hub_out_1'
+    i2c_id: bus_a
+    address: ${pcf_out_address}
+    pcf8575: true
+
+
+# ============================================
+# DIGITAL INPUTS (DI1–DI16 via PCF8575)
+# ============================================
+binary_sensor:
+  - platform: gpio
+    name: "DI1"
+    id: DI1
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 0
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI2"
+    id: DI2
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 1
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI3"
+    id: DI3
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 2
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI4"
+    id: DI4
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 3
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI5"
+    id: DI5
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 4
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI6"
+    id: DI6
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 5
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI7"
+    id: DI7
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 6
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI8"
+    id: DI8
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 7
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI9"
+    id: DI9
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 8
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI10"
+    id: DI10
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 9
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI11"
+    id: DI11
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 10
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI12"
+    id: DI12
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 11
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI13"
+    id: DI13
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 12
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI14"
+    id: DI14
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 13
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI15"
+    id: DI15
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 14
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI16"
+    id: DI16
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 15
+      mode: INPUT
+      inverted: true
+
+
+# ============================================
+# DIGITAL OUTPUTS (DO1–DO16 via PCF8575)
+# ============================================
+switch:
+  - platform: gpio
+    name: "DO1"
+    id: DO1
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 0
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO2"
+    id: DO2
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 1
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO3"
+    id: DO3
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 2
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO4"
+    id: DO4
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 3
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO5"
+    id: DO5
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 4
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO6"
+    id: DO6
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 5
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO7"
+    id: DO7
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 6
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO8"
+    id: DO8
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 7
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO9"
+    id: DO9
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 8
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO10"
+    id: DO10
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 9
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO11"
+    id: DO11
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 10
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO12"
+    id: DO12
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 11
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO13"
+    id: DO13
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 12
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO14"
+    id: DO14
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 13
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO15"
+    id: DO15
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 14
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO16"
+    id: DO16
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 15
+      mode: OUTPUT
+      inverted: true
+
+
+# ============================================
+# ANALOG INPUTS (AI1–AI4 via ADS1115)
+# ============================================
+ads1115:
+  - address: ${ads_address}
+
+sensor:
+  - platform: ads1115
+    multiplexer: 'A0_GND'
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_1
+    name: "AI 1"
+    internal: true
+    unit_of_measurement: "V"
+    update_interval: 5s
+
+  - platform: ads1115
+    multiplexer: 'A1_GND'
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_2
+    name: "AI 2"
+    internal: true
+    unit_of_measurement: "V"
+    update_interval: 5s
+
+  - platform: ads1115
+    multiplexer: 'A2_GND'
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_3
+    unit_of_measurement: "mA"
+    accuracy_decimals: 2
+    internal: true
+    update_interval: 5s
+    filters:
+      - calibrate_linear:
+          - 0.0 -> 0.0
+          - 0.59 -> 3.95
+
+  - platform: ads1115
+    multiplexer: 'A3_GND'
+    name: "Strom AI_4"
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_4
+    unit_of_measurement: "mA"
+    accuracy_decimals: 2
+    internal: true
+    update_interval: 5s
+    filters:
+      - calibrate_linear:
+          - 0.0 -> 0.0
+          - 0.59 -> 3.95
+
+
+# ============================================
+# DHT SENSOREN (T1–T4)
+# ============================================
+  - platform: dht
+    pin: ${dht1_pin}
+    id: T1
+    temperature:
+      name: "${T1_name} Temperature"
+      id: ${T1_name}_temperature
+    humidity:
+      name: "${T1_name} Humidity"
+      id: ${T1_name}_humidity
+    update_interval: ${dht1_update_interval}
+
+  - platform: dht
+    pin: ${dht2_pin}
+    id: T2
+    temperature:
+      name: "${T2_name} Temperature"
+      id: ${T2_name}_temperature
+    humidity:
+      name: "${T2_name} Humidity"
+      id: ${T2_name}_humidity
+    update_interval: ${dht2_update_interval}
+
+  - platform: dht
+    pin: ${dht3_pin}
+    id: T3
+    temperature:
+      name: "${T3_name} Temperature"
+      id: ${T3_name}_temperature
+    humidity:
+      name: "${T3_name} Humidity"
+      id: ${T3_name}_humidity
+    update_interval: ${dht3_update_interval}
+
+  - platform: dht
+    pin: ${dht4_pin}
+    id: T4
+    temperature:
+      name: "${T4_name} Temperature"
+      id: ${T4_name}_temperature
+    humidity:
+      name: "${T4_name} Humidity"
+      id: ${T4_name}_humidity
+    update_interval: ${dht4_update_interval}
+
+
+# ============================================
+# ANEMOMETER (Windgeschwindigkeit via AI_4)
+# ============================================
+  - id: !extend AI_3
+    internal: true
+
+  - platform: template
+    name: Windspeed Sensor
+    id: wind_speed
+    lambda: |-
+      return id(AI_4).state;
+    update_interval: 1s
+    unit_of_measurement: m/s
+    device_class: "wind_speed"
+    filters:
+      - calibrate_linear:
+          - 3.95 ->  0.0
+          - 20 -> 30.0
+
+
+# ============================================
+# UPTIME / VERSION SENSOREN
+# ============================================
+  - platform: uptime
+    type: seconds
+    id: uptime_seconds
+    name: Uptime Seconds
+    entity_category: "diagnostic"
+    update_interval: 1s
+
+  - platform: debug
+    loop_time:
+      name: "Loop Time"
+    psram:
+      name: "Free PSRAM"
+    cpu_frequency:
+      name: "CPU Frequency"
+
+text_sensor:
+  - platform: version
+    name: "ESPHome Version"
+    hide_timestamp: true
+  - platform: uptime
+    name: Uptime
+    entity_category: "diagnostic"
+    format:
+      separator: " "
+      days: "D"
+  - platform: template
+    name: "Project Version:"
+    id: uptime_text
+    entity_category: "diagnostic"
+    lambda: |-
+      return {ESPHOME_PROJECT_VERSION};
+    update_interval: 60s
+  - platform: debug
+    device:
+      name: "Device Info"
+    reset_reason:
+      name: "Reset Reason"
+
+
+# ============================================
+# DISPLAY (SSD1306 OLED 128x64) + FONTS
+# ============================================
+font:
+  - file:
+      type: gfonts
+      family: "Open+Sans"
+      weight: 400
+    id: tiny
+    size: 9
+
+  - file:
+      type: gfonts
+      family: "Open+Sans"
+      weight: 400
+    id: small
+    size: 12
+
+  - file:
+      type: gfonts
+      family: "Open+Sans"
+      weight: 400
+    id: large
+    size: 20
+
+  - file:
+      type: gfonts
+      family: "Open+Sans"
+      weight: 700
+    id: bold
+    size: 10
+
+  - file: "B16M_components/materialdesignicons-webfont.ttf"
+    id: icon
+    size: 16
+    glyphs: [
+        "\U000F02D1",  # mdi-heart
+        "\U000F05D4",  # mdi-airplane-landing
+        "\U000F0159",  # mdi-alert
+        "\U000F012F",  # mdi-checkbox-blank-circle
+        "\U000F0133",  # mdi-checkbox-marked-circle
+        "\U000F012E",  # mdi-checkbox-blank
+        "\U000F0132",  # mdi-checkbox-marked
+        "\U000F0319",  # mdi-lan-disconnect
+        "\U000F0318",  # mdi-lan-connect
+      ]
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    id: oled_display
+    i2c_id: bus_a
+    address: ${display_address}
+    pages:
+      - id: page1
+        lambda: |-
+          it.printf(0, 0, id(small), "B16M");
+          it.printf(0, 16, id(tiny), "Ready");

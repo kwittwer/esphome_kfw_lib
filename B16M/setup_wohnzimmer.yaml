@@ -5,64 +5,54 @@
 # Thermostaten: 4 Stück (T1-T4)
 # ============================================
 
-substitutions:
-  # Device Identification
-  device_name: b16m_wohnzimmer
-  friendly_name: "B16M Wohnzimmer"
-  version: "2025.12.10.1"
-  
-  # Network
-  # Ethernet only; IP per DHCP
-  
-  # Sensor Names (OneWire DHTs)
-  T1_name: "Wohnzimmer_Temp"
-  T2_name: "Schlafzimmer_Temp"
-  T3_name: "Kinderzimmer_Temp"
-  T4_name: "Kueche_Temp"
-  Thermostat_external_sensor_timeout: "900"
-
 packages:
-  debug: !include B16M_components/B16M_Debug.yaml
-  device_base: !include B16M_components/B16M_device_base.yaml
-  bus: !include B16M_components/B16M_Bus.yaml
-  hardware: !include B16M_components/B16M_hardware.yaml
+  base: !include
+    file: B16M_components/B16M_base.yaml
+    vars:
+      device_name: b16m_wohnzimmer
+      friendly_name: "B16M Wohnzimmer"
+      version: "2025.12.10.1"
+      T1_name: "Wohnzimmer_Temp"
+      T2_name: "Schlafzimmer_Temp"
+      T3_name: "Kinderzimmer_Temp"
+      T4_name: "Kueche_Temp"
   thermostat_base: !include Peripherie/Thermostate.yaml
   thermostat1: !include
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 1
       thermostat_name: "Wohnzimmer"
-      thermostat_fallback_sensor: ${T2_name}_temperature
-      thermostat_fallback_humidity_sensor: ${T2_name}_humidity
+      thermostat_fallback_sensor: Schlafzimmer_Temp_temperature
+      thermostat_fallback_humidity_sensor: Schlafzimmer_Temp_humidity
       thermostat_valve_switch: DO1
-      Thermostat_external_sensor_timeout: ${Thermostat_external_sensor_timeout}
+      Thermostat_external_sensor_timeout: "900"
   thermostat2: !include
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 2
       thermostat_name: "Schlafzimmer"
-      thermostat_fallback_sensor: ${T1_name}_temperature
-      thermostat_fallback_humidity_sensor: ${T1_name}_humidity
+      thermostat_fallback_sensor: Wohnzimmer_Temp_temperature
+      thermostat_fallback_humidity_sensor: Wohnzimmer_Temp_humidity
       thermostat_valve_switch: DO2
-      Thermostat_external_sensor_timeout: ${Thermostat_external_sensor_timeout}
+      Thermostat_external_sensor_timeout: "900"
   thermostat3: !include
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 3
       thermostat_name: "Kinderzimmer"
-      thermostat_fallback_sensor: ${T1_name}_temperature
-      thermostat_fallback_humidity_sensor: ${T1_name}_humidity
+      thermostat_fallback_sensor: Wohnzimmer_Temp_temperature
+      thermostat_fallback_humidity_sensor: Wohnzimmer_Temp_humidity
       thermostat_valve_switch: DO3
-      Thermostat_external_sensor_timeout: ${Thermostat_external_sensor_timeout}
+      Thermostat_external_sensor_timeout: "900"
   thermostat4: !include
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 4
       thermostat_name: "Kueche"
-      thermostat_fallback_sensor: ${T2_name}_temperature
-      thermostat_fallback_humidity_sensor: ${T2_name}_humidity
+      thermostat_fallback_sensor: Schlafzimmer_Temp_temperature
+      thermostat_fallback_humidity_sensor: Schlafzimmer_Temp_humidity
       thermostat_valve_switch: DO4
-      Thermostat_external_sensor_timeout: ${Thermostat_external_sensor_timeout}
+      Thermostat_external_sensor_timeout: "900"
 
 api:
   encryption:

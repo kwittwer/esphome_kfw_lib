@@ -2,74 +2,76 @@
 # ESPHome B16M - Setup Template
 # 
 # Kopiere diese Datei als setup_[name].yaml und passe die Parameter an.
+# Nur die Werte angeben, die vom Standard abweichen.
 # 
 # Basis-Hardware: B16M (16 DI, 16 DO, 4 AI, Display, OneWire)
 # Thermostaten: Bis zu 10 Stück (je nach Setup)
 # ============================================
 
-substitutions:
-  # ============================================
-  # 1. DEVICE IDENTIFICATION (anpassen!)
-  # ============================================
-  device_name: b16m_mysetup              # Gerätename (für mDNS, API, etc.)
-  friendly_name: "B16M My Setup"         # Anzeigename
-  version: "2025.12.10.1"                # Firmware-Version
-  
-  # ============================================
-  # 2. NETWORK (anpassen!)
-  # ============================================
-  # Ethernet only; IP per DHCP
-  
-  # ============================================
-  # 3. SENSOR NAMES - OneWire DHTs
-  # (anpassen nach verfügbaren Sensoren im Setup)
-  # ============================================
-  T1_name: "Sensor1"
-  T2_name: "Sensor2"
-  T3_name: "Sensor3"
-  T4_name: "Sensor4"
-  Thermostat_external_sensor_timeout: "900"
-
-# ============================================
-# PACKAGES - Zusammensetzung der Firmware
-# (normalerweise nicht anpassen nötig)
-# ============================================
-
 packages:
-  debug: !include B16M_components/B16M_Debug.yaml          # Debug-Output
-  device_base: !include B16M_components/B16M_device_base.yaml    # ESP32-S3 Base-Konfiguration
-  bus: !include B16M_components/B16M_Bus.yaml            # Ethernet + I2C Bus
-  hardware: !include B16M_components/B16M_hardware.yaml       # Hardware: DI, DO, AI, OneWire, Display, Anemometer
-  thermostat_base: !include Peripherie/Thermostate.yaml  # gemeinsame Thermostat-Basis
+  # ============================================
+  # BASIS-KONFIGURATION (anpassen!)
+  # Alle nicht genannten Variablen verwenden die Standardwerte aus B16M_base.yaml
+  # ============================================
+  base: !include
+    file: B16M_components/B16M_base.yaml
+    vars:
+      device_name: b16m_mysetup              # Gerätename (für mDNS, API, etc.)
+      friendly_name: "B16M My Setup"         # Anzeigename in Home Assistant
+      version: "2025.12.10.1"                # Firmware-Version
 
-  # Thermostat 1 (AKTIV)
+      # DHT Sensor Namen (werden für Sensor-IDs und HA-Entitäten verwendet)
+      T1_name: "Sensor1"
+      T2_name: "Sensor2"
+      T3_name: "Sensor3"
+      T4_name: "Sensor4"
+
+      # Optional: Hardware-Parameter nur bei abweichender Verdrahtung angeben
+      # logger_level: DEBUG
+      # timezone: "Europe/Berlin"
+      # dht1_update_interval: 30s
+      # pcf_in_address: "0x24"
+      # eth_clk_pin: GPIO42
+      # ...
+
+  # ============================================
+  # THERMOSTAT BASIS (nicht ändern)
+  # ============================================
+  thermostat_base: !include Peripherie/Thermostate.yaml
+
+  # ============================================
+  # THERMOSTATEN (anpassen!)
+  # thermostat_fallback_sensor = ID des Sensors aus B16M_base (T{n}_name + "_temperature")
+  # Beispiel: T2_name = "Sensor2" → thermostat_fallback_sensor: Sensor2_temperature
+  # ============================================
+
+  # Thermostat 1
   thermostat1: !include
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 1
       thermostat_name: "Raum 1"
-      thermostat_fallback_sensor: ${T2_name}_temperature
-      thermostat_fallback_humidity_sensor: ${T2_name}_humidity
+      thermostat_fallback_sensor: Sensor2_temperature
+      thermostat_fallback_humidity_sensor: Sensor2_humidity
       thermostat_valve_switch: DO1
-      Thermostat_external_sensor_timeout: ${Thermostat_external_sensor_timeout}
+      Thermostat_external_sensor_timeout: "900"
 
-  # Thermostat 2 (AKTIV)
+  # Thermostat 2
   thermostat2: !include
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 2
       thermostat_name: "Raum 2"
-      thermostat_fallback_sensor: ${T1_name}_temperature
-      thermostat_fallback_humidity_sensor: ${T1_name}_humidity
+      thermostat_fallback_sensor: Sensor1_temperature
+      thermostat_fallback_humidity_sensor: Sensor1_humidity
       thermostat_valve_switch: DO2
-      Thermostat_external_sensor_timeout: ${Thermostat_external_sensor_timeout}
+      Thermostat_external_sensor_timeout: "900"
 
-  # Weitere Thermostate bei Bedarf genauso ergänzen.
+  # Weitere Thermostate bei Bedarf genauso ergänzen (thermostat3 ... thermostat10)
 
 # ============================================
-# API & OTA (normalerweise nicht anpassen nötig)
+# API & OTA (Schlüssel anpassen!)
 # ============================================
-
 api:
   encryption:
     key: "GvfbcydpffzMhFZJ9Jm59Vv86K8pZFtVq3BzSGj5Rek="

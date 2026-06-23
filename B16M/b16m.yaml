@@ -1,70 +1,52 @@
-substitutions:
-  # ============================================
-  # 1. DEVICE IDENTIFICATION
-  # ============================================
-  device_name: b16m
-  friendly_name: "B16M Panel"
-  version: "2025.12.10.1"
-
-  # ============================================
-  # 2. NETWORK
-  # ============================================
-  # Ethernet only; IP per DHCP
-
-  # ============================================
-  # 3. SENSOR NAMES
-  # ============================================
-  T1_name: "Temp1"
-  T2_name: "Temp2"
-  T3_name: "Temp3"
-  T4_name: "Temp4"
-  Thermostat_external_sensor_timeout: "900"
-
 # ============================================
 # PACKAGES
 # ============================================
 packages:
-  debug: !include B16M_components/B16M_Debug.yaml
-  device_base: !include B16M_components/B16M_device_base.yaml
-  bus: !include B16M_components/B16M_Bus.yaml
-  hardware: !include B16M_components/B16M_hardware.yaml
+  base: !include
+    file: B16M_components/B16M_base.yaml
+    vars:
+      device_name: b16m
+      friendly_name: "B16M Panel"
+      version: "2025.12.10.1"
+      # T1_name–T4_name: Standardwerte (Temp1–Temp4) werden aus B16M_base.yaml übernommen
+      # Alle Ethernet/I2C/Hardware-Pins verwenden die Standardwerte
   thermostat_base: !include Peripherie/Thermostate.yaml
   thermostat1: !include
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 1
-      thermostat_name: "${T1_name}"
-      thermostat_fallback_sensor: ${T2_name}_temperature
-      thermostat_fallback_humidity_sensor: ${T2_name}_humidity
+      thermostat_name: "Temp1"
+      thermostat_fallback_sensor: Temp2_temperature
+      thermostat_fallback_humidity_sensor: Temp2_humidity
       thermostat_valve_switch: DO1
-      Thermostat_external_sensor_timeout: ${Thermostat_external_sensor_timeout}
+      Thermostat_external_sensor_timeout: "900"
   thermostat2: !include
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 2
-      thermostat_name: "${T2_name}"
-      thermostat_fallback_sensor: ${T1_name}_temperature
-      thermostat_fallback_humidity_sensor: ${T1_name}_humidity
+      thermostat_name: "Temp2"
+      thermostat_fallback_sensor: Temp1_temperature
+      thermostat_fallback_humidity_sensor: Temp1_humidity
       thermostat_valve_switch: DO2
-      Thermostat_external_sensor_timeout: ${Thermostat_external_sensor_timeout}
+      Thermostat_external_sensor_timeout: "900"
   thermostat3: !include
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 3
-      thermostat_name: "${T3_name}"
-      thermostat_fallback_sensor: ${T1_name}_temperature
-      thermostat_fallback_humidity_sensor: ${T1_name}_humidity
+      thermostat_name: "Temp3"
+      thermostat_fallback_sensor: Temp1_temperature
+      thermostat_fallback_humidity_sensor: Temp1_humidity
       thermostat_valve_switch: DO3
-      Thermostat_external_sensor_timeout: ${Thermostat_external_sensor_timeout}
+      Thermostat_external_sensor_timeout: "900"
   thermostat4: !include
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 4
-      thermostat_name: "${T4_name}"
-      thermostat_fallback_sensor: ${T2_name}_temperature
-      thermostat_fallback_humidity_sensor: ${T2_name}_humidity
+      thermostat_name: "Temp4"
+      thermostat_fallback_sensor: Temp2_temperature
+      thermostat_fallback_humidity_sensor: Temp2_humidity
       thermostat_valve_switch: DO4
-      Thermostat_external_sensor_timeout: ${Thermostat_external_sensor_timeout}
+      Thermostat_external_sensor_timeout: "900"
 
 # ============================================
 # API & OTA
