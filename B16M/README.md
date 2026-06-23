@@ -1,6 +1,6 @@
 # B16M ESPHome Firmware
 
-Modulare ESPHome-Firmware für den **B16M Industrial Controller** (ESP32-S3, 16 DI, 16 DO, 4 AI, W5500 Ethernet, DHT-Sensoren, SSD1306 Display).
+Modulare ESPHome-Firmware fuer den **B16M Industrial Controller** (ESP32-S3, 16 DI, 16 DO, 4 AI, W5500 Ethernet, 4 Sensor-Slots, SSD1306 Display).
 
 Die Konfiguration ist vollständig package-template-basiert. Ein neues Setup-File besteht nur aus den Werten, die vom Standard abweichen.
 
@@ -21,6 +21,9 @@ B16M/
 │   ├── net_wifi_static.yaml     # Netzwerk: WiFi + statische IP
 │   ├── net_ethernet.yaml        # Netzwerk: Ethernet W5500 + DHCP
 │   ├── net_ethernet_static.yaml # Netzwerk: Ethernet W5500 + statische IP
+│   ├── ow_dht_slot.yaml         # Sensor-Slot: DHT Sensor
+│   ├── ow_dallas_bus.yaml       # Sensor-Slot: Dallas One-Wire Bus
+│   ├── ow_dallas_sensor.yaml    # Dallas Sensor per Bus + Adresse
 │   └── thermostat_template.yaml # Thermostat-Instanz (parametrisiert)
 │
 └── Peripherie/
@@ -41,7 +44,8 @@ B16M/
 
 ## Package: `B16M_base.yaml` – Basis-Konfiguration
 
-Enthält ESP32-S3, I2C-Bus, PCF8575 I/O-Expander (16 DI / 16 DO), ADS1115 (4 AI), DHT-Sensoren, Display, Anemometer, Web-Server, RTC.
+Enthaelt ESP32-S3, I2C-Bus, PCF8575 I/O-Expander (16 DI / 16 DO), ADS1115 (4 AI), Display, Anemometer, Web-Server, RTC.
+Die 4 Sensor-Slots auf GPIO `40`, `15`, `48`, `47` werden separat ueber eigene Packages eingebunden.
 
 ### Verwendung
 
@@ -85,27 +89,6 @@ packages:
 | `pcf_out_address` | `"0x25"` | I2C-Adresse PCF8575 Ausgänge (DO1–DO16) |
 | `ads_address` | `"0x48"` | I2C-Adresse ADS1115 (AI1–AI4) |
 | `display_address` | `"0x3c"` | I2C-Adresse SSD1306 Display |
-
-#### DHT-Sensoren (T1–T4)
-
-| Variable | Standard | Beschreibung |
-|---|---|---|
-| `dht1_pin` | `"40"` | GPIO-Pin DHT-Sensor 1 |
-| `dht2_pin` | `"15"` | GPIO-Pin DHT-Sensor 2 |
-| `dht3_pin` | `"48"` | GPIO-Pin DHT-Sensor 3 |
-| `dht4_pin` | `"47"` | GPIO-Pin DHT-Sensor 4 |
-| `dht1_update_interval` | `10s` | Update-Intervall DHT 1 |
-| `dht2_update_interval` | `1s` | Update-Intervall DHT 2 |
-| `dht3_update_interval` | `10s` | Update-Intervall DHT 3 |
-| `dht4_update_interval` | `10s` | Update-Intervall DHT 4 |
-| `T1_name` | `"Temp1"` | Name für DHT 1 (Sensor-ID und HA-Entität) |
-| `T2_name` | `"Temp2"` | Name für DHT 2 |
-| `T3_name` | `"Temp3"` | Name für DHT 3 |
-| `T4_name` | `"Temp4"` | Name für DHT 4 |
-
-> **Wichtig:** `T{n}_name` bestimmt die ESPHome Sensor-IDs.  
-> Beispiel: `T2_name: "Schlafzimmer_Temp"` → IDs `Schlafzimmer_Temp_temperature` und `Schlafzimmer_Temp_humidity`.  
-> Diese IDs werden in den Thermostat-Fallback-Sensoren referenziert.
 
 #### Logger / Debug
 
@@ -217,6 +200,85 @@ packages:
 
 ---
 
+## Packages: Sensor-Slots
+
+Die 4 Anschluesse auf GPIO `40`, `15`, `48`, `47` werden nicht in der Base fest verdrahtet.
+Stattdessen gilt pro Slot:
+
+- entweder `ow_dht_slot.yaml` fuer genau einen DHT Sensor
+- oder `ow_dallas_bus.yaml` fuer einen One-Wire Bus
+
+Auf einem Dallas Bus koennen mehrere Sensoren ueber `ow_dallas_sensor.yaml` angelegt werden. In dieser Struktur kannst du bis zu 16 Dallas Sensoren per wiederholtem Package-Include anbinden.
+
+Die Referenzkonfiguration in `b16m.yaml` verwendet standardmaessig:
+
+- Slot 1 bis 3 als DHT
+- Slot 4 auf GPIO `47` als Dallas Bus mit 16 vorbereiteten Dallas Sensor-Instanzen
+
+### Option 1: DHT auf einem Slot
+
+```yaml
+packages:
+  sensor_slot_1: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "40"
+      dht_name: "Wohnzimmer_Temp"
+      dht_id: "T1"
+      dht_update_interval: 10s
+```
+
+| Variable | Standard | Beschreibung |
+|---|---|---|
+| `dht_pin` | `"40"` | GPIO-Pin des Slots |
+| `dht_name` | `"Temp1"` | Basisname fuer Temperatur-/Humidity-Entitaeten |
+| `dht_id` | `"T1"` | ESPHome-ID des DHT Geraets |
+| `dht_update_interval` | `10s` | Update-Intervall |
+
+Der Name erzeugt automatisch die Sensor-IDs `"<dht_name>_temperature"` und `"<dht_name>_humidity"`.
+
+### Option 2: Dallas Bus auf einem Slot
+
+```yaml
+packages:
+  sensor_slot_1: !include
+    file: B16M_components/ow_dallas_bus.yaml
+    vars:
+      dallas_bus_id: ow_slot_1
+      dallas_pin: "40"
+```
+
+| Variable | Standard | Beschreibung |
+|---|---|---|
+| `dallas_bus_id` | `ow_bus_1` | ESPHome-ID des One-Wire Bus |
+| `dallas_pin` | `"40"` | GPIO-Pin des Slots |
+
+### Dallas Sensor auf einem Bus
+
+```yaml
+packages:
+  dallas_sensor_1: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_1
+      dallas_address: 0x1234567812345628
+      dallas_sensor_name: "Aussen_Temp"
+      dallas_sensor_id: outdoor_temp
+      dallas_update_interval: 10s
+```
+
+| Variable | Standard | Beschreibung |
+|---|---|---|
+| `one_wire_id` | `ow_bus_1` | Referenz auf den One-Wire Bus |
+| `dallas_address` | `0x0000000000000000` | Dallas ROM-Adresse des Sensors |
+| `dallas_sensor_name` | `"Dallas_Sensor"` | Anzeigename |
+| `dallas_sensor_id` | `dallas_sensor` | ESPHome-ID des Temperatursensors |
+| `dallas_update_interval` | `10s` | Update-Intervall |
+
+Die `dallas_address` entspricht der eindeutigen Sensoradresse aus dem ESPHome Log oder einer Discovery-Konfiguration.
+
+---
+
 ## Package: `thermostat_template.yaml` – Thermostat-Instanz
 
 Pro Thermostat ein Eintrag unter `packages:`. Bis zu 10 Thermostate möglich.
@@ -238,14 +300,14 @@ packages:
 |---|---|
 | `thermostat_id` | Eindeutige Nummer (1–10), keine doppelten |
 | `thermostat_name` | Anzeigename in Home Assistant |
-| `thermostat_fallback_sensor` | ESPHome Sensor-ID des Fallback-Temperatursensors (aus `T{n}_name + "_temperature"`) |
+| `thermostat_fallback_sensor` | ESPHome Sensor-ID des Fallback-Temperatursensors (z.B. aus `dht_name + "_temperature"`) |
 | `thermostat_fallback_humidity_sensor` | ESPHome Sensor-ID des Fallback-Feuchtigkeitssensors |
 | `thermostat_valve_switch` | DO-ID des Ventil-Ausgangs (z.B. `DO1`) |
 | `Thermostat_external_sensor_timeout` | Timeout in Sekunden bis zum Fallback-Sensor (Standard: `"900"`) |
 
 > **Fallback-Sensor ID:**  
-> Die Sensor-IDs werden aus dem `T{n}_name` in `B16M_base.yaml` gebildet.  
-> `T2_name: "Schlafzimmer_Temp"` → `thermostat_fallback_sensor: Schlafzimmer_Temp_temperature`
+> Die Sensor-IDs werden aus dem jeweiligen Sensor-Slot-Namen gebildet.  
+> `dht_name: "Schlafzimmer_Temp"` -> `thermostat_fallback_sensor: Schlafzimmer_Temp_temperature`
 
 Außerdem wird `thermostat_base` eingebunden (Heizungsmaster-Schalter, Hardware-Eingang DI1):
 
@@ -268,14 +330,26 @@ packages:
       device_name: b16m_keller
       friendly_name: "B16M Keller"
       version: "2025.12.10.1"
-      T1_name: "Keller_Temp"
-      T2_name: "Heizraum_Temp"
 
   network: !include
     file: B16M_components/net_ethernet_static.yaml
     vars:
       static_ip: "192.168.1.42"
       gateway: "192.168.1.1"
+
+  sensor_slot_1: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "40"
+      dht_name: "Keller_Temp"
+      dht_id: "T1"
+
+  sensor_slot_2: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "15"
+      dht_name: "Heizraum_Temp"
+      dht_id: "T2"
 
   thermostat_base: !include Peripherie/Thermostate.yaml
 

@@ -1,0 +1,15 @@
+# ============================================
+# Sensor-Slot: Dallas One-Wire Bus
+#
+# Ein Slot belegt genau einen der 4 GPIO-Anschluesse mit einem One-Wire Bus.
+# Auf dem Bus koennen mehrere Dallas Sensoren per ow_dallas_sensor.yaml liegen.
+# ============================================
+
+defaults:
+  dallas_bus_id: ow_bus_1
+  dallas_pin: "40"
+
+one_wire:
+  - platform: gpio
+    pin: ${dallas_pin}
+    id: ${dallas_bus_id}

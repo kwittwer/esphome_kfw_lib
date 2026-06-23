@@ -1,0 +1,24 @@
+# ============================================
+# Sensor-Slot: DHT Sensor
+#
+# Ein Slot belegt genau einen der 4 GPIO-Anschluesse mit einem DHT Sensor.
+# Jeder Anschluss kann ENTWEDER DHT ODER Dallas One-Wire sein.
+# ============================================
+
+defaults:
+  dht_pin: "40"
+  dht_name: "Temp1"
+  dht_id: "T1"
+  dht_update_interval: 10s
+
+sensor:
+  - platform: dht
+    pin: ${dht_pin}
+    id: ${dht_id}
+    temperature:
+      name: "${dht_name} Temperature"
+      id: ${dht_name}_temperature
+    humidity:
+      name: "${dht_name} Humidity"
+      id: ${dht_name}_humidity
+    update_interval: ${dht_update_interval}

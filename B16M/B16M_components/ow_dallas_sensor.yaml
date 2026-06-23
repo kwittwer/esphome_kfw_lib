@@ -1,0 +1,21 @@
+# ============================================
+# Dallas Temperatur-Sensor Template
+#
+# Bindet einen Dallas Sensor auf einem bestehenden One-Wire Bus ein.
+# Die Adresse wird als Parameter uebergeben.
+# ============================================
+
+defaults:
+  one_wire_id: ow_bus_1
+  dallas_address: 0x0000000000000000
+  dallas_sensor_name: "Dallas_Sensor"
+  dallas_sensor_id: dallas_sensor
+  dallas_update_interval: 10s
+
+sensor:
+  - platform: dallas_temp
+    one_wire_id: ${one_wire_id}
+    address: ${dallas_address}
+    name: "${dallas_sensor_name}"
+    id: ${dallas_sensor_id}
+    update_interval: ${dallas_update_interval}

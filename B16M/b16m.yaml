@@ -8,11 +8,168 @@ packages:
       device_name: b16m
       friendly_name: "B16M Panel"
       version: "2025.12.10.1"
-      # T1_name–T4_name: Standardwerte (Temp1–Temp4) werden aus B16M_base.yaml übernommen
-      # Alle Ethernet/I2C/Hardware-Pins verwenden die Standardwerte
   # Ethernet W5500 mit DHCP (Standard B16M-Hardware)
   # Alternativen: net_ethernet_static.yaml | net_wifi.yaml | net_wifi_static.yaml
   network: !include B16M_components/net_ethernet.yaml
+
+  # Sensor-Slots: Slot 1-3 als DHT, Slot 4 als Dallas Bus mit 16 Sensoren
+  sensor_slot_1: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "40"
+      dht_name: "Temp1"
+      dht_id: "T1"
+      dht_update_interval: 10s
+  sensor_slot_2: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "15"
+      dht_name: "Temp2"
+      dht_id: "T2"
+      dht_update_interval: 1s
+  sensor_slot_3: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "48"
+      dht_name: "Temp3"
+      dht_id: "T3"
+      dht_update_interval: 10s
+
+  sensor_slot_4: !include
+    file: B16M_components/ow_dallas_bus.yaml
+    vars:
+      dallas_bus_id: ow_slot_4
+      dallas_pin: "47"
+
+  dallas_slot_4_01: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x1000000000000001
+      dallas_sensor_name: "Dallas_01"
+      dallas_sensor_id: dallas_01
+      dallas_update_interval: 10s
+  dallas_slot_4_02: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x1000000000000002
+      dallas_sensor_name: "Dallas_02"
+      dallas_sensor_id: dallas_02
+      dallas_update_interval: 10s
+  dallas_slot_4_03: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x1000000000000003
+      dallas_sensor_name: "Dallas_03"
+      dallas_sensor_id: dallas_03
+      dallas_update_interval: 10s
+  dallas_slot_4_04: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x1000000000000004
+      dallas_sensor_name: "Dallas_04"
+      dallas_sensor_id: dallas_04
+      dallas_update_interval: 10s
+  dallas_slot_4_05: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x1000000000000005
+      dallas_sensor_name: "Dallas_05"
+      dallas_sensor_id: dallas_05
+      dallas_update_interval: 10s
+  dallas_slot_4_06: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x1000000000000006
+      dallas_sensor_name: "Dallas_06"
+      dallas_sensor_id: dallas_06
+      dallas_update_interval: 10s
+  dallas_slot_4_07: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x1000000000000007
+      dallas_sensor_name: "Dallas_07"
+      dallas_sensor_id: dallas_07
+      dallas_update_interval: 10s
+  dallas_slot_4_08: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x1000000000000008
+      dallas_sensor_name: "Dallas_08"
+      dallas_sensor_id: dallas_08
+      dallas_update_interval: 10s
+  dallas_slot_4_09: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x1000000000000009
+      dallas_sensor_name: "Dallas_09"
+      dallas_sensor_id: dallas_09
+      dallas_update_interval: 10s
+  dallas_slot_4_10: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x100000000000000A
+      dallas_sensor_name: "Dallas_10"
+      dallas_sensor_id: dallas_10
+      dallas_update_interval: 10s
+  dallas_slot_4_11: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x100000000000000B
+      dallas_sensor_name: "Dallas_11"
+      dallas_sensor_id: dallas_11
+      dallas_update_interval: 10s
+  dallas_slot_4_12: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x100000000000000C
+      dallas_sensor_name: "Dallas_12"
+      dallas_sensor_id: dallas_12
+      dallas_update_interval: 10s
+  dallas_slot_4_13: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x100000000000000D
+      dallas_sensor_name: "Dallas_13"
+      dallas_sensor_id: dallas_13
+      dallas_update_interval: 10s
+  dallas_slot_4_14: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x100000000000000E
+      dallas_sensor_name: "Dallas_14"
+      dallas_sensor_id: dallas_14
+      dallas_update_interval: 10s
+  dallas_slot_4_15: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x100000000000000F
+      dallas_sensor_name: "Dallas_15"
+      dallas_sensor_id: dallas_15
+      dallas_update_interval: 10s
+  dallas_slot_4_16: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_slot_4
+      dallas_address: 0x1000000000000010
+      dallas_sensor_name: "Dallas_16"
+      dallas_sensor_id: dallas_16
+      dallas_update_interval: 10s
+
   thermostat_base: !include Peripherie/Thermostate.yaml
   thermostat1: !include
     file: B16M_components/thermostat_template.yaml

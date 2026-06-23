@@ -12,13 +12,40 @@ packages:
       device_name: b16m_wohnzimmer
       friendly_name: "B16M Wohnzimmer"
       version: "2025.12.10.1"
-      T1_name: "Wohnzimmer_Temp"
-      T2_name: "Schlafzimmer_Temp"
-      T3_name: "Kinderzimmer_Temp"
-      T4_name: "Kueche_Temp"
   # Ethernet W5500 mit DHCP (Standard B16M-Hardware)
   # Alternativen: net_ethernet_static.yaml | net_wifi.yaml | net_wifi_static.yaml
   network: !include B16M_components/net_ethernet.yaml
+
+  # Sensor-Slots: Standardmaessig 4x DHT
+  sensor_slot_1: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "40"
+      dht_name: "Wohnzimmer_Temp"
+      dht_id: "T1"
+      dht_update_interval: 10s
+  sensor_slot_2: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "15"
+      dht_name: "Schlafzimmer_Temp"
+      dht_id: "T2"
+      dht_update_interval: 1s
+  sensor_slot_3: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "48"
+      dht_name: "Kinderzimmer_Temp"
+      dht_id: "T3"
+      dht_update_interval: 10s
+  sensor_slot_4: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "47"
+      dht_name: "Kueche_Temp"
+      dht_id: "T4"
+      dht_update_interval: 10s
+
   thermostat_base: !include Peripherie/Thermostate.yaml
   thermostat1: !include
     file: B16M_components/thermostat_template.yaml
