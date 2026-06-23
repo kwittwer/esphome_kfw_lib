@@ -22,3 +22,26 @@ sensor:
       name: "${dht_name} Humidity"
       id: ${dht_name}_humidity
     update_interval: ${dht_update_interval}
+
+display:
+  - id: !extend oled_display
+    pages:
+      - id: page_sensor_${dht_id}
+        lambda: |-
+          it.printf(0, 0, id(small), "Sensor ${dht_id}");
+          it.print(0, 11, id(tiny), "${dht_name}");
+          it.line(0, 21, 127, 21);
+
+          if (id(${dht_name}_temperature).has_state()) {
+            it.printf(0, 26, id(small), "Temp: %.1f C", id(${dht_name}_temperature).state);
+          } else {
+            it.print(0, 26, id(small), "Temp: n/a");
+          }
+
+          if (id(${dht_name}_humidity).has_state()) {
+            it.printf(0, 42, id(small), "Hum : %.1f %%", id(${dht_name}_humidity).state);
+            it.print(0, 58, id(tiny), "Status: OK");
+          } else {
+            it.print(0, 42, id(small), "Hum : n/a");
+            it.print(0, 58, id(tiny), "Status: NO DATA");
+          }

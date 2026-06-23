@@ -45,6 +45,34 @@ binary_sensor:
     lambda: |-
       return id(thermostat${thermostat_id}).is_using_fallback_temperature();
 
+display:
+  - id: !extend oled_display
+    pages:
+      - id: page_thermostat_${thermostat_id}
+        lambda: |-
+          auto thermostat = id(thermostat${thermostat_id});
+          it.printf(0, 0, id(small), "Thermostat ${thermostat_id}");
+          it.print(0, 11, id(tiny), "${thermostat_name}");
+          it.line(0, 21, 127, 21);
+
+          if (!isnan(thermostat->current_temperature)) {
+            it.printf(0, 25, id(tiny), "Temp: %.1f C", thermostat->current_temperature);
+          } else {
+            it.print(0, 25, id(tiny), "Temp: n/a");
+          }
+
+          if (!isnan(thermostat->current_humidity)) {
+            it.printf(64, 25, id(tiny), "Hum: %.1f%%", thermostat->current_humidity);
+          } else {
+            it.print(64, 25, id(tiny), "Hum: n/a");
+          }
+
+          it.printf(0, 37, id(tiny), "Soll: %.1f C", thermostat->target_temperature);
+          it.printf(64, 37, id(tiny), "Valve: %s", thermostat->get_valve_state() ? "ON" : "OFF");
+
+          it.printf(0, 49, id(tiny), "Fallback: %s", id(t${thermostat_id}_fallback_temp_active).state ? "ON" : "OFF");
+          it.printf(0, 59, id(tiny), "Action: %d Mode: %d", (int)thermostat->action, (int)thermostat->mode);
+
 api:
   services:
     - service: set_current_temperature_thermostat${thermostat_id}

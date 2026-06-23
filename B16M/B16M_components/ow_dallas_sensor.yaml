@@ -19,3 +19,20 @@ sensor:
     name: "${dallas_sensor_name}"
     id: ${dallas_sensor_id}
     update_interval: ${dallas_update_interval}
+
+display:
+  - id: !extend oled_display
+    pages:
+      - id: page_sensor_${dallas_sensor_id}
+        lambda: |-
+          it.printf(0, 0, id(small), "Dallas Sensor");
+          it.print(0, 11, id(tiny), "${dallas_sensor_name}");
+          it.line(0, 21, 127, 21);
+
+          if (id(${dallas_sensor_id}).has_state()) {
+            it.printf(0, 28, id(small), "Wert: %.2f C", id(${dallas_sensor_id}).state);
+            it.print(0, 48, id(tiny), "Status: OK");
+          } else {
+            it.print(0, 28, id(small), "Wert: n/a");
+            it.print(0, 48, id(tiny), "Status: NO DATA");
+          }

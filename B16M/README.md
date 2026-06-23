@@ -318,6 +318,33 @@ packages:
 
 ---
 
+## OLED Display Standardseiten
+
+Die aktive Display-Implementierung liegt in [B16M/B16M_components/B16M_base.yaml](B16M/B16M_components/B16M_base.yaml).
+
+Standardmaessig sind folgende Seiten aktiv:
+
+1. Homescreen: Uhrzeit + blinkendes Heartbeat-Icon (1s)
+2. Verbindungsseite: Home-Assistant/API-Status + IP-Adresse
+3. Infoseite: Firmware-Version + ESPHome-Version + Uptime
+4. Inputs: DI1-DI16 als High/Low-Iconmatrix
+5. Outputs: DO1-DO16 als High/Low-Iconmatrix
+6. Sensorseiten aus Base: AI1, AI2, AI3, AI4, Wind
+
+Zusaetzlich kommen pro Template-Instanz automatisch Seiten dazu:
+
+- Pro Thermostat-Instanz (aus [B16M/B16M_components/thermostat_template.yaml](B16M/B16M_components/thermostat_template.yaml)): Name, Temperatur, Feuchte, Sollwert, Action/Mode, Ventilstatus, Fallbackstatus
+- Pro DHT-Slot-Instanz (aus [B16M/B16M_components/ow_dht_slot.yaml](B16M/B16M_components/ow_dht_slot.yaml)): Name, Temperatur, Feuchte, Status
+- Pro Dallas-Sensor-Instanz (aus [B16M/B16M_components/ow_dallas_sensor.yaml](B16M/B16M_components/ow_dallas_sensor.yaml)): Name, Wert, Status
+
+Navigation:
+
+- Auto-Rotation: alle 4 Sekunden naechste Seite
+- Manuell: DI16 schaltet sofort zur naechsten Seite
+- Heartbeat: Icon blinkt jede Sekunde
+
+---
+
 ## Vollständiges Beispiel: Minimales Setup
 
 ```yaml
@@ -387,3 +414,235 @@ esphome compile setup_keller.yaml
 # OTA-Upload:
 esphome run setup_keller.yaml --device OTA
 ```
+
+---
+
+## Vollstaendige Optionen-Referenz
+
+Dieser Abschnitt dokumentiert alle aktuell verwendeten Konfigurationsoptionen der aktiven Package-Struktur in B16M.
+
+### 1) Base-Package: B16M_components/B16M_base.yaml
+
+Pflicht: keine. Alle Werte haben Defaults.
+
+Konfigurierbare Variablen:
+
+- device_name: b16m
+- friendly_name: B16M Panel
+- version: 2025.12.10.1
+- project_name: Konrad.B16M_Heimsteuerung
+- timezone: Europe/Berlin
+- rtc_update_interval: 1h
+- web_server_port: 80
+- i2c_sda_pin: 38
+- i2c_scl_pin: 39
+- i2c_frequency: 400kHz
+- pcf_in_address: 0x24
+- pcf_out_address: 0x25
+- ads_address: 0x48
+- display_address: 0x3c
+- logger_level: INFO
+- debug_update_interval: 10s
+
+Feste, automatisch aktive Basisfunktionen:
+
+- ESP32-S3 Konfiguration mit ESP-IDF und PSRAM (octal, 80 MHz)
+- DS1307 RTC plus Home Assistant Time Sync
+- I2C-Bus und Hardware-Komponenten:
+  - DI1 bis DI16 ueber PCF8575 Input
+  - DO1 bis DO16 ueber PCF8575 Output
+  - AI1 bis AI4 ueber ADS1115
+  - Wind-Geschwindigkeit (Anemometer) als Pulsecounter
+- Netzwerkunabhaengige IP-Textanzeige auf dem Display per network::get_ip_address()
+- OLED Display mit Seitenrotation und Heartbeat
+- Webserver und Debug-Sensoren
+
+Hinweis:
+
+- Die Sensor-Slots (GPIO 40, 15, 48, 47) werden absichtlich nicht in der Base festgelegt.
+- Diese kommen immer ueber ow_dht_slot oder ow_dallas_bus aus dem Top-Level-Setup.
+
+### 2) Netzwerk-Packages
+
+Genau eines davon pro Setup einbinden.
+
+WiFi DHCP (B16M_components/net_wifi.yaml):
+
+- wifi_ssid: Bitte_SSID_setzen
+- wifi_password: Bitte_Passwort_setzen
+- wifi_ap_ssid: B16M Fallback AP
+- wifi_ap_password: b16m12345
+
+WiFi statisch (B16M_components/net_wifi_static.yaml):
+
+- wifi_ssid: Bitte_SSID_setzen
+- wifi_password: Bitte_Passwort_setzen
+- wifi_ap_ssid: B16M Fallback AP
+- wifi_ap_password: b16m12345
+- static_ip: 192.168.1.100
+- gateway: 192.168.1.1
+- subnet: 255.255.255.0
+- dns: 192.168.1.1
+
+Ethernet DHCP (B16M_components/net_ethernet.yaml):
+
+- eth_clk_pin: GPIO42
+- eth_mosi_pin: GPIO43
+- eth_miso_pin: GPIO44
+- eth_cs_pin: GPIO41
+- eth_int_pin: GPIO2
+- eth_rst_pin: GPIO1
+
+Ethernet statisch (B16M_components/net_ethernet_static.yaml):
+
+- eth_clk_pin: GPIO42
+- eth_mosi_pin: GPIO43
+- eth_miso_pin: GPIO44
+- eth_cs_pin: GPIO41
+- eth_int_pin: GPIO2
+- eth_rst_pin: GPIO1
+- static_ip: 192.168.1.100
+- gateway: 192.168.1.1
+- subnet: 255.255.255.0
+- dns: 192.168.1.1
+
+### 3) Sensor-Slot-Packages
+
+Pro physischem Slot genau eine Bus-Variante:
+
+- DHT direkt am Slot: B16M_components/ow_dht_slot.yaml
+- Dallas One-Wire Bus am Slot: B16M_components/ow_dallas_bus.yaml
+
+DHT Slot Variablen:
+
+- dht_pin: 40
+- dht_name: Temp1
+- dht_id: T1
+- dht_update_interval: 10s
+
+Automatisch erzeugte IDs bei DHT:
+
+- <dht_name>_temperature
+- <dht_name>_humidity
+- Display-Seite page_sensor_<dht_id>
+
+Dallas Bus Variablen:
+
+- dallas_bus_id: ow_bus_1
+- dallas_pin: 40
+
+Dallas Sensor Template (B16M_components/ow_dallas_sensor.yaml) pro Sensorinstanz:
+
+- one_wire_id: ow_bus_1
+- dallas_address: 0x0000000000000000
+- dallas_sensor_name: Dallas_Sensor
+- dallas_sensor_id: dallas_sensor
+- dallas_update_interval: 10s
+
+Automatisch erzeugt bei Dallas Sensor:
+
+- Sensor-ID: <dallas_sensor_id>
+- Display-Seite: page_sensor_<dallas_sensor_id>
+
+### 4) Thermostat-Packages
+
+Thermostat-Basis (Peripherie/Thermostate.yaml):
+
+Wird einmalig eingebunden und stellt bereit:
+
+- external_components fuer dummy_thermostat
+- local_control_switch
+- heating_master_switch
+- hw_master_sw (abgeleitet von DI1)
+
+Thermostat-Instanz (B16M_components/thermostat_template.yaml), pro Thermostat einmal:
+
+- thermostat_id: Pflicht, eindeutig
+- thermostat_name: Pflicht
+- thermostat_fallback_sensor: Pflicht, Sensor-ID
+- thermostat_fallback_humidity_sensor: Pflicht, Sensor-ID
+- thermostat_valve_switch: Pflicht, z. B. DO1
+- Thermostat_external_sensor_timeout: empfohlen, Standard in Beispielen 900
+
+Automatisch erzeugt pro Thermostatinstanz:
+
+- climate id thermostat<thermostat_id>
+- Diagnose binary_sensor t<thermostat_id>_fallback_temp_active
+- Display-Seite page_thermostat_<thermostat_id>
+- API-Services:
+  - set_current_temperature_thermostat<thermostat_id>
+  - set_current_humidity_thermostat<thermostat_id>
+  - set_valve_state_thermostat<thermostat_id>
+
+### 5) Display-Logik komplett
+
+Aktive Display-Definition ist im Base-Package.
+
+Fixe Basisseiten:
+
+- page_home
+- page_connection
+- page_info
+- page_inputs
+- page_outputs
+- page_sensor_ai1
+- page_sensor_ai2
+- page_sensor_ai3
+- page_sensor_ai4
+- page_sensor_wind
+
+Dynamische Seiten aus Templates:
+
+- DHT: page_sensor_<dht_id>
+- Dallas: page_sensor_<dallas_sensor_id>
+- Thermostat: page_thermostat_<thermostat_id>
+
+Navigation und Verhalten:
+
+- Auto-Rotation alle 4 Sekunden
+- Manueller Seitensprung bei DI16 Press
+- Heartbeat-Blinken alle 1 Sekunde
+
+### 6) API und OTA im Top-Level-Setup
+
+Im Setup-File (z. B. b16m.yaml, setup_wohnzimmer.yaml, setup_template.yaml) zu setzen:
+
+- api.encryption.key
+- api.reboot_timeout
+- ota.platform: esphome
+- ota.password
+
+Empfehlung:
+
+- API-Key und OTA-Passwort ueber secrets.yaml verwalten.
+
+### 7) Namens- und ID-Regeln
+
+- thermostat_id darf nicht doppelt vorkommen.
+- dht_name sollte eindeutig sein, da daraus Sensor-IDs gebildet werden.
+- dallas_sensor_id und dallas_bus_id muessen eindeutig sein.
+- thermostat_fallback_sensor muss exakt auf eine existierende Sensor-ID zeigen.
+- thermostat_fallback_humidity_sensor muss exakt auf eine existierende Feuchte-ID zeigen.
+
+### 8) Aktueller Standard in b16m.yaml
+
+- Netzwerk: Ethernet DHCP
+- Slot 1 bis 3: DHT
+- Slot 4: Dallas Bus
+- Slot 4 Standard: 16 Dallas Sensorinstanzen
+- 4 Thermostat-Instanzen
+
+### 9) Validierung und bekannte Besonderheit
+
+Pruefen:
+
+```bash
+esphome config b16m.yaml
+esphome config setup_wohnzimmer.yaml
+esphome config setup_template.yaml
+```
+
+Wichtig:
+
+- ESPHome kann in manchen PowerShell-Pipelines trotz gueltiger Konfiguration einen Exit Code 1 melden, wenn Informationen ueber stderr ausgegeben werden.
+- Verlass dich in dem Fall auf die Ausgabezeile INFO Configuration is valid.

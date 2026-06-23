@@ -288,6 +288,9 @@ binary_sensor:
       number: 15
       mode: INPUT
       inverted: true
+    on_press:
+      then:
+        - script.execute: manual_next_page
 
 
 # ============================================
@@ -535,27 +538,82 @@ sensor:
       name: "CPU Frequency"
 
 text_sensor:
+  - platform: template
+    id: ip_addr
+    name: "IP Address"
+    update_interval: 5s
+    lambda: |-
+      auto ip = network::get_ip_address();
+      if (ip.is_set()) {
+        return ip.str();
+      }
+      return {"n/a"};
+
   - platform: version
     name: "ESPHome Version"
+    id: esphome_version_text
     hide_timestamp: true
+
   - platform: uptime
     name: Uptime
+    id: uptime_text_readable
     entity_category: "diagnostic"
     format:
       separator: " "
       days: "D"
+
   - platform: template
     name: "Project Version:"
-    id: uptime_text
+    id: project_version_text
     entity_category: "diagnostic"
     lambda: |-
       return {ESPHOME_PROJECT_VERSION};
     update_interval: 60s
+
   - platform: debug
     device:
       name: "Device Info"
     reset_reason:
       name: "Reset Reason"
+
+
+globals:
+  - id: heartbeat_blink
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: auto_rotate_display
+    type: bool
+    restore_value: yes
+    initial_value: "true"
+
+script:
+  - id: display_next_page
+    mode: restart
+    then:
+      - display.page.show_next: oled_display
+      - component.update: oled_display
+
+  - id: manual_next_page
+    mode: restart
+    then:
+      - script.execute: display_next_page
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          id(heartbeat_blink) = !id(heartbeat_blink);
+      - component.update: oled_display
+
+  - interval: 4s
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return id(auto_rotate_display);
+          then:
+            - script.execute: display_next_page
 
 
 # ============================================
@@ -603,6 +661,8 @@ font:
         "\U000F0132",  # mdi-checkbox-marked
         "\U000F0319",  # mdi-lan-disconnect
         "\U000F0318",  # mdi-lan-connect
+        "\U000F050F",  # mdi-thermometer
+        "\U000F058E",  # mdi-water-percent
       ]
 
 display:
@@ -611,8 +671,161 @@ display:
     id: oled_display
     i2c_id: bus_a
     address: ${display_address}
+    update_interval: 500ms
     pages:
-      - id: page1
+      - id: page_home
         lambda: |-
-          it.printf(0, 0, id(small), "B16M");
-          it.printf(0, 16, id(tiny), "Ready");
+          it.strftime(0, 0, id(large), "%H:%M", id(rtc_time).now());
+          if (id(heartbeat_blink)) {
+            it.print(110, 0, id(icon), "\U000F02D1");
+          }
+          it.printf(0, 28, id(small), "B16M");
+          if (api::global_api_server->is_connected()) {
+            it.print(48, 28, id(icon), "\U000F0318");
+            it.print(66, 32, id(tiny), "HA OK");
+          } else {
+            it.print(48, 28, id(icon), "\U000F0319");
+            it.print(66, 32, id(tiny), "HA OFF");
+          }
+          if (id(uptime_seconds).has_state()) {
+            it.printf(0, 52, id(tiny), "Uptime: %.0fs", id(uptime_seconds).state);
+          }
+
+      - id: page_connection
+        lambda: |-
+          it.print(0, 0, id(small), "Verbindung");
+          it.line(0, 13, 127, 13);
+          if (api::global_api_server->is_connected()) {
+            it.print(0, 17, id(icon), "\U000F0318");
+            it.print(18, 20, id(small), "HomeAssistant: OK");
+          } else {
+            it.print(0, 17, id(icon), "\U000F0319");
+            it.print(18, 20, id(small), "HomeAssistant: OFF");
+          }
+          it.print(0, 38, id(tiny), "IP:");
+          if (id(ip_addr).has_state()) {
+            it.print(14, 38, id(tiny), id(ip_addr).state.c_str());
+          } else {
+            it.print(14, 38, id(tiny), "n/a");
+          }
+
+      - id: page_info
+        lambda: |-
+          it.print(0, 0, id(small), "Info");
+          it.line(0, 13, 127, 13);
+          it.print(0, 18, id(tiny), "FW:");
+          if (id(project_version_text).has_state()) {
+            it.print(20, 18, id(tiny), id(project_version_text).state.c_str());
+          }
+          it.print(0, 30, id(tiny), "ESPHome:");
+          if (id(esphome_version_text).has_state()) {
+            it.print(43, 30, id(tiny), id(esphome_version_text).state.c_str());
+          }
+          if (id(uptime_text_readable).has_state()) {
+            it.print(0, 44, id(tiny), "UP:");
+            it.print(16, 44, id(tiny), id(uptime_text_readable).state.c_str());
+          }
+
+      - id: page_inputs
+        lambda: |-
+          it.print(0, 0, id(small), "Inputs");
+          it.line(0, 13, 127, 13);
+          it.print(0, 16, id(icon), id(DI1).state ? "\U000F0133" : "\U000F012F");
+          it.print(16, 16, id(icon), id(DI2).state ? "\U000F0133" : "\U000F012F");
+          it.print(32, 16, id(icon), id(DI3).state ? "\U000F0133" : "\U000F012F");
+          it.print(48, 16, id(icon), id(DI4).state ? "\U000F0133" : "\U000F012F");
+          it.print(64, 16, id(icon), id(DI5).state ? "\U000F0133" : "\U000F012F");
+          it.print(80, 16, id(icon), id(DI6).state ? "\U000F0133" : "\U000F012F");
+          it.print(96, 16, id(icon), id(DI7).state ? "\U000F0133" : "\U000F012F");
+          it.print(112, 16, id(icon), id(DI8).state ? "\U000F0133" : "\U000F012F");
+          it.print(0, 38, id(icon), id(DI9).state ? "\U000F0133" : "\U000F012F");
+          it.print(16, 38, id(icon), id(DI10).state ? "\U000F0133" : "\U000F012F");
+          it.print(32, 38, id(icon), id(DI11).state ? "\U000F0133" : "\U000F012F");
+          it.print(48, 38, id(icon), id(DI12).state ? "\U000F0133" : "\U000F012F");
+          it.print(64, 38, id(icon), id(DI13).state ? "\U000F0133" : "\U000F012F");
+          it.print(80, 38, id(icon), id(DI14).state ? "\U000F0133" : "\U000F012F");
+          it.print(96, 38, id(icon), id(DI15).state ? "\U000F0133" : "\U000F012F");
+          it.print(112, 38, id(icon), id(DI16).state ? "\U000F0133" : "\U000F012F");
+          it.print(0, 58, id(tiny), "DI1-8 oben, DI9-16 unten");
+
+      - id: page_outputs
+        lambda: |-
+          it.print(0, 0, id(small), "Outputs");
+          it.line(0, 13, 127, 13);
+          it.print(0, 16, id(icon), id(DO1).state ? "\U000F0133" : "\U000F012F");
+          it.print(16, 16, id(icon), id(DO2).state ? "\U000F0133" : "\U000F012F");
+          it.print(32, 16, id(icon), id(DO3).state ? "\U000F0133" : "\U000F012F");
+          it.print(48, 16, id(icon), id(DO4).state ? "\U000F0133" : "\U000F012F");
+          it.print(64, 16, id(icon), id(DO5).state ? "\U000F0133" : "\U000F012F");
+          it.print(80, 16, id(icon), id(DO6).state ? "\U000F0133" : "\U000F012F");
+          it.print(96, 16, id(icon), id(DO7).state ? "\U000F0133" : "\U000F012F");
+          it.print(112, 16, id(icon), id(DO8).state ? "\U000F0133" : "\U000F012F");
+          it.print(0, 38, id(icon), id(DO9).state ? "\U000F0133" : "\U000F012F");
+          it.print(16, 38, id(icon), id(DO10).state ? "\U000F0133" : "\U000F012F");
+          it.print(32, 38, id(icon), id(DO11).state ? "\U000F0133" : "\U000F012F");
+          it.print(48, 38, id(icon), id(DO12).state ? "\U000F0133" : "\U000F012F");
+          it.print(64, 38, id(icon), id(DO13).state ? "\U000F0133" : "\U000F012F");
+          it.print(80, 38, id(icon), id(DO14).state ? "\U000F0133" : "\U000F012F");
+          it.print(96, 38, id(icon), id(DO15).state ? "\U000F0133" : "\U000F012F");
+          it.print(112, 38, id(icon), id(DO16).state ? "\U000F0133" : "\U000F012F");
+          it.print(0, 58, id(tiny), "DO1-8 oben, DO9-16 unten");
+
+      - id: page_sensor_ai1
+        lambda: |-
+          it.print(0, 0, id(small), "Sensor AI1");
+          it.line(0, 13, 127, 13);
+          if (id(AI_1).has_state()) {
+            it.printf(0, 24, id(small), "Wert: %.2f V", id(AI_1).state);
+            it.print(0, 44, id(tiny), "Status: OK");
+          } else {
+            it.print(0, 24, id(small), "Wert: n/a");
+            it.print(0, 44, id(tiny), "Status: NO DATA");
+          }
+
+      - id: page_sensor_ai2
+        lambda: |-
+          it.print(0, 0, id(small), "Sensor AI2");
+          it.line(0, 13, 127, 13);
+          if (id(AI_2).has_state()) {
+            it.printf(0, 24, id(small), "Wert: %.2f V", id(AI_2).state);
+            it.print(0, 44, id(tiny), "Status: OK");
+          } else {
+            it.print(0, 24, id(small), "Wert: n/a");
+            it.print(0, 44, id(tiny), "Status: NO DATA");
+          }
+
+      - id: page_sensor_ai3
+        lambda: |-
+          it.print(0, 0, id(small), "Sensor AI3");
+          it.line(0, 13, 127, 13);
+          if (id(AI_3).has_state()) {
+            it.printf(0, 24, id(small), "Wert: %.2f mA", id(AI_3).state);
+            it.print(0, 44, id(tiny), "Status: OK");
+          } else {
+            it.print(0, 24, id(small), "Wert: n/a");
+            it.print(0, 44, id(tiny), "Status: NO DATA");
+          }
+
+      - id: page_sensor_ai4
+        lambda: |-
+          it.print(0, 0, id(small), "Sensor AI4");
+          it.line(0, 13, 127, 13);
+          if (id(AI_4).has_state()) {
+            it.printf(0, 24, id(small), "Wert: %.2f mA", id(AI_4).state);
+            it.print(0, 44, id(tiny), "Status: OK");
+          } else {
+            it.print(0, 24, id(small), "Wert: n/a");
+            it.print(0, 44, id(tiny), "Status: NO DATA");
+          }
+
+      - id: page_sensor_wind
+        lambda: |-
+          it.print(0, 0, id(small), "Sensor Wind");
+          it.line(0, 13, 127, 13);
+          if (id(wind_speed).has_state()) {
+            it.printf(0, 24, id(small), "Wert: %.2f m/s", id(wind_speed).state);
+            it.print(0, 44, id(tiny), "Status: OK");
+          } else {
+            it.print(0, 24, id(small), "Wert: n/a");
+            it.print(0, 44, id(tiny), "Status: NO DATA");
+          }
