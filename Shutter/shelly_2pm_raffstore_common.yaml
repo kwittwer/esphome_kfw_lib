@@ -1,0 +1,18 @@
+substitutions:
+  device_name: raffstore
+  friendly_name: Raffstore
+  channel_1_name: Switch 1
+  channel_2_name: Switch 2
+  max_temp: "70.0" # °C
+  restore_mode: RESTORE_DEFAULT_OFF
+
+packages:
+  shelly_2pm_gen3_base: !include
+    file: kfw_shutter_lib/device_shelly_2pm_gen3_base.yaml
+    vars:
+      device_name: ${device_name}
+      friendly_name: ${friendly_name}
+      channel_1_name: ${channel_1_name}
+      channel_2_name: ${channel_2_name}
+      max_temp: ${max_temp}
+      restore_mode: ${restore_mode}

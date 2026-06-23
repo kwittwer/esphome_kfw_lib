@@ -1,0 +1,595 @@
+substitutions:
+    cover_friendly_name: Jalousie
+    cover_id: ""
+    interval: 0.1
+    switch_up_id: relais_up
+    switch_down_id: releis_down
+    power_up_sensor_id: channel_1_power
+    power_down_sensor_id: channel_2_power
+    movement_unknown: 0
+    movement_up: 1
+    movement_down: 2
+
+esphome:
+  on_boot: 
+    then:
+      - lambda: |-
+          id(${cover_id}_total_runtime_input).publish_state(id(${cover_id}_total_runtime));
+          id(${cover_id}_50_runtime_input).publish_state(id(${cover_id}_50_runtime));
+          id(${cover_id}_100_runtime_input).publish_state(id(${cover_id}_100_runtime));
+      
+
+globals:
+  - id: ${cover_id}_current_position
+    type: float
+    restore_value: yes
+    initial_value: '100.0'  # Startwert 100% (geöffnet)
+  - id: ${cover_id}_current_tilt
+    type: float
+    restore_value: yes
+    initial_value: '100.0'  # Startwert 100% (geöffnet)
+
+  # Tracking für Bewegung
+  - id: ${cover_id}_elapsed_time_up
+    type: float
+    initial_value: '0.0'  # Verstrichene Zeit beim Hochfahren
+  
+  - id: ${cover_id}_elapsed_time_down
+    type: float
+    initial_value: '0.0'  # Verstrichene Zeit beim Runterfahren
+  # Verstrichene Zeit beim Runterfahren
+
+  - id: ${cover_id}_target_position
+    type: float
+    restore_value: yes
+    initial_value: '0.0'  # Zielposition für die Bewegung
+    
+  - id: ${cover_id}_target_tilt
+    type: int
+    restore_value: yes
+    initial_value: '0'  # Zielposition für die Lamellenstellung
+
+  - id: ${cover_id}_last_movement
+    type: int
+    restore_value: yes
+    initial_value: '0'  # Zielposition für die Lamellenstellung
+
+  - id: ${cover_id}_total_runtime
+    type: float
+    restore_value: yes
+    initial_value: '1'  # Zielposition für die Lamellenstellung
+
+  - id: ${cover_id}_50_runtime
+    type: float
+    restore_value: yes
+    initial_value: '0.9'  # Zielposition für die Lamellenstellung
+
+  - id: ${cover_id}_100_runtime
+    type: float
+    restore_value: yes
+    initial_value: '1.6'  # Zielposition für die Lamellenstellung
+
+  - id: ${cover_id}_up_power_threshold
+    type: float
+    restore_value: yes
+    initial_value: '8.0'
+
+  - id: ${cover_id}_down_power_threshold
+    type: float
+    restore_value: yes
+    initial_value: '8.0'
+
+  - id: ${cover_id}_endstop_min_runtime
+    type: float
+    restore_value: yes
+    initial_value: '1.0'
+
+  - id: ${cover_id}_movement_timeout_margin
+    type: float
+    restore_value: yes
+    initial_value: '2.0'
+
+  - id: ${cover_id}_recalibration_alpha
+    type: float
+    restore_value: yes
+    initial_value: '0.20'
+
+  - id: ${cover_id}_auto_recalibration_enabled
+    type: bool
+    restore_value: yes
+    initial_value: 'true'
+
+  - id: ${cover_id}_full_open_requested
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: ${cover_id}_full_close_requested
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: ${cover_id}_calibration_mode
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: ${cover_id}_calibration_step
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+
+number:
+  - platform: template
+    name: ${cover_friendly_name} Gesamtlaufzeit
+    id: ${cover_id}_total_runtime_input
+    min_value: 1.0 # Mindestens 100 ms
+    max_value: 240.0 # Maximal 10 Minuten (600.000 ms)
+    step: 0.1 # Schritte von 100 ms
+    unit_of_measurement: "s"
+    icon: "mdi:timer-sand"
+    mode: BOX # Zeigt ein Eingabefeld in Home Assistant an
+    # Bei Änderung des Wertes, diesen in der globalen Variable speichern
+    entity_category: "config"
+    optimistic: true
+    on_value:
+      then:
+        - lambda: id(${cover_id}_total_runtime) = x;
+
+  - platform: template
+    name: ${cover_friendly_name} Lamellen 50% Laufzeit
+    id: ${cover_id}_50_runtime_input
+    min_value: 0.1 # Mindestens 100 ms
+    max_value: 240.0 # Maximal 10 Minuten (600.000 ms)
+    step: 0.1 # Schritte von 100 ms
+    unit_of_measurement: "s"
+    icon: "mdi:timer-sand"
+    mode: BOX # Zeigt ein Eingabefeld in Home Assistant an
+    # Bei Änderung des Wertes, diesen in der globalen Variable speichern
+    entity_category: "config"
+    optimistic: true
+    on_value:
+      then:
+        - lambda: id(${cover_id}_50_runtime) = x;
+
+  - platform: template
+    name: ${cover_friendly_name} Lamellen 100% Laufzeit
+    id: ${cover_id}_100_runtime_input
+    min_value: 0.1 # Mindestens 100 ms
+    max_value: 240.0 # Maximal 10 Minuten (600.000 ms)
+    step: 0.1 # Schritte von 100 ms
+    unit_of_measurement: "s"
+    icon: "mdi:timer-sand"
+    mode: BOX # Zeigt ein Eingabefeld in Home Assistant an
+    # Bei Änderung des Wertes, diesen in der globalen Variable speichern
+    entity_category: "config"
+    optimistic: true
+    on_value:
+      then:
+        - lambda: id(${cover_id}_100_runtime) = x;
+
+  - platform: template
+    name: ${cover_friendly_name} Endlage Leistung Hoch
+    id: ${cover_id}_up_power_threshold_input
+    min_value: 1.0
+    max_value: 400.0
+    step: 0.5
+    unit_of_measurement: "W"
+    icon: "mdi:flash"
+    mode: BOX
+    entity_category: "config"
+    optimistic: true
+    on_value:
+      then:
+        - lambda: id(${cover_id}_up_power_threshold) = x;
+
+  - platform: template
+    name: ${cover_friendly_name} Endlage Leistung Runter
+    id: ${cover_id}_down_power_threshold_input
+    min_value: 1.0
+    max_value: 400.0
+    step: 0.5
+    unit_of_measurement: "W"
+    icon: "mdi:flash"
+    mode: BOX
+    entity_category: "config"
+    optimistic: true
+    on_value:
+      then:
+        - lambda: id(${cover_id}_down_power_threshold) = x;
+
+  - platform: template
+    name: ${cover_friendly_name} Endlage Mindestlaufzeit
+    id: ${cover_id}_endstop_min_runtime_input
+    min_value: 0.2
+    max_value: 10.0
+    step: 0.1
+    unit_of_measurement: "s"
+    icon: "mdi:timer-outline"
+    mode: BOX
+    entity_category: "config"
+    optimistic: true
+    on_value:
+      then:
+        - lambda: id(${cover_id}_endstop_min_runtime) = x;
+
+  - platform: template
+    name: ${cover_friendly_name} Fahrzeit Timeout-Zuschlag
+    id: ${cover_id}_movement_timeout_margin_input
+    min_value: 0.5
+    max_value: 20.0
+    step: 0.5
+    unit_of_measurement: "s"
+    icon: "mdi:timer-alert-outline"
+    mode: BOX
+    entity_category: "config"
+    optimistic: true
+    on_value:
+      then:
+        - lambda: id(${cover_id}_movement_timeout_margin) = x;
+
+  - platform: template
+    name: ${cover_friendly_name} Rekalibrierung Alpha
+    id: ${cover_id}_recalibration_alpha_input
+    min_value: 0.05
+    max_value: 1.0
+    step: 0.05
+    mode: BOX
+    entity_category: "config"
+    optimistic: true
+    on_value:
+      then:
+        - lambda: |-
+            if (x < 0.05) {
+              id(${cover_id}_recalibration_alpha) = 0.05;
+            } else if (x > 1.0) {
+              id(${cover_id}_recalibration_alpha) = 1.0;
+            } else {
+              id(${cover_id}_recalibration_alpha) = x;
+            }
+
+switch:
+  - platform: template
+    name: ${cover_friendly_name} Auto Rekalibrierung
+    id: ${cover_id}_auto_recalibration_switch
+    icon: "mdi:tune-variant"
+    entity_category: "config"
+    lambda: |-
+      return id(${cover_id}_auto_recalibration_enabled);
+    turn_on_action:
+      - lambda: id(${cover_id}_auto_recalibration_enabled) = true;
+    turn_off_action:
+      - lambda: id(${cover_id}_auto_recalibration_enabled) = false;
+
+button:
+  - platform: template
+    name: ${cover_friendly_name} Kalibrierung starten
+    id: ${cover_id}_start_calibration_button
+    icon: "mdi:play-circle-outline"
+    entity_category: "config"
+    on_press:
+      - script.execute: ${cover_id}_start_calibration
+
+cover:
+  - platform: template
+    name: "${cover_friendly_name}"
+    id: ${cover_id}_cover
+    assumed_state: true
+    has_position: true
+    # position: !lambda |-
+    #   return id(${cover_id}_current_position);
+    # tilt: !lambda |-
+    #     return id(${cover_id}_current_tilt);
+
+    open_action:
+      - lambda: |-
+          id(${cover_id}_full_open_requested) = true;
+          id(${cover_id}_full_close_requested) = false;
+          id(${cover_id}_open).execute(id(${cover_id}_total_runtime) + 1.0);
+    close_action:
+      - lambda: |-
+          id(${cover_id}_full_open_requested) = false;
+          id(${cover_id}_full_close_requested) = true;
+          id(${cover_id}_close).execute(id(${cover_id}_total_runtime) + 1.0);
+    stop_action:
+      - lambda: |-
+          id(${cover_id}_full_open_requested) = false;
+          id(${cover_id}_full_close_requested) = false;
+          id(${cover_id}_stop).execute();
+    position_action:
+      - lambda: |-
+          float target_position = pos * 100.0; // Zielposition in Prozent
+          id(${cover_id}_run_to_target_position).execute(target_position);
+
+    tilt_action:
+      - lambda: |-
+          float target_tilt = tilt * 100.0; // Zielneigung in Prozent
+          if(target_tilt > 66.0)
+          {
+            id(${cover_id}_target_tilt)=2;
+            id(${cover_id}_run_to_target_tilt).execute(2);
+          }
+          else if ((target_tilt <= 66.0)&&(target_tilt > 33.0))
+          {
+            id(${cover_id}_target_tilt)=1;
+            id(${cover_id}_run_to_target_tilt).execute(1);
+          }
+          else
+          {
+            id(${cover_id}_target_tilt)=0;
+            id(${cover_id}_run_to_target_tilt).execute(0);
+          }
+
+    optimistic: true
+
+
+
+interval:
+  - interval: ${interval}s
+    then:
+      - lambda: |-
+            if(id(${switch_up_id}).state)
+            {
+              id(${cover_id}_elapsed_time_up) += ${interval};
+
+              if(id(${cover_id}_elapsed_time_up) >= id(${cover_id}_endstop_min_runtime)
+                  && id(${power_up_sensor_id}).state < id(${cover_id}_up_power_threshold))
+              {
+                float measured_time = id(${cover_id}_elapsed_time_up);
+                bool allow_recalibration = (id(${cover_id}_calibration_mode) && id(${cover_id}_calibration_step) == 2)
+                                          || (id(${cover_id}_auto_recalibration_enabled) && id(${cover_id}_full_open_requested));
+                if (allow_recalibration && measured_time > 0.2)
+                {
+                  if (id(${cover_id}_total_runtime) <= 1.0 || id(${cover_id}_calibration_mode))
+                  {
+                    id(${cover_id}_total_runtime) = measured_time;
+                  }
+                  else
+                  {
+                    float alpha = id(${cover_id}_recalibration_alpha);
+                    id(${cover_id}_total_runtime) = id(${cover_id}_total_runtime) * (1.0 - alpha) + measured_time * alpha;
+                  }
+                  id(${cover_id}_total_runtime_input).publish_state(id(${cover_id}_total_runtime));
+                }
+
+                id(${cover_id}_current_tilt) = 100.0;
+                id(${cover_id}_current_position) = 100.0;
+
+                if(id(${cover_id}_calibration_mode) && id(${cover_id}_calibration_step) == 2)
+                {
+                  id(${cover_id}_calibration_mode) = false;
+                  id(${cover_id}_calibration_step) = 0;
+                }
+
+                id(${cover_id}_full_open_requested) = false;
+                id(${cover_id}_stop).execute();
+                return;
+              }
+              else if(id(${cover_id}_elapsed_time_up) > (id(${cover_id}_total_runtime) + id(${cover_id}_movement_timeout_margin)))
+              {
+                id(${cover_id}_full_open_requested) = false;
+                id(${cover_id}_stop).execute();
+                return;
+              }
+
+              if(id(${cover_id}_current_tilt) < 100.0)
+              {
+                id(${cover_id}_current_tilt) = id(${cover_id}_current_tilt) + ((100.0 / id(${cover_id}_100_runtime)) * ${interval});
+                if(id(${cover_id}_current_tilt) > 100.0)
+                {
+                  id(${cover_id}_current_tilt) = 100.0;
+                }
+              }
+              else
+              {
+                id(${cover_id}_current_position) = id(${cover_id}_current_position) + ((100.0 / id(${cover_id}_total_runtime)) * ${interval});
+              }
+
+            }
+            if(id(${switch_down_id}).state)
+            {
+              id(${cover_id}_elapsed_time_down) += ${interval};
+
+              if(id(${cover_id}_elapsed_time_down) >= id(${cover_id}_endstop_min_runtime)
+                  && id(${power_down_sensor_id}).state < id(${cover_id}_down_power_threshold))
+              {
+                float measured_time = id(${cover_id}_elapsed_time_down);
+                bool allow_recalibration = (id(${cover_id}_calibration_mode) && id(${cover_id}_calibration_step) == 1)
+                                          || (id(${cover_id}_auto_recalibration_enabled) && id(${cover_id}_full_close_requested));
+                if (allow_recalibration && measured_time > 0.2)
+                {
+                  if (id(${cover_id}_total_runtime) <= 1.0 || id(${cover_id}_calibration_mode))
+                  {
+                    id(${cover_id}_total_runtime) = measured_time;
+                  }
+                  else
+                  {
+                    float alpha = id(${cover_id}_recalibration_alpha);
+                    id(${cover_id}_total_runtime) = id(${cover_id}_total_runtime) * (1.0 - alpha) + measured_time * alpha;
+                  }
+                  id(${cover_id}_total_runtime_input).publish_state(id(${cover_id}_total_runtime));
+                }
+
+                id(${cover_id}_current_tilt) = 0.0;
+                id(${cover_id}_current_position) = 0.0;
+
+                if(id(${cover_id}_calibration_mode) && id(${cover_id}_calibration_step) == 1)
+                {
+                  id(${cover_id}_calibration_step) = 2;
+                  id(${cover_id}_full_close_requested) = false;
+                  id(${cover_id}_full_open_requested) = true;
+                  id(${cover_id}_stop).execute();
+                  id(${cover_id}_open).execute(0);
+                  return;
+                }
+                else
+                {
+                  id(${cover_id}_full_close_requested) = false;
+                  id(${cover_id}_stop).execute();
+                  return;
+                }
+              }
+              else if(id(${cover_id}_elapsed_time_down) > (id(${cover_id}_total_runtime) + id(${cover_id}_movement_timeout_margin)))
+              {
+                id(${cover_id}_full_close_requested) = false;
+                id(${cover_id}_stop).execute();
+                return;
+              }
+
+              if(id(${cover_id}_current_tilt) > 0.0)
+              {
+                id(${cover_id}_current_tilt) = id(${cover_id}_current_tilt) - ((100.0 / id(${cover_id}_100_runtime)) * ${interval});
+                if(id(${cover_id}_current_tilt) < 0.0)
+                {
+                  id(${cover_id}_current_tilt) = 0.0;
+                }
+              }
+              else
+              {
+                id(${cover_id}_current_position) = id(${cover_id}_current_position) - ((100.0 / id(${cover_id}_total_runtime)) * ${interval});
+              }
+            }
+
+            if(id(${cover_id}_current_position) > 100.0)
+            {
+              id(${cover_id}_current_position) = 100.0;
+            } else if(id(${cover_id}_current_position) < 0.0)
+            {
+              id(${cover_id}_current_position) = 0.0;
+            } 
+
+            if((id(${cover_id}_current_position) / 100.0) != id(${cover_id}_cover).position || id(${cover_id}_current_tilt) / 100.0 != id(${cover_id}_cover).tilt)
+            {
+              id(${cover_id}_cover).position = id(${cover_id}_current_position) / 100.0;
+              id(${cover_id}_cover).tilt = id(${cover_id}_current_tilt) / 100.0;
+              id(${cover_id}_cover).publish_state();
+            }
+
+script:
+  - id: ${cover_id}_run_to_target_position
+    mode: single
+    parameters:
+      target_position: float
+    then:
+      - lambda: |-
+          id(${cover_id}_full_open_requested) = false;
+          id(${cover_id}_full_close_requested) = false;
+          if(target_position < id(${cover_id}_current_position))
+          {
+            id(${cover_id}_close).execute(0);
+          }
+          else if(target_position > id(${cover_id}_current_position))
+          {
+            id(${cover_id}_open).execute(0);
+          }
+          else
+          {
+            return; // Bereits in Zielposition
+          }
+      - wait_until: 
+          condition:
+            lambda: "return (id(${cover_id}_current_position) - target_position) < ((100.0 / id(${cover_id}_total_runtime)) * ${interval}) && (id(${cover_id}_current_position) - target_position) > -((100.0 / id(${cover_id}_total_runtime)) * ${interval});"
+          timeout: !lambda "return int((id(${cover_id}_total_runtime)+1.0)*1000);"
+      - script.execute: ${cover_id}_stop
+      - lambda: |-
+          id(${cover_id}_run_to_target_tilt).execute(id(${cover_id}_target_tilt));
+
+  - id: ${cover_id}_run_to_target_tilt
+    mode: single
+    parameters:
+      target_tilt: int
+    then:
+      - lambda: |-
+          if(id(${cover_id}_current_tilt)> 1)
+          {
+            id(${cover_id}_close).execute(0);
+          }
+      - wait_until: 
+          condition:
+            lambda: "return (id(${cover_id}_current_tilt) < 1);"
+      - script.execute: ${cover_id}_stop      
+      # - if:
+      #     condition:
+      #       lambda: 'return target_tilt == 0 ;'
+      #     then: 
+      #       - lambda: |-
+    
+      - if:
+          condition:
+            lambda: 'return target_tilt == 1 ;'
+          then:
+            - lambda: |-
+                id(${cover_id}_open).execute(id(${cover_id}_50_runtime));
+      - if:
+          condition:
+            lambda: 'return target_tilt == 2 ;'
+          then:
+            - lambda: |-
+                id(${cover_id}_open).execute(id(${cover_id}_100_runtime));
+
+  - id: ${cover_id}_stop
+    mode: single
+    then:
+      # - script.stop: ${cover_id}_clibration
+      - script.stop: ${cover_id}_open
+      - script.stop: ${cover_id}_close
+      - lambda: |-
+          id(${cover_id}_elapsed_time_up) = 0.0;
+          id(${cover_id}_elapsed_time_down) = 0.0;
+      - switch.turn_off: ${switch_up_id}
+      - switch.turn_off: ${switch_down_id}  
+
+  - id: ${cover_id}_start_calibration
+    mode: single
+    then:
+      - lambda: |-
+          id(${cover_id}_calibration_mode) = true;
+          id(${cover_id}_calibration_step) = 1;
+          id(${cover_id}_full_open_requested) = false;
+          id(${cover_id}_full_close_requested) = true;
+      - script.execute: ${cover_id}_stop
+      - delay: 500ms
+      - lambda: |-
+          id(${cover_id}_close).execute(0);
+
+  - id: ${cover_id}_open
+    parameters:
+      open_time: float
+    mode: single
+    then:
+      - switch.turn_off: ${switch_down_id}  
+      - if:
+          condition:
+            lambda: 'return open_time > 0.0 ;'
+          then:
+            - switch.turn_on: ${switch_up_id}
+            - delay: !lambda 'return int((open_time * 1000));' 
+            - switch.turn_off: ${switch_up_id}
+          else:
+            - switch.turn_on: ${switch_up_id}
+
+
+  - id: ${cover_id}_close
+    parameters:
+      close_time: float
+    mode: single
+    then:
+      - switch.turn_off: ${switch_up_id}  
+      - if:
+          condition:
+            lambda: 'return close_time > 0.0 ;'
+          then:
+            - switch.turn_on: ${switch_down_id}
+            - delay: !lambda 'return int((close_time * 1000));' 
+            - switch.turn_off: ${switch_down_id}
+          else:
+            - switch.turn_on: ${switch_down_id}
+
+
+  # - id: ${cover_id}_clibration
+  #   mode: single
+  #   then:
+  #     - lambda: |-
+  #         id(${cover_id}_open_for).execute(int(${uptime}*1000));
+  

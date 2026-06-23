@@ -12,15 +12,15 @@ $logFile = Join-Path $projectRoot "build_log.txt"
 # Liste der zu kompilierenden YAML-Dateien.
 # Erweiterbar: füge hier neue Einträge hinzu.
 $configs = @(
-    "NSPanel\nspanel_1.yaml"
-    "NSPanel\nspanel_2.yaml"
-    "NSPanel\nspanel_3.yaml"
-    "NSPanel\nspanel_4.yaml"
-    "NSPanel\nspanel_5.yaml"
-    "NSPanel\nspanel_6.yaml"
-    "NSPanel\nspanel_7.yaml"
-    "NSPanel\nspanel_8.yaml"
-    "NSPanel\nspanel_9.yaml"
+    # "NSPanel\nspanel_1.yaml"
+    # "NSPanel\nspanel_2.yaml"
+    # "NSPanel\nspanel_3.yaml"
+    # "NSPanel\nspanel_4.yaml"
+    # "NSPanel\nspanel_5.yaml"
+    # "NSPanel\nspanel_6.yaml"
+    # "NSPanel\nspanel_7.yaml"
+    # "NSPanel\nspanel_8.yaml"
+    # "NSPanel\nspanel_9.yaml"
     "Shutter\shelly_2pm_raffstore1.yaml"
     "Shutter\shelly_2pm_raffstore2.yaml"
     "Shutter\shelly_2pm_raffstore3.yaml"
@@ -34,6 +34,12 @@ $colors = @{
     Warning = "Yellow"
     Error   = "Red"
 }
+
+$requiredFirmwareNames = @(
+    "firmware.bin"
+    "firmware.factory.bin"
+    "firmware.ota.bin"
+)
 
 function Write-Log {
     param(
@@ -156,41 +162,65 @@ foreach ($config in $configs) {
             }
         }
 
-        Write-Log "Suche Binaries in: $buildDir" "Info"
-        
-        $binFiles = @()
-        if (Test-Path $buildDir) {
-            $binFiles = @(Get-ChildItem -Path $buildDir -Filter "firmware*.bin" -Recurse -ErrorAction SilentlyContinue)
-            if ($binFiles.Count -eq 0) {
-                $binFiles = @(Get-ChildItem -Path $buildDir -Filter "*.bin" -Recurse -ErrorAction SilentlyContinue)
+        $searchDirs = @()
+        if ($buildDir -and (Test-Path $buildDir)) {
+            $searchDirs += $buildDir
+        }
+
+        $configDir = Split-Path -Parent $config
+        if ($configDir) {
+            $fallbackDir = Join-Path $projectRoot $configDir
+            $fallbackDir = Join-Path $fallbackDir ".esphome\build\$configName"
+            if ((Test-Path $fallbackDir) -and -not ($searchDirs -contains $fallbackDir)) {
+                $searchDirs += $fallbackDir
             }
         }
-        
-        if ($binFiles.Count -eq 0) {
-            # Fallback: Suche in der Konfigurations-Unterordner-Struktur
-            $configDir = Split-Path -Parent $config
-            if ($configDir) {
-                $fallbackDir = Join-Path $projectRoot $configDir
-                $fallbackDir = Join-Path $fallbackDir ".esphome\build\$configName"
-                if (Test-Path $fallbackDir) {
-                    Write-Log "Fallback: Suche Binaries in: $fallbackDir" "Info"
-                    $binFiles = @(Get-ChildItem -Path $fallbackDir -Filter "*.bin" -Recurse -ErrorAction SilentlyContinue)
+
+        $fallbackDir2 = Join-Path $projectRoot ".esphome\build\$configName"
+        if ((Test-Path $fallbackDir2) -and -not ($searchDirs -contains $fallbackDir2)) {
+            $searchDirs += $fallbackDir2
+        }
+
+        # Fallback 3: Suche mit verkürztem Namen (z.B. shelly_2pm_raffstore1 -> raffstore1)
+        if ($configDir -and $configName -match '(.+)_(\w+)$') {
+            $shortName = $matches[2]
+            $fallbackDir3 = Join-Path $projectRoot $configDir
+            $fallbackDir3 = Join-Path $fallbackDir3 ".esphome\build\$shortName"
+            if ((Test-Path $fallbackDir3) -and -not ($searchDirs -contains $fallbackDir3)) {
+                $searchDirs += $fallbackDir3
+            }
+        }
+
+        $binFiles = @()
+        $foundInDir = $null
+        foreach ($dir in $searchDirs) {
+            Write-Log "Suche Ziel-Binaries in: $dir" "Info"
+
+            $matchesForDir = @()
+            foreach ($requiredName in $requiredFirmwareNames) {
+                $match = Get-ChildItem -Path $dir -Filter $requiredName -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($match) {
+                    $matchesForDir += $match
                 }
             }
-        }
-        
-        if ($binFiles.Count -eq 0) {
-            $fallbackDir2 = Join-Path $projectRoot ".esphome\build\$configName"
-            if (Test-Path $fallbackDir2) {
-                Write-Log "Fallback: Suche Binaries in: $fallbackDir2" "Info"
-                $binFiles = @(Get-ChildItem -Path $fallbackDir2 -Filter "*.bin" -Recurse -ErrorAction SilentlyContinue)
+
+            if ($matchesForDir.Count -gt 0) {
+                $binFiles = $matchesForDir
+                $foundInDir = $dir
+                break
             }
         }
-        
+
         if ($binFiles.Count -eq 0) {
             Write-Log "WARNING: Keine .bin Datei gefunden in $buildDir" "Warning"
             $buildStats.Skipped++
             continue
+        }
+
+        $foundNames = @($binFiles | ForEach-Object { $_.Name })
+        $missingFirmwareNames = @($requiredFirmwareNames | Where-Object { $_ -notin $foundNames })
+        if ($missingFirmwareNames.Count -gt 0) {
+            Write-Log "Hinweis: Nicht alle Ziel-Binaries gefunden in $foundInDir. Fehlend: $($missingFirmwareNames -join ', ')" "Warning"
         }
         
         # Kopiere Binaries in einen Geräte-Unterordner und benenne sie mit dem Gerätenamen
@@ -236,14 +266,14 @@ Write-Log "Fehlgeschlagen: $($buildStats.Failed)" "Error"
 Write-Log "Uebersprungen: $($buildStats.Skipped)" "Warning"
 
 if (Test-Path $outputDir) {
-    $firmwareCount = @(Get-ChildItem $outputDir -Filter "*.bin" -ErrorAction SilentlyContinue).Count
+    $firmwareCount = @(Get-ChildItem $outputDir -Filter "*.bin" -File -Recurse -ErrorAction SilentlyContinue).Count
     Write-Log "Firmware-Dateien im Output-Ordner: $firmwareCount" "Success"
     Write-Log "" "Info"
     Write-Log "Binaries sind verfügbar unter:" "Info"
     Write-Host "  $outputDir" -foreground Green
     Write-Host ""
     Write-Host "Inhalte:" -foreground Cyan
-    Get-ChildItem $outputDir -Filter "*.bin" -ErrorAction SilentlyContinue | ForEach-Object {
+    Get-ChildItem $outputDir -Filter "*.bin" -File -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
         $sizeInMB = [math]::Round($_.Length / (1024*1024), 2)
         Write-Host "  - $($_.Name) ($sizeInMB MB)" -foreground DarkGray
     }

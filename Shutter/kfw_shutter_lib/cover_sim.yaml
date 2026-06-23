@@ -1,0 +1,161 @@
+substitutions:
+    cover_id: "jalousie_sim"
+    uptime: 52.0
+    downtime: 52.0
+    tilt_time: 1.2
+    interval: 0.1
+
+
+
+globals:
+  - id: ${cover_id}_current_position
+    type: float
+    restore_value: yes
+    initial_value: '100.0'  # Startwert 100% (geöffnet)
+
+  - id: ${cover_id}_current_tilt
+    type: float
+    restore_value: yes
+    initial_value: '0.0'  # Startwert 0% (geschlossen)
+
+  # Tracking für Bewegung
+  - id: ${cover_id}_elapsed_time_up
+    type: float
+    initial_value: '0.0'  # Verstrichene Zeit beim Hochfahren
+  
+  - id: ${cover_id}_elapsed_time_down
+    type: float
+    initial_value: '0.0'  # Verstrichene Zeit beim Runterfahren
+  # Verstrichene Zeit beim Runterfahren
+
+
+
+button:
+  - platform: template
+    name: "Sim zurücksetzten"
+    id: Sim_reset_button
+    icon: "mdi:gauge-full"
+    entity_category: "diagnostic"  # Verschiebt den Button in die Diagnose-Sektion
+    on_press:
+      - lambda: |-
+         id(${cover_id}_current_position)=100.0;
+         id(${cover_id}_current_tilt)=100.0;
+         id(${cover_id}_elapsed_time_up)=0.0;
+         id(${cover_id}_elapsed_time_down)=0.0;
+
+switch:
+  - platform: template
+    name: "Motor Hoch"
+    id: ${cover_id}_motor_up
+    optimistic: true
+    icon: "mdi:arrow-up"
+    turn_on_action:
+      then:
+        - switch.turn_off: ${cover_id}_motor_down  # Sicherstellen, dass der andere Motor aus ist
+        - globals.set:
+            id: ${cover_id}_elapsed_time_up
+            value: '0.0'  # Reset Timer
+        - logger.log: "Motor fährt HOCH"
+    turn_off_action:
+      then:
+        - logger.log: "Motor HOCH gestoppt"
+  
+  - platform: template
+    name: "Motor Runter"
+    id: ${cover_id}_motor_down
+    optimistic: true
+    icon: "mdi:arrow-down"
+    turn_on_action:
+      then:
+        - switch.turn_off: ${cover_id}_motor_up  # Sicherstellen, dass der andere Motor aus ist
+        - globals.set:
+            id: ${cover_id}_elapsed_time_down
+            value: '0.0'  # Reset Timer
+        - logger.log: "Motor fährt RUNTER"
+    turn_off_action:
+      then:
+        - logger.log: "Motor RUNTER gestoppt"
+
+sensor:
+  - platform: template
+    name: "Sim Position"
+    id: ${cover_id}_position_sensor
+    unit_of_measurement: "%"
+    icon: "mdi:window-closed"
+    accuracy_decimals: 1
+    lambda: return id(${cover_id}_current_position);
+    update_interval: 200ms
+
+  - platform: template
+    name: "Sim Hochfahren"
+    id: ${cover_id}_time_up_sensor
+    unit_of_measurement: "s"
+    icon: "mdi:timer-outline"
+    accuracy_decimals: 1
+    lambda: return id(${cover_id}_elapsed_time_up);
+    update_interval: 200ms
+
+  - platform: template
+    name: "Sim Runterfahren"
+    id: ${cover_id}_time_down_sensor
+    unit_of_measurement: "s"
+    icon: "mdi:timer-outline"
+    accuracy_decimals: 1
+    lambda: return id(${cover_id}_elapsed_time_down);
+    update_interval: 200ms
+
+  - platform: template
+    name: "Sim Lamellenstellung"
+    id: ${cover_id}_tilt_sensor
+    unit_of_measurement: "%"
+    icon: "mdi:blinds"
+    accuracy_decimals: 1
+    lambda: return id(${cover_id}_current_tilt);
+    update_interval: 200ms
+
+interval:
+  - interval: ${interval}s
+    then:
+      - lambda: |-
+            if(id(${cover_id}_motor_up).state)
+            {
+              id(${cover_id}_elapsed_time_up) += ${interval};
+
+              if(id(${cover_id}_current_tilt) < 100.0)
+              {
+                id(${cover_id}_current_tilt) = id(${cover_id}_current_tilt) + ((100.0 / ${tilt_time}) * ${interval});
+                if(id(${cover_id}_current_tilt) > 100.0)
+                {
+                  id(${cover_id}_current_tilt) = 100.0;
+                }
+              }
+              else
+              {
+                id(${cover_id}_current_position) = id(${cover_id}_current_position) + ((100.0 / ${uptime}) * ${interval});
+              }
+
+            }
+            if(id(${cover_id}_motor_down).state)
+            {
+              id(${cover_id}_elapsed_time_down) += ${interval};
+              if(id(${cover_id}_current_tilt) > 0.0)
+              {
+                id(${cover_id}_current_tilt) = id(${cover_id}_current_tilt) - ((100.0 / ${tilt_time}) * ${interval});
+                if(id(${cover_id}_current_tilt) < 0.0)
+                {
+                  id(${cover_id}_current_tilt) = 0.0;
+                }
+              }
+              else
+              {
+                id(${cover_id}_current_position) = id(${cover_id}_current_position) - ((100.0 / ${downtime}) * ${interval});
+              }
+            }
+
+            if(id(${cover_id}_current_position) > 100.0)
+            {
+              id(${cover_id}_current_position) = 100.0;
+            } else if(id(${cover_id}_current_position) < 0.0)
+            {
+              id(${cover_id}_current_position) = 0.0;
+            } 

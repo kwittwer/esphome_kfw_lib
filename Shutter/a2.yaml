@@ -1,0 +1,49 @@
+esphome:
+  name: a2
+  friendly_name: A2
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+  level: INFO       # Globales Level bleibt bei Debug
+  # logs:
+  #   sensor: WARN
+  #   cover: WARN
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "NbG9Z6GIPHGNYiTVBSarabBW44o1D2RjZgNb5u55rww="
+
+ota:
+  - platform: esphome
+    password: "b1ba22fe8271fe26a7215fa96e3f1dff"
+
+ethernet:
+  type: LAN8720
+  mdc_pin: GPIO23
+  mdio_pin: GPIO18
+  clk_mode: GPIO17_OUT
+  phy_addr: 0
+
+packages:
+  Sim1: !include
+    file: cover_sim.yaml
+    vars:
+      cover_id: "jalousie_sim"
+      uptime: 52.0
+      downtime: 52.0
+      tilt_time: 1.5
+
+  Cover: !include
+    file: cover.yaml
+    vars:
+      cover_id: "jalousie_test"
+      cover_friendly_name: "Test"
+      switch_up_id: jalousie_sim_motor_up
+      switch_down_id: jalousie_sim_motor_down
+
