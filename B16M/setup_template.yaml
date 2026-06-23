@@ -35,6 +35,37 @@ packages:
       # ...
 
   # ============================================
+  # NETZWERK (anpassen!)
+  # Wähle EINE der folgenden Optionen:
+  # ============================================
+
+  # Option 1: WiFi mit DHCP (Standard für neue Setups)
+  network: !include
+    file: B16M_components/net_wifi.yaml
+    vars:
+      wifi_ssid: "MeinNetzwerk"     # oder: !secret wifi_ssid
+      wifi_password: "MeinPasswort" # oder: !secret wifi_password
+
+  # Option 2: WiFi mit statischer IP
+  # network: !include
+  #   file: B16M_components/net_wifi_static.yaml
+  #   vars:
+  #     wifi_ssid: "MeinNetzwerk"
+  #     wifi_password: "MeinPasswort"
+  #     static_ip: "192.168.1.100"
+  #     gateway: "192.168.1.1"
+
+  # Option 3: Ethernet W5500 mit DHCP (Standard B16M-Hardware)
+  # network: !include B16M_components/net_ethernet.yaml
+
+  # Option 4: Ethernet W5500 mit statischer IP
+  # network: !include
+  #   file: B16M_components/net_ethernet_static.yaml
+  #   vars:
+  #     static_ip: "192.168.1.100"
+  #     gateway: "192.168.1.1"
+
+  # ============================================
   # THERMOSTAT BASIS (nicht ändern)
   # ============================================
   thermostat_base: !include Peripherie/Thermostate.yaml

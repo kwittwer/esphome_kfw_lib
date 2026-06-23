@@ -16,6 +16,9 @@ packages:
       T2_name: "Schlafzimmer_Temp"
       T3_name: "Kinderzimmer_Temp"
       T4_name: "Kueche_Temp"
+  # Ethernet W5500 mit DHCP (Standard B16M-Hardware)
+  # Alternativen: net_ethernet_static.yaml | net_wifi.yaml | net_wifi_static.yaml
+  network: !include B16M_components/net_ethernet.yaml
   thermostat_base: !include Peripherie/Thermostate.yaml
   thermostat1: !include
     file: B16M_components/thermostat_template.yaml

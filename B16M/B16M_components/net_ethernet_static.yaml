@@ -1,0 +1,45 @@
+# ============================================
+# Netzwerk: Ethernet W5500 (SPI) mit statischer IP
+#
+# Verwendung:
+#   packages:
+#     network: !include
+#       file: B16M_components/net_ethernet_static.yaml
+#       vars:
+#         static_ip: "192.168.1.100"
+#         gateway: "192.168.1.1"
+#         subnet: "255.255.255.0"     # optional, Standard: 255.255.255.0
+#         dns: "192.168.1.1"          # optional, Standard: Gateway
+#
+# Zusätzlich bei abweichenden Pins:
+#       vars:
+#         static_ip: "192.168.1.100"
+#         ...
+#         eth_clk_pin: GPIO42
+# ============================================
+
+defaults:
+  eth_clk_pin: GPIO42
+  eth_mosi_pin: GPIO43
+  eth_miso_pin: GPIO44
+  eth_cs_pin: GPIO41
+  eth_int_pin: GPIO2
+  eth_rst_pin: GPIO1
+  static_ip: "192.168.1.100"
+  gateway: "192.168.1.1"
+  subnet: "255.255.255.0"
+  dns: "192.168.1.1"
+
+ethernet:
+  type: W5500
+  clk_pin: ${eth_clk_pin}
+  mosi_pin: ${eth_mosi_pin}
+  miso_pin: ${eth_miso_pin}
+  cs_pin: ${eth_cs_pin}
+  interrupt_pin: ${eth_int_pin}
+  reset_pin: ${eth_rst_pin}
+  manual_ip:
+    static_ip: ${static_ip}
+    gateway: ${gateway}
+    subnet: ${subnet}
+    dns1: ${dns}

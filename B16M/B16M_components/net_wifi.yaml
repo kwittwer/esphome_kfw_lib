@@ -1,0 +1,30 @@
+# ============================================
+# Netzwerk: WiFi mit DHCP (Standard)
+#
+# Verwendung:
+#   packages:
+#     network: !include
+#       file: B16M_components/net_wifi.yaml
+#       vars:
+#         wifi_ssid: "MeinNetzwerk"
+#         wifi_password: "MeinPasswort"
+#
+#   Alternativ mit secrets.yaml:
+#     vars:
+#       wifi_ssid: !secret wifi_ssid
+#       wifi_password: !secret wifi_password
+# ============================================
+
+defaults:
+  wifi_ssid: "Bitte_SSID_setzen"
+  wifi_password: "Bitte_Passwort_setzen"
+  wifi_ap_ssid: "B16M Fallback AP"
+  wifi_ap_password: "b16m12345"
+
+wifi:
+  ssid: ${wifi_ssid}
+  password: ${wifi_password}
+  # Fallback-AP wenn kein WiFi erreichbar
+  ap:
+    ssid: ${wifi_ap_ssid}
+    password: ${wifi_ap_password}

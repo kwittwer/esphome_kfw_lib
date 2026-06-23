@@ -1,0 +1,38 @@
+# ============================================
+# Netzwerk: WiFi mit statischer IP
+#
+# Verwendung:
+#   packages:
+#     network: !include
+#       file: B16M_components/net_wifi_static.yaml
+#       vars:
+#         wifi_ssid: "MeinNetzwerk"
+#         wifi_password: "MeinPasswort"
+#         static_ip: "192.168.1.100"
+#         gateway: "192.168.1.1"
+#         subnet: "255.255.255.0"     # optional, Standard: 255.255.255.0
+#         dns: "192.168.1.1"          # optional, Standard: Gateway
+# ============================================
+
+defaults:
+  wifi_ssid: "Bitte_SSID_setzen"
+  wifi_password: "Bitte_Passwort_setzen"
+  wifi_ap_ssid: "B16M Fallback AP"
+  wifi_ap_password: "b16m12345"
+  static_ip: "192.168.1.100"
+  gateway: "192.168.1.1"
+  subnet: "255.255.255.0"
+  dns: "192.168.1.1"
+
+wifi:
+  ssid: ${wifi_ssid}
+  password: ${wifi_password}
+  manual_ip:
+    static_ip: ${static_ip}
+    gateway: ${gateway}
+    subnet: ${subnet}
+    dns1: ${dns}
+  # Fallback-AP wenn kein WiFi erreichbar
+  ap:
+    ssid: ${wifi_ap_ssid}
+    password: ${wifi_ap_password}

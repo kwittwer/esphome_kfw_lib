@@ -10,6 +10,9 @@ packages:
       version: "2025.12.10.1"
       # T1_name–T4_name: Standardwerte (Temp1–Temp4) werden aus B16M_base.yaml übernommen
       # Alle Ethernet/I2C/Hardware-Pins verwenden die Standardwerte
+  # Ethernet W5500 mit DHCP (Standard B16M-Hardware)
+  # Alternativen: net_ethernet_static.yaml | net_wifi.yaml | net_wifi_static.yaml
+  network: !include B16M_components/net_ethernet.yaml
   thermostat_base: !include Peripherie/Thermostate.yaml
   thermostat1: !include
     file: B16M_components/thermostat_template.yaml
