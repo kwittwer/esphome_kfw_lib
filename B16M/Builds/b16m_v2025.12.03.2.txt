@@ -1,0 +1,14 @@
+Build Information
+=================
+Version:        2025.12.03.2
+Build Date:     2025-12-03 07:34:25
+Build Duration: 94.75 seconds
+File Size:      0.73 MB
+Source:         C:\Users\z004s49s\Documents\B16M_Homecontroller\B16M_Homecontroller\b16m.yaml
+Binary:         b16m_v2025.12.03.2.bin
+
+ESPHome Version: 
+Version: 2025.11.2
+
+
+

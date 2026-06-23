@@ -1,0 +1,150 @@
+pcf8574:
+  - id: 'pcf8574_hub_in_1'  # for input channel 1-16
+    i2c_id: bus_a
+    address: 0x24
+    pcf8575: true
+    
+binary_sensor:
+  - platform: gpio
+    name: "DI1"
+    id: DI1
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 0
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI2"
+    id: DI2
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 1
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI3"
+    id: DI3
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 2
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI4"
+    id: DI4
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 3
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI5"
+    id: DI5
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 4
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI6"
+    id: DI6
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 5
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI7"
+    id: DI7
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 6
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI8"
+    id: DI8
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 7
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI9"
+    id: DI9
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 8
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI10"
+    id: DI10
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 9
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI11"
+    id: DI11
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 10
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI12"
+    id: DI12
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 11
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI13"
+    id: DI13
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 12
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI14"
+    id: DI14
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 13
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI15"
+    id: DI15
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 14
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI16"
+    id: DI16
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 15
+      mode: INPUT
+      inverted: true

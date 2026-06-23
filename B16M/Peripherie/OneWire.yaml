@@ -1,0 +1,48 @@
+sensor:
+  - platform: dht
+    pin: 40
+    id: T1
+    temperature:
+      name: "${T1_name} Temperature"
+      id: ${T1_name}_temperature
+    humidity:
+      name: "${T1_name} Humidity"
+      id: ${T1_name}_humidity
+    update_interval: 10s
+    
+  - platform: dht
+    pin: 15
+    id: T2
+    temperature:
+      name: "${T2_name} Temperature"
+      id: ${T2_name}_temperature
+    humidity:
+      name: "${T2_name} Humidity"
+      id: ${T2_name}_humidity
+    update_interval: 1s
+
+  - platform: dht
+    pin: 48
+    id: T3
+    temperature:
+      name: "${T3_name} Temperature"
+    humidity:
+      name: "${T3_name} Humidity"
+    update_interval: 10s
+
+  - platform: dht
+    pin: 47
+    id: T4
+    temperature:
+      name: "${T4_name} Temperature"
+      # filters:
+      #   - multiply: 10  # Für Modbus als Integer
+      # on_value:
+      #   then:
+      #     - lambda: |-
+      #         id(modbus_server)->set_holding_register(0, (uint16_t)x);
+      #         id(modbus_server)->set_input_register(0, (uint16_t)x);
+    humidity:
+      name: "${T4_name} Humidity"
+    update_interval: 10s
+

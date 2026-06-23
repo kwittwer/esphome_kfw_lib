@@ -1,0 +1,150 @@
+pcf8574:
+  - id: 'pcf8574_hub_out_1'  # for output channel 1-16
+    i2c_id: bus_a
+    address: 0x25
+    pcf8575: true
+
+switch:
+  - platform: gpio
+    name: "DO1"
+    id: DO1
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 0
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO2"
+    id: DO2
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 1
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO3"
+    id: DO3
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 2
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO4"
+    id: DO4
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 3
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO5"
+    id: DO5
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 4
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO6"
+    id: DO6
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 5
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO7"
+    id: DO7
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 6
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO8"
+    id: DO8
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 7
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO9"
+    id: DO9
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 8
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO10"
+    id: DO10
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 9
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO11"
+    id: DO11
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 10
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO12"
+    id: DO12
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 11
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO13"
+    id: DO13
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 12
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO14"
+    id: DO14
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 13
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO15"
+    id: DO15
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 14
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO16"
+    id: DO16
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 15
+      mode: OUTPUT
+      inverted: true

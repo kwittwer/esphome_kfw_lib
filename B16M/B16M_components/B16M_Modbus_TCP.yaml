@@ -1,0 +1,74 @@
+external_components:
+  - source:
+      type: local
+      path:  B16M_components/components # Pfad zum components/ Ordner
+    components: [ modbus_tcp_server ]
+
+
+# Modbus TCP Server Konfiguration
+modbus_tcp_server:
+  id: modbus_server
+  port: 502
+  unit_id: 1
+  max_registers: 100
+  max_coils: 100
+    # Callback wenn Register geschrieben wird
+  on_write_register:
+    - lambda: |-
+        ESP_LOGI("modbus", "Register %d = %d", address, value);
+        
+        // Beispiel: Register 10 steuert etwas
+        if (address == 10 && value > 0) {
+          ESP_LOGI("modbus", "Spezielle Aktion für Register 10");
+        }
+  
+  # Callback wenn Coil geschrieben wird
+  on_write_coil:
+    - lambda: |-
+        ESP_LOGI("modbus", "Coil %d = %s", address, value ? "ON" : "OFF");
+
+# # Beispiel: Temperatur-Sensor
+# sensor:
+#   - platform: dht
+#     pin: GPIO4
+#     temperature:
+#       name: "Temperatur"
+#       id: temp_sensor
+#       filters:
+#         - multiply: 10  # Für Modbus als Integer
+#       on_value:
+#         then:
+#           - lambda: |-
+#               id(modbus_server)->set_holding_register(0, (uint16_t)x);
+#               id(modbus_server)->set_input_register(0, (uint16_t)x);
+#     humidity:
+#       name: "Luftfeuchtigkeit"
+#       id: hum_sensor
+#       filters:
+#         - multiply: 10
+#       on_value:
+#         then:
+#           - lambda: |-
+#               id(modbus_server)->set_holding_register(1, (uint16_t)x);
+#               id(modbus_server)->set_input_register(1, (uint16_t)x);
+
+# Beispiel: Schalter über Modbus steuern
+
+
+# Modbus Coil auf GPIO abbilden
+interval:
+  - interval: 100ms
+    then:
+      - lambda: |-
+          // Coil 0 -> Relais 1
+          bool coil_state = id(modbus_server)->get_coil(0);
+          if (coil_state != id(DO6).state) {
+            if (coil_state) {
+              id(DO6).turn_on();
+            } else {
+              id(DO6).turn_off();
+            }
+          }
+          
+          // Relais Status zurück in Discrete Input schreiben
+          id(modbus_server)->set_discrete_input(0, id(DO6).state);

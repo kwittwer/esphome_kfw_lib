@@ -1,0 +1,154 @@
+##### ESPHOME CONFIGURATION #####
+esphome:
+    name: ${device_name}
+    friendly_name: ${friendly_name}
+    platformio_options:
+        board_build.flash_mode: dio
+    project:
+      name:  Konrad.B16M_Heimsteuerung
+      version: "${version}"
+    on_boot:
+        then:
+            # read the RTC time once when the system boots
+            ds1307.read_time:
+
+esp32:
+    board: esp32-s3-devkitc-1
+    cpu_frequency: 240MHz
+    flash_size: 16MB 
+    variant: esp32s3
+
+    framework:
+      # type: arduino
+      # version: latest
+      type: esp-idf
+      sdkconfig_options:
+          CONFIG_FATFS_LFN_STACK: "y"
+      advanced:
+        execute_from_psram: true
+
+psram:
+    mode: octal 
+    speed: 80MHz  
+
+
+
+web_server:
+    port: 80
+    # auth:
+    #     username: admin
+    #     password: password
+    version: 3
+
+time:
+  - platform: ds1307
+    id: rtc_time
+    timezone: Europe/Berlin
+    # repeated synchronization is not necessary unless the external RTC
+    # is much more accurate than the internal clock
+    update_interval: 1h
+  - platform: homeassistant
+    timezone: Europe/Berlin
+    # instead try to synchronize via network repeatedly ...
+    on_time_sync:
+      then:
+        # ... and update the RTC when the synchronization was successful
+        ds1307.write_time:
+
+
+ethernet:
+  type: W5500
+  clk_pin: GPIO42
+  mosi_pin: GPIO43
+  miso_pin: GPIO44
+  cs_pin: GPIO41
+  interrupt_pin: GPIO2
+  reset_pin: GPIO1
+
+  manual_ip:
+    static_ip: ${staticip}
+    gateway: 192.168.178.1
+    subnet: 255.255.255.0
+
+  
+
+# Example configuration entry
+text_sensor:
+  - platform: version
+    name: "ESPHome Version"
+    hide_timestamp: true
+  - platform: uptime
+    name: Uptime
+    entity_category: "diagnostic"
+    format:
+      separator: " "
+      days: "D"
+  - platform: template
+    name: "Project Version:"
+    id: uptime_text
+    entity_category: "diagnostic"
+    lambda: |-
+      return {ESPHOME_PROJECT_VERSION};
+    update_interval: 60s
+
+
+# Example configuration entry
+sensor:
+  - platform: uptime
+    type: seconds
+    id: uptime_seconds
+    name: Uptime Seconds
+    entity_category: "diagnostic"
+    update_interval: 1s
+
+
+  #min_version: 2025.5.2
+#   project:
+#     name: esphome.NSPanel_HA_Blueprint
+#     version: "${version}"
+#   platformio_options:
+#     build_flags:
+#       - -Wno-missing-field-initializers
+#       - -D NSPANEL_HA_BLUEPRINT_CORE
+
+#   on_boot:
+#     - priority: 600.0  # This is where most sensors are set up.
+#       then:
+#         - lambda: |-
+#             boot_log->execute("on_boot", "Set time zone");
+#             set_timezone->execute(id(mui_timezone).c_str());
+#             boot_log->execute("on_boot", "Publish Blueprint progress (0)");
+#             if (isnan(blueprint_status->raw_state)) blueprint_status->publish_state(0);
+#             boot_log->execute("on_boot", "Publish firmware version");
+#             version_esphome->publish_state("${version}");
+#             boot_log->execute("on_boot", "Publish device name");
+#             device_name->publish_state("${name}");
+#             boot_log->execute("on_boot", "Reset notification entities");
+#             notification_label->publish_state("");
+#             notification_text->publish_state("");
+#             notification_unread->turn_off();
+#         - wait_until:
+#             condition:
+#               - lambda: return (not isnan(stoi(baud_rate->state)));
+#             timeout: 60s
+#         - lambda: |-
+#             boot_log->execute("on_boot", "Set baud rate");
+#             if (stoi(baud_rate->state) != tf_uart->get_baud_rate()) set_baud_rate->execute(stoi(baud_rate->state), true);
+#         - wait_until:
+#             condition:
+#               - lambda: return disp1->is_setup();
+#             timeout: 60s
+#         - if:
+#             condition:
+#               - lambda: return (not disp1->is_detected());
+#             then:
+#               - lambda: boot_log->execute("on_boot", "Restart Nextion");
+#               - switch.turn_off: screen_power
+#               - delay: 2s
+#               - switch.turn_on: screen_power
+
+
+
+
+
+# Enable logging

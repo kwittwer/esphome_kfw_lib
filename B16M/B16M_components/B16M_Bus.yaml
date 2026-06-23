@@ -1,0 +1,22 @@
+# ============================================
+# B16M Bus Configuration
+# Ethernet, I2C, UART/RS485 mit allen Einstellungen
+# ============================================
+
+# ethernet:
+#   type: W5500
+#   clk_pin: GPIO42
+#   mosi_pin: GPIO43
+#   miso_pin: GPIO44
+#   cs_pin: GPIO41
+#   interrupt_pin: GPIO2
+#   reset_pin: GPIO1
+
+i2c:
+   - id: bus_a
+     sda: 38
+     scl: 39
+     scan: false
+     frequency: 400kHz
+
+

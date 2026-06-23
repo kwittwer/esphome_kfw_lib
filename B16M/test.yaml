@@ -1,0 +1,1817 @@
+substitutions:
+  dev_name: b16m
+  mqtt_prefix: b16m
+
+esphome:
+  name: ${dev_name}
+  friendly_name: ${dev_name}
+  platformio_options:
+    board_build.flash_mode: dio
+  on_boot:
+    priority: -100
+    then:
+      # Modusankündigung
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/io40/mode    
+          payload: !lambda 'return id(io40_mode_select).state.c_str();'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/io15/mode    
+          payload: !lambda 'return id(io15_mode_select).state.c_str();'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/io48/mode    
+          payload: !lambda 'return id(io48_mode_select).state.c_str();'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/io47/mode    
+          payload: !lambda 'return id(io47_mode_select).state.c_str();'    
+          retain: true    
+      # Analog-Konfig ankündigen
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a0/update_interval    
+          payload: !lambda 'char b[16]; sprintf(b    id(a0_interval_s)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a1/update_interval    
+          payload: !lambda 'char b[16]; sprintf(b    id(a1_interval_s)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a2/update_interval    
+          payload: !lambda 'char b[16]; sprintf(b    id(a2_interval_s)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a3/update_interval    
+          payload: !lambda 'char b[16]; sprintf(b    id(a3_interval_s)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a0/map/x1    
+          payload: !lambda 'char b[24]; sprintf(b    id(a0_map_x1)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a0/map/y1    
+          payload: !lambda 'char b[24]; sprintf(b    id(a0_map_y1)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a0/map/x2    
+          payload: !lambda 'char b[24]; sprintf(b    id(a0_map_x2)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a0/map/y2    
+          payload: !lambda 'char b[24]; sprintf(b    id(a0_map_y2)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a1/map/x1    
+          payload: !lambda 'char b[24]; sprintf(b    id(a1_map_x1)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a1/map/y1    
+          payload: !lambda 'char b[24]; sprintf(b    id(a1_map_y1)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a1/map/x2    
+          payload: !lambda 'char b[24]; sprintf(b    id(a1_map_x2)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a1/map/y2    
+          payload: !lambda 'char b[24]; sprintf(b    id(a1_map_y2)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a2/map/x1    
+          payload: !lambda 'char b[24]; sprintf(b    id(a2_map_x1)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a2/map/y1    
+          payload: !lambda 'char b[24]; sprintf(b    id(a2_map_y1)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a2/map/x2    
+          payload: !lambda 'char b[24]; sprintf(b    id(a2_map_x2)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a2/map/y2    
+          payload: !lambda 'char b[24]; sprintf(b    id(a2_map_y2)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a3/map/x1    
+          payload: !lambda 'char b[24]; sprintf(b    id(a3_map_x1)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a3/map/y1    
+          payload: !lambda 'char b[24]; sprintf(b    id(a3_map_y1)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a3/map/x2    
+          payload: !lambda 'char b[24]; sprintf(b    id(a3_map_x2)); return std: :string(b);'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a3/map/y2    
+          payload: !lambda 'char b[24]; sprintf(b    id(a3_map_y2)); return std: :string(b);'    
+          retain: true    
+      # Homescreen Defaultzeilen publizieren (falls noch leer)
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/display/home/line1    
+          payload: !lambda 'return id(home_line1).state;'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/display/home/line2    
+          payload: !lambda 'return id(home_line2).state;'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/display/home/line3    
+          payload: !lambda 'return id(home_line3).state;'    
+          retain: true
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/display/home/line4    
+          payload: !lambda 'return id(home_line4).state;'    
+          retain: true
+      # Display: starte auf Seite 1
+      - lambda: |-
+          id(page_index)=1; 
+          id(last_page_ms)=millis();
+          id(oled).show_page(id(page_home));
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+# ===================== LOGGER / API / MQTT =====================
+logger:
+  hardware_uart: USB_SERIAL_JTAG
+
+
+
+api:
+  # HA-Verbindungsstatus in Global setzen
+  id: api_server
+  encryption:
+    key: "GvfbcydpffzMhFZJ9Jm59Vv86K8pZFtVq3BzSGj5Rek="
+  on_client_connected:
+    then:
+      - lambda: 'id(ha_connected) = true;'
+  on_client_disconnected:
+    then:
+      - lambda: 'id(ha_connected) = false;'
+ota:
+  - platform: esphome
+    password: "ac6feaa1334ddf6f9876e1f3203074fd"
+
+mqtt:
+  id: mqtt_client
+  broker: !secret mqtt_broker
+  username: !secret mqtt_user
+  password: !secret mqtt_password
+  topic_prefix: ${mqtt_prefix}
+  discovery: false
+  reboot_timeout: 0s
+  on_connect:
+    then:
+      - lambda: 'id(mqtt_is_connected) = true;'
+      # Announce aktueller Display-Homescreen-Text
+
+      - mqtt.publish:
+          topic: ${mqtt_prefix}/display/home/line1
+          payload: !lambda 'return id(home_line1).c_str();'
+          retain: true
+      - mqtt.publish:
+          topic: ${mqtt_prefix}/display/home/line2
+          payload: !lambda 'return id(home_line2).c_str();'
+          retain: true
+
+      - mqtt.publish:
+          topic: ${mqtt_prefix}/display/home/line3
+          payload: !lambda 'return id(home_line3).c_str();'
+          retain: true
+
+      - mqtt.publish:
+          topic: ${mqtt_prefix}/display/home/line4
+          payload: !lambda 'return id(home_line4).c_str();'
+          retain: true
+
+  on_disconnect:
+    then:
+      - lambda: 'id(mqtt_is_connected) = false;'
+
+  # ===== Custom MQTT-Set Topics =====
+  on_message:
+    # --------- 16 digitale Ausgänge setzen -----------
+    - topic: ${mqtt_prefix}/output/01/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out01], else: [switch.turn_off: out01] }
+    - topic: ${mqtt_prefix}/output/02/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out02], else: [switch.turn_off: out02] }
+    - topic: ${mqtt_prefix}/output/03/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out03], else: [switch.turn_off: out03] }
+    - topic: ${mqtt_prefix}/output/04/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out04], else: [switch.turn_off: out04] }
+    - topic: ${mqtt_prefix}/output/05/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out05], else: [switch.turn_off: out05] }
+    - topic: ${mqtt_prefix}/output/06/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out06], else: [switch.turn_off: out06] }
+    - topic: ${mqtt_prefix}/output/07/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out07], else: [switch.turn_off: out07] }
+    - topic: ${mqtt_prefix}/output/08/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out08], else: [switch.turn_off: out08] }
+    - topic: ${mqtt_prefix}/output/09/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out09], else: [switch.turn_off: out09] }
+    - topic: ${mqtt_prefix}/output/10/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out10], else: [switch.turn_off: out10] }
+    - topic: ${mqtt_prefix}/output/11/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out11], else: [switch.turn_off: out11] }
+    - topic: ${mqtt_prefix}/output/12/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out12], else: [switch.turn_off: out12] }
+    - topic: ${mqtt_prefix}/output/13/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out13], else: [switch.turn_off: out13] }
+    - topic: ${mqtt_prefix}/output/14/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out14], else: [switch.turn_off: out14] }
+    - topic: ${mqtt_prefix}/output/15/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out15], else: [switch.turn_off: out15] }
+    - topic: ${mqtt_prefix}/output/16/set
+      then:
+        - if: { condition: { lambda: 'return (payload == "ON" || payload == "on" || payload == "1");' }, then: [switch.turn_on: out16], else: [switch.turn_off: out16] }
+
+    # RS485 Frame senden
+    - topic: ${mqtt_prefix}/rs485/button/set
+      then:
+        # - switch.turn_on: rs485_button
+
+    # IO40/15/48/47 - Modus per MQTT
+    - topic: ${mqtt_prefix}/config/io40/mode/set
+      then:
+        - select.set:
+            id: io40_mode_select
+            option: !lambda |-
+              std::string s(payload);
+              if (s == "Binary" || s == "binary") return std::string("Binary");
+              if (s == "DHT22"  || s == "dht22")  return std::string("DHT22");
+              if (s == "Dallas" || s == "dallas") return std::string("Dallas");
+              return id(io40_mode_select).state.c_str();
+
+    - topic: ${mqtt_prefix}/config/io15/mode/set
+      then:
+        - select.set:
+            id: io15_mode_select
+            option: !lambda |-
+              std::string s(payload);
+              if (s == "Binary" || s == "binary") return std::string("Binary");
+              if (s == "DHT22"  || s == "dht22")  return std::string("DHT22");
+              if (s == "Dallas" || s == "dallas") return std::string("Dallas");
+              return id(io15_mode_select).state.c_str();
+
+    - topic: ${mqtt_prefix}/config/io48/mode/set
+      then:
+        - select.set:
+            id: io48_mode_select
+            option: !lambda |-
+              std::string s(payload);
+              if (s == "Binary" || s == "binary") return std::string("Binary");
+              if (s == "DHT22"  || s == "dht22")  return std::string("DHT22");
+              if (s == "Dallas" || s == "dallas") return std::string("Dallas");
+              return id(io48_mode_select).state.c_str();
+
+    - topic: ${mqtt_prefix}/config/io47/mode/set
+      then:
+        - select.set:
+            id: io47_mode_select
+            option: !lambda |-
+              std::string s(payload);
+              if (s == "Binary" || s == "binary") return std::string("Binary");
+              if (s == "DHT22"  || s == "dht22")  return std::string("DHT22");
+              if (s == "Dallas" || s == "dallas") return std::string("Dallas");
+              return id(io47_mode_select).state.c_str();
+
+    # Display Page 1: Homescreen Texte per MQTT setzen
+    - topic: ${mqtt_prefix}/display/home/line1/set
+      then:
+        - lambda: 'id(home_line1) = std::string(payload);'
+        - mqtt.publish:
+            topic: ${mqtt_prefix}/display/home/line1
+            payload: !lambda 'return id(home_line1).c_str();'
+            retain: true
+
+        - mqtt.publish:
+            topic: ${mqtt_prefix}/display/home/line2
+            payload: !lambda 'return id(home_line2).c_str();'
+            retain: true
+
+        - mqtt.publish:
+            topic: ${mqtt_prefix}/display/home/line3
+            payload: !lambda 'return id(home_line3).c_str();'
+            retain: true
+
+        - mqtt.publish:
+            topic: ${mqtt_prefix}/display/home/line4
+            payload: !lambda 'return id(home_line4).c_str();'
+            retain: true
+
+
+ethernet:
+  type: W5500
+  clk_pin: GPIO42
+  mosi_pin: GPIO43
+  miso_pin: GPIO44
+  cs_pin: GPIO41
+  interrupt_pin: GPIO2
+  reset_pin: GPIO1
+
+# ===================== I2C / IO-Expander =====================
+i2c:
+  - id: bus_a
+    sda: 38
+    scl: 39
+    scan: true
+    frequency: 400kHz
+
+pcf8574:
+  - id: pcf8574_hub_out_1
+    i2c_id: bus_a
+    address: 0x25
+    pcf8575: true
+
+  - id: pcf8574_hub_in_1
+    i2c_id: bus_a
+    address: 0x24
+    pcf8575: true
+
+# ===================== UART / RS485-Button =====================
+uart:
+  - id: uart_1
+    baud_rate: 9600
+    debug:
+      direction: BOTH
+      dummy_receiver: true
+      after:
+        timeout: 10ms
+    tx_pin: 18
+    rx_pin: 8
+
+switch:
+  # - platform: uart
+  #   id: rs485_button
+  #   name: "RS485 Button"
+  #   uart_id: uart_1
+  #   data: [0x11, 0x22, 0x33, 0x44, 0x55]
+  #   on_turn_on:
+  #     - mqtt.publish:
+  #       topic: ${mqtt_prefix}/rs485/button/state
+  #       payload: "TRIGGERED"
+  #     - delay: 50ms
+  #     - switch.turn_off: rs485_button
+  - platform: template
+    id: cfg_inv_out01
+    name: "Config Invert Output 01"
+    entity_category: config
+    restore_mode: RESTORE_DEFAULT_ON
+    lambda: 'return id(out01_inv);'
+    turn_on_action:
+      - lambda: 'id(out01_inv)=true;'
+      - mqtt.publish: 
+          topic: ${mqtt_prefix}/config/output/01/invert
+          payload: "Inverted"
+          retain: true
+    turn_off_action:
+      - lambda: 'id(out01_inv)=false;'
+      - mqtt.publish: 
+          topic: ${mqtt_prefix}/config/output/01/invert
+          payload: "Normal"
+          retain: true
+  - platform: template
+    id: out01
+    name: "b16m-output01"
+    lambda: 'return id(out01_state);'
+    turn_on_action:
+      - lambda: |-
+          id(out01_state) = true;
+          const bool phys_on = id(out01_inv) ? false : true;
+          if (phys_on) id(out01_hw).turn_on(); else id(out01_hw).turn_off();
+      - mqtt.publish: 
+          topic: ${mqtt_prefix}/output/01/state
+          payload: "ON"
+          retain: true
+    turn_off_action:
+      - lambda: |-
+          id(out01_state) = false;
+          const bool phys_on = id(out01_inv) ? true : false;
+          if (phys_on) id(out01_hw).turn_on(); else id(out01_hw).turn_off();
+      - mqtt.publish: 
+          topic: ${mqtt_prefix}/output/01/state
+          payload: "OFF"
+          retain: true 
+
+  # ... identisch für out02..out16 mit jeweiligem *_inv, *_state, *_hw und Topic
+  - platform: template
+    id: cfg_inv_in01
+    name: "Config Invert Input 01"
+    entity_category: config
+    restore_mode: RESTORE_DEFAULT_ON
+    lambda: 'return id(in01_inv);'
+    turn_on_action:
+      - lambda: 'id(in01_inv)=true;'
+      - mqtt.publish: 
+          topic: ${mqtt_prefix}/config/input/01/invert
+          payload: "Inverted"
+          retain: true
+    turn_off_action:
+      - lambda: 'id(in01_inv)=false;'
+      - mqtt.publish: 
+          topic: ${mqtt_prefix}/config/input/01/invert
+          payload: "Normal"
+          retain: true
+
+# ===================== GLOBALE FLAGS & STATES =====================
+globals:
+  # --- HA/MQTT Status ---
+  - { id: ha_connected, type: bool, restore_value: false, initial_value: 'false' }
+  - { id: mqtt_is_connected, type: bool, restore_value: false, initial_value: 'false' }
+
+  # --- Display Pages ---
+  - { id: current_page, type: int, restore_value: false, initial_value: "1" }
+
+  # Invert-Flags Outputs (default true wie bisher)
+  - { id: out01_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out02_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out03_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out04_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out05_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out06_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out07_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out08_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out09_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out10_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out11_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out12_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out13_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out14_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out15_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: out16_inv, type: bool, restore_value: true, initial_value: 'true' }
+
+  # Output-Logikzustände (persistieren)
+  - { id: out01_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out02_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out03_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out04_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out05_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out06_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out07_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out08_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out09_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out10_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out11_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out12_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out13_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out14_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out15_state, type: bool, restore_value: true, initial_value: 'false' }
+  - { id: out16_state, type: bool, restore_value: true, initial_value: 'false' }
+
+  # Invert-Flags Inputs (default true)
+  - { id: in01_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in02_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in03_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in04_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in05_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in06_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in07_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in08_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in09_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in10_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in11_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in12_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in13_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in14_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in15_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: in16_inv, type: bool, restore_value: true, initial_value: 'true' }
+
+  # Umschalt-Pins: Modus und Invert (Binary)
+  - { id: io40_mode_val, type: int, restore_value: true, initial_value: '0' } # 0=Binary,1=DHT22,2=Dallas
+  - { id: io15_mode_val, type: int, restore_value: true, initial_value: '0' }
+  - { id: io48_mode_val, type: int, restore_value: true, initial_value: '0' }
+  - { id: io47_mode_val, type: int, restore_value: true, initial_value: '0' }
+  - { id: io40_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: io15_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: io48_inv, type: bool, restore_value: true, initial_value: 'true' }
+  - { id: io47_inv, type: bool, restore_value: true, initial_value: 'true' }
+
+  # Analoge Kanäle: Intervalle [s]
+  - { id: a0_interval_s, type: float, restore_value: true, initial_value: '10' }
+  - { id: a1_interval_s, type: float, restore_value: true, initial_value: '10' }
+  - { id: a2_interval_s, type: float, restore_value: true, initial_value: '10' }
+  - { id: a3_interval_s, type: float, restore_value: true, initial_value: '10' }
+
+  # Analoge Kanäle: letzte Publish-Zeitpunkte
+  - { id: a0_last_ms, type: uint32_t, restore_value: false, initial_value: '0' }
+  - { id: a1_last_ms, type: uint32_t, restore_value: false, initial_value: '0' }
+  - { id: a2_last_ms, type: uint32_t, restore_value: false, initial_value: '0' }
+  - { id: a3_last_ms, type: uint32_t, restore_value: false, initial_value: '0' }
+
+  # Mappingpunkte (x=Eingabe, y=Ziel)
+  # A0/A1: x in Volt
+  - { id: a0_map_x1, type: float, restore_value: true, initial_value: '0' }
+  - { id: a0_map_y1, type: float, restore_value: true, initial_value: '0' }
+  - { id: a0_map_x2, type: float, restore_value: true, initial_value: '10' }
+  - { id: a0_map_y2, type: float, restore_value: true, initial_value: '10' }
+  - { id: a1_map_x1, type: float, restore_value: true, initial_value: '0' }
+  - { id: a1_map_y1, type: float, restore_value: true, initial_value: '0' }
+  - { id: a1_map_x2, type: float, restore_value: true, initial_value: '10' }
+  - { id: a1_map_y2, type: float, restore_value: true, initial_value: '10' }
+
+  # A2/A3: x in mA (intern V->mA via 1V=4mA)
+  - { id: a2_map_x1, type: float, restore_value: true, initial_value: '0' }
+  - { id: a2_map_y1, type: float, restore_value: true, initial_value: '0' }
+  - { id: a2_map_x2, type: float, restore_value: true, initial_value: '20' }
+  - { id: a2_map_y2, type: float, restore_value: true, initial_value: '20' }
+  - { id: a3_map_x1, type: float, restore_value: true, initial_value: '0' }
+  - { id: a3_map_y1, type: float, restore_value: true, initial_value: '0' }
+  - { id: a3_map_x2, type: float, restore_value: true, initial_value: '20' }
+  - { id: a3_map_y2, type: float, restore_value: true, initial_value: '20' }
+
+  # Display: Page-Steuerung
+  - { id: page_index, type: int, restore_value: false, initial_value: '1' }
+  - { id: last_page_ms, type: uint32_t, restore_value: false, initial_value: '0' }
+
+# ---------- MQTT (eigene Topics + Retained) ----------
+# mqtt:
+#   id: mqtt_client
+#   broker: !secret mqtt_broker
+#   username: !secret mqtt_user
+#   password: !secret mqtt_password
+#   topic_prefix: ${mqtt_prefix}
+#   discovery: false
+#   reboot_timeout: 0s
+
+#   # Steuer-Themen (Set) und Konfig-Nachladen (Homescreen-Texte)
+#   on_message:
+#     # ---- Outputs 01..16 schalten (ON/OFF/1/0) ----
+#     - topic: ${mqtt_prefix}/output/01/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out01 ], else: [ switch.turn_off: out01 ] } }
+#     - topic: ${mqtt_prefix}/output/02/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out02 ], else: [ switch.turn_off: out02 ] } }
+#     - topic: ${mqtt_prefix}/output/03/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out03 ], else: [ switch.turn_off: out03 ] } }
+#     - topic: ${mqtt_prefix}/output/04/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out04 ], else: [ switch.turn_off: out04 ] } }
+#     - topic: ${mqtt_prefix}/output/05/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out05 ], else: [ switch.turn_off: out05 ] } }
+#     - topic: ${mqtt_prefix}/output/06/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out06 ], else: [ switch.turn_off: out06 ] } }
+#     - topic: ${mqtt_prefix}/output/07/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out07 ], else: [ switch.turn_off: out07 ] } }
+#     - topic: ${mqtt_prefix}/output/08/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out08 ], else: [ switch.turn_off: out08 ] } }
+#     - topic: ${mqtt_prefix}/output/09/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out09 ], else: [ switch.turn_off: out09 ] } }
+#     - topic: ${mqtt_prefix}/output/10/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out10 ], else: [ switch.turn_off: out10 ] } }
+#     - topic: ${mqtt_prefix}/output/11/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out11 ], else: [ switch.turn_off: out11 ] } }
+#     - topic: ${mqtt_prefix}/output/12/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out12 ], else: [ switch.turn_off: out12 ] } }
+#     - topic: ${mqtt_prefix}/output/13/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out13 ], else: [ switch.turn_off: out13 ] } }
+#     - topic: ${mqtt_prefix}/output/14/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out14 ], else: [ switch.turn_off: out14 ] } }
+#     - topic: ${mqtt_prefix}/output/15/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out15 ], else: [ switch.turn_off: out15 ] } }
+#     - topic: ${mqtt_prefix}/output/16/set
+#       then: { if: { condition: { lambda: 'return payload == "ON" || payload == "on" || payload == "1";' }, then: [ switch.turn_on: out16 ], else: [ switch.turn_off: out16 ] } }
+
+#     # RS485 Trigger
+#     - topic: ${mqtt_prefix}/rs485/button/set
+#       then: [ switch.turn_on: rs485_button ]
+
+#     - topic: ${mqtt_prefix}/config/io40/mode/set
+#       then:
+#         - select.set:
+#             id: io40_mode_select
+#             option: !lambda |-
+#               std::string s(payload);
+#               if (s=="Binary"||s=="binary") return std::string("Binary");
+#               if (s=="DHT22" ||s=="dht22")  return std::string("DHT22");
+#               if (s=="Dallas"||s=="dallas") return std::string("Dallas");
+#               return id(io40_mode_select).state.c_str();
+
+#     - topic: ${mqtt_prefix}/config/io15/mode/set
+#       then:
+#         - select.set:
+#             id: io15_mode_select
+#             option: !lambda |-
+#               std::string s(payload);
+#               if (s=="Binary"||s=="binary") return std::string("Binary");
+#               if (s=="DHT22" ||s=="dht22")  return std::string("DHT22");
+#               if (s=="Dallas"||s=="dallas") return std::string("Dallas");
+#               return id(io15_mode_select).state.c_str();
+
+#     - topic: ${mqtt_prefix}/config/io48/mode/set
+#       then:
+#         - select.set:
+#             id: io48_mode_select
+#             option: !lambda |-
+#               std::string s(payload);
+#               if (s=="Binary"||s=="binary") return std::string("Binary");
+#               if (s=="DHT22" ||s=="dht22")  return std::string("DHT22");
+#               if (s=="Dallas"||s=="dallas") return std::string("Dallas");
+#               return id(io48_mode_select).state.c_str();
+
+#     - topic: ${mqtt_prefix}/config/io47/mode/set
+#       then:
+#         - select.set:
+#             id: io47_mode_select
+#             option: !lambda |-
+#               std::string s(payload);
+#               if (s=="Binary"||s=="binary") return std::string("Binary");
+#               if (s=="DHT22" ||s=="dht22")  return std::string("DHT22");
+#               if (s=="Dallas"||s=="dallas") return std::string("Dallas");
+#               return id(io47_mode_select).state.c_str();
+#     # Homescreen-Text per MQTT setzen (retained)
+#     - topic: ${mqtt_prefix}/display/home/line1/set
+#       then:
+#         - text_sensor.template.publish:
+#             id: home_line1
+#             state: !lambda 'return std::string(payload);'
+#         - mqtt.publish:
+#             topic: ${mqtt_prefix}/display/home/line1
+#             payload: !lambda 'return std::string(payload);'
+#             retain: true
+#     - topic: ${mqtt_prefix}/display/home/line2/set
+#       then:
+#       - text_sensor.template.publish:
+#           id: home_line3
+#           state: !lambda 'return std::string(payload);'
+
+#       - mqtt.publish:
+#           topic: ${mqtt_prefix}/display/home/line3
+#           payload: !lambda 'return std::string(payload);'
+#           retain: true
+
+#       - text_sensor.template.publish:
+#           id: home_line4
+#           state: !lambda 'return std::string(payload);'
+
+#       - mqtt.publish:
+#           topic: ${mqtt_prefix}/display/home/line4
+#           payload: !lambda 'return std::string(payload);'
+#           retain: true
+
+# # ---------- Netzwerkschnittstelle ----------
+# ethernet:
+#   type: W5500
+#   clk_pin: GPIO42
+#   mosi_pin: GPIO43
+#   miso_pin: GPIO44
+#   cs_pin: GPIO41
+#   interrupt_pin: GPIO2
+#   reset_pin: GPIO1
+
+# # ---------- I2C ----------
+# i2c:
+#   - id: bus_a
+#     sda: 38
+#     scl: 39
+#     scan: true
+#     frequency: 400kHz
+
+# # ---------- PCF8575 Hubs ----------
+# pcf8574:
+#   - id: pcf8574_hub_out_1
+#     i2c_id: bus_a
+#     address: 0x25
+#     pcf8575: true
+#   - id: pcf8574_hub_in_1
+#     i2c_id: bus_a
+#     address: 0x24
+#     pcf8575: true
+
+# # ---------- UART / RS485 Button ----------
+# uart:
+#   - id: uart_1
+#     baud_rate: 9600
+#     debug:
+#       direction: BOTH
+#       dummy_receiver: true
+#       after: { timeout: 10ms }
+#     tx_pin: 18
+    # rx_pin: 8
+
+# switch:
+#   - platform: uart
+#     id: rs485_button
+#     uart_id: uart_1
+#     name: "RS485 Button"
+#     data: [0x11, 0x22, 0x33, 0x44, 0x55]
+#     on_turn_on:
+#       - mqtt.publish:
+#           topic: ${mqtt_prefix}/rs485/button/state
+#           payload: "TRIGGERED" 
+#       - delay: 50ms
+#       - switch.turn_off: rs485_button
+
+
+
+# ---------- SELECTS: Moduswahl IO40/15/48/47 ----------
+select:
+  - platform: template
+    id: io40_mode_select
+    name: "IO40 Modus"
+    optimistic: true
+    options: [Binary, DHT22, Dallas]
+    initial_option: "Binary"  # Fester Wert, KEIN Lambda!
+    set_action:
+      - lambda: |-
+          if (x=="DHT22") id(io40_mode_val)=1;
+          else if (x=="Dallas") id(io40_mode_val)=2;
+          else id(io40_mode_val)=0;
+      - mqtt.publish: 
+          topic: ${mqtt_prefix}/config/io40/mode
+          payload: !lambda 'return id(io40_mode_select).state.c_str();'
+          retain: true 
+
+  - platform: template
+    id: io15_mode_select
+    name: "IO15 Modus"
+    optimistic: true
+    options: [Binary, DHT22, Dallas]
+    initial_option: "Binary"  # Fester Wert, KEIN Lambda!
+    set_action:
+      - lambda: |-
+          if (x=="DHT22") id(io15_mode_val)=1;
+          else if (x=="Dallas") id(io15_mode_val)=2;
+          else id(io15_mode_val)=0;
+      - mqtt.publish: 
+          topic: ${mqtt_prefix}/config/io15/mode
+          payload: !lambda 'return id(io15_mode_select).state.c_str();'
+          retain: true 
+
+  - platform: template
+    id: io48_mode_select
+    name: "IO48 Modus"
+    optimistic: true
+    options: [Binary, DHT22, Dallas]
+    initial_option: "Binary"  # Fester Wert, KEIN Lambda!
+    set_action:
+      - lambda: |-
+          if (x=="DHT22") id(io48_mode_val)=1;
+          else if (x=="Dallas") id(io48_mode_val)=2;
+          else id(io48_mode_val)=0;
+      - mqtt.publish: 
+          topic: ${mqtt_prefix}/config/io48/mode
+          payload: !lambda 'return id(io48_mode_select).state.c_str();' 
+          retain: true 
+
+  - platform: template
+    id: io47_mode_select
+    name: "IO47 Modus"
+    optimistic: true
+    options: [Binary, DHT22, Dallas]
+    initial_option: "Binary"  # Fester Wert, KEIN Lambda!
+    set_action:
+      - lambda: |-
+          if (x=="DHT22") id(io47_mode_val)=1;
+          else if (x=="Dallas") id(io47_mode_val)=2;
+          else id(io47_mode_val)=0;
+      - mqtt.publish: 
+          topic: ${mqtt_prefix}/config/io47/mode
+          payload: !lambda 'return id(io47_mode_select).state.c_str();'
+          retain: true 
+
+
+  # ... (Analog für cfg_inv_out02..16 und cfg_inv_in02..16 sowie cfg_inv_io40/15/48/47)
+
+# ---------- OUTPUT-Hardware (nicht invertiert) ----------
+output:
+  - platform: gpio
+    id: out01_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 0, mode: OUTPUT }
+  - platform: gpio
+    id: out02_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 1, mode: OUTPUT }
+  - platform: gpio
+    id: out03_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 2, mode: OUTPUT }
+  - platform: gpio
+    id: out04_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 3, mode: OUTPUT }
+  - platform: gpio
+    id: out05_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 4, mode: OUTPUT }
+  - platform: gpio
+    id: out06_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 5, mode: OUTPUT }
+  - platform: gpio
+    id: out07_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 6, mode: OUTPUT }
+  - platform: gpio
+    id: out08_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 7, mode: OUTPUT }
+  - platform: gpio
+    id: out09_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 8, mode: OUTPUT }
+  - platform: gpio
+    id: out10_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 9, mode: OUTPUT }
+  - platform: gpio
+    id: out11_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 10, mode: OUTPUT }
+  - platform: gpio
+    id: out12_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 11, mode: OUTPUT }
+  - platform: gpio
+    id: out13_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 12, mode: OUTPUT }
+  - platform: gpio
+    id: out14_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 13, mode: OUTPUT }
+  - platform: gpio
+    id: out15_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 14, mode: OUTPUT }
+  - platform: gpio
+    id: out16_hw
+    pin: { pcf8574: pcf8574_hub_out_1, number: 15, mode: OUTPUT }
+
+
+# ---------- Dallas 1-Wire ----------
+
+one_wire:
+  - platform: gpio
+    id: ow_bus_40
+    pin: 40
+  - platform: gpio
+    id: ow_bus_15
+    pin: 15
+  - platform: gpio  
+    id: ow_bus_48
+    pin: 48
+  - platform: gpio
+    id: ow_bus_47
+    pin: 47
+
+
+# ---------- EINGÄNGE (sichtbar als Template + HW intern, invertierbar) ----------
+binary_sensor:
+  # Sichtbare logische Inputs (Template)
+  - platform: gpio
+    id: page_button
+    name: "Display Page Button"
+    pin:
+      number: 0
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    on_press:
+      - lambda: |-
+          id(page_index) = (id(page_index) % 4) + 1;
+          id(last_page_ms) = millis();
+      - script.execute: show_current_page
+
+  - platform: template
+    id: in01
+    name: "b16m-input01"
+  - platform: template
+    id: in02
+    name: "b16m-input02"
+  - platform: template
+    id: in03
+    name: "b16m-input03"
+  - platform: template
+    id: in04
+    name: "b16m-input04"
+  - platform: template
+    id: in05
+    name: "b16m-input05"
+  - platform: template
+    id: in06
+    name: "b16m-input06"
+  - platform: template
+    id: in07
+    name: "b16m-input07"
+  - platform: template
+    id: in08
+    name: "b16m-input08"
+  - platform: template
+    id: in09
+    name: "b16m-input09"
+  - platform: template
+    id: in10
+    name: "b16m-input10"
+  - platform: template
+    id: in11
+    name: "b16m-input11"
+  - platform: template
+    id: in12
+    name: "b16m-input12"
+  - platform: template
+    id: in13
+    name: "b16m-input13"
+  - platform: template
+    id: in14
+    name: "b16m-input14"
+  - platform: template
+    id: in15
+    name: "b16m-input15"
+  - platform: template
+    id: in16
+    name: "b16m-input16"
+
+  # Interne HW Inputs (PCF8575) – nicht invertiert; Publish logischer Zustand
+  - platform: gpio
+    id: in01_hw
+    internal: true
+    pin: { pcf8574: pcf8574_hub_in_1, number: 0, mode: INPUT }
+    on_state:
+      - lambda: |-
+          bool logical = id(in01_inv) ? !x : x;
+          id(in01).publish_state(logical);
+      - mqtt.publish: 
+          topic: ${mqtt_prefix}/input/01/state
+          payload: !lambda 'return (id(in01_inv)?(!x):x) ? "ON":"OFF";'
+          retain: true
+  # ... identisch für in02_hw..in16_hw (Nummer und *_inv/Topic anpassen)
+  - platform: template
+    id: w1_io40
+    name: "b16m-W1-io40"
+  - platform: template
+    id: w1_io15
+    name: "b16m-W1-io15"
+  - platform: template
+    id: w1_io48
+    name: "b16m-W1-io48"
+  - platform: template
+    id: w1_io47
+    name: "b16m-W1-io47"
+
+  # HW Binary (intern), Publish nur bei Modus Binary
+  - platform: gpio
+    id: io40_bin_hw
+    internal: true
+    pin: { number: 40, mode: INPUT }
+    on_state:
+      - if:
+          condition: { lambda: 'return id(io40_mode_val)==0;' }
+          then:
+            - lambda: |-
+                bool logical = id(io40_inv) ? !x : x;
+                id(w1_io40).publish_state(logical);
+            - mqtt.publish: 
+                topic: ${mqtt_prefix}/w1/io40/state 
+                payload: !lambda 'return (id(io40_inv)?(!x):x) ? "ON":"OFF";'
+                retain: true
+
+  - platform: gpio
+    id: io15_bin_hw
+    internal: true
+    pin: { number: 15, mode: INPUT }
+    on_state:
+      - if:
+          condition: { lambda: 'return id(io15_mode_val)==0;' }
+          then:
+            - lambda: |-
+                bool logical = id(io15_inv) ? !x : x;
+                id(w1_io15).publish_state(logical);
+            - mqtt.publish: 
+                topic: ${mqtt_prefix}/w1/io15/state
+                payload: !lambda 'return (id(io15_inv)?(!x):x) ? "ON":"OFF";'
+                retain: true 
+
+  - platform: gpio
+    id: io48_bin_hw
+    internal: true
+    pin: { number: 48, mode: INPUT }
+    on_state:
+      - if:
+          condition: { lambda: 'return id(io48_mode_val)==0;' }
+          then:
+            - lambda: |-
+                bool logical = id(io48_inv) ? !x : x;
+                id(w1_io48).publish_state(logical);
+            - mqtt.publish: 
+                topic: ${mqtt_prefix}/w1/io48/state
+                payload: !lambda 'return (id(io48_inv)?(!x):x) ? "ON":"OFF";'
+                retain: true
+
+  - platform: gpio
+    id: io47_bin_hw
+    internal: true
+    pin: { number: 47, mode: INPUT }
+    on_state:
+      - if:
+          condition: { lambda: 'return id(io47_mode_val)==0;' }
+          then:
+            - lambda: |-
+                bool logical = id(io47_inv) ? !x : x;
+                id(w1_io47).publish_state(logical);
+            - mqtt.publish: 
+                topic: ${mqtt_prefix}/w1/io47/state
+                payload: !lambda 'return (id(io47_inv)?(!x):x) ? "ON":"OFF";'
+                retain: true
+
+# ---------- Umschaltbare Pins (Binary/DHT/Dallas) ----------
+# Sichtbare Binarys (für Binary-Modus)
+# binary_sensor:
+
+# ---------- DHT22 (nur aktiv bei Modus=DHT22, manuell getriggert) ----------
+sensor:
+  - platform: dht
+    id: dht_io40
+    pin: 40
+    model: DHT22
+    update_interval: never
+    temperature:
+      id: dht_io40_t
+      internal: true
+      on_value:
+        - if:
+            condition: { lambda: 'return id(io40_mode_val)==1;' }
+            then:
+              - mqtt.publish_json:
+                  topic: ${mqtt_prefix}/w1/io40/dht22
+                  payload: |-
+                    root["temperature"]=x; root["unit"]="°C";
+                  retain: true
+    humidity:
+      id: dht_io40_h
+      internal: true
+      on_value:
+        - if:
+            condition: { lambda: 'return id(io40_mode_val)==1;' }
+            then:
+              - mqtt.publish_json:
+                  topic: ${mqtt_prefix}/w1/io40/dht22
+                  payload: |-
+                    root["humidity"]=x; root["unit_h"]="%";
+                  retain: true
+
+  - platform: dht
+    id: dht_io15
+    pin: 15
+    model: DHT22
+    update_interval: never
+    temperature:
+      id: dht_io15_t
+      internal: true
+      on_value:
+        - if:
+            condition:
+              lambda: 'return id(io15_mode_val)==1;'
+            then:
+              - mqtt.publish_json:
+                  topic: ${mqtt_prefix}/w1/io15/dht22
+                  payload: |-
+                    root["temperature"]=x; root["unit"]="°C";
+                  retain: true
+    humidity:
+      id: dht_io15_h
+      internal: true
+      on_value:
+        - if:
+            condition:
+              lambda: 'return id(io15_mode_val)==1;'
+            then:
+              - mqtt.publish_json:
+                  topic: ${mqtt_prefix}/w1/io15/dht22
+                  payload: |-
+                    root["humidity"]=x; root["unit_h"]="%";
+                  retain: true
+
+  - platform: dht
+    id: dht_io48
+    pin: 48
+    model: DHT22
+    update_interval: never
+    temperature:
+      id: dht_io48_t
+      internal: true
+      on_value:
+        - if:
+            condition:
+              lambda: 'return id(io48_mode_val)==1;'
+            then:
+              - mqtt.publish_json:
+                  topic: ${mqtt_prefix}/w1/io48/dht22
+                  payload: |-
+                    root["temperature"]=x; root["unit"]="°C";
+                  retain: true
+    humidity:
+      id: dht_io48_h
+      internal: true
+      on_value:
+        - if:
+            condition:
+              lambda: 'return id(io48_mode_val)==1;'
+            then:
+              - mqtt.publish_json:
+                  topic: ${mqtt_prefix}/w1/io48/dht22
+                  payload: |-
+                    root["humidity"]=x; root["unit_h"]="%";
+                  retain: true
+
+  - platform: dht
+    id: dht_io47
+    pin: 47
+    model: DHT22
+    update_interval: never
+    temperature:
+      id: dht_io47_t
+      internal: true
+      on_value:
+        - if:
+            condition:
+              lambda: 'return id(io47_mode_val)==1;'
+            then:
+              - mqtt.publish_json:
+                  topic: ${mqtt_prefix}/w1/io47/dht22
+                  payload: |-
+                    root["temperature"]=x; root["unit"]="°C";
+                  retain: true
+    humidity:
+      id: dht_io47_h
+      internal: true
+      on_value:
+        - if:
+            condition:
+              lambda: 'return id(io47_mode_val)==1;'
+            then:
+              - mqtt.publish_json:
+                  topic: ${mqtt_prefix}/w1/io47/dht22
+                  payload: |-
+                    root["humidity"]=x; root["unit_h"]="%";
+                  retain: true
+
+  - platform: dallas_temp
+    id: dallas_io40
+    one_wire_id: ow_bus_40
+    internal: true
+    update_interval: never
+    on_value:
+      - if:
+          condition: { lambda: 'return id(io40_mode_val)==2;' }
+          then:
+            - mqtt.publish_json:
+                topic: ${mqtt_prefix}/w1/io40/dallas
+                payload: |-
+                  root["temperature"]=x; root["unit"]="°C";
+                retain: true
+  - platform: dallas_temp
+    id: dallas_io15
+    one_wire_id: ow_bus_15
+    internal: true
+    update_interval: never
+    on_value:
+      - if:
+          condition: { lambda: 'return id(io15_mode_val)==2;' }
+          then:
+            - mqtt.publish_json:
+                topic: ${mqtt_prefix}/w1/io15/dallas
+                payload: |-
+                  root["temperature"]=x; root["unit"]="°C";
+                retain: true
+  - platform: dallas_temp
+    id: dallas_io48
+    one_wire_id: ow_bus_48
+    internal: true
+    update_interval: never
+    on_value:
+      - if:
+          condition: { lambda: 'return id(io48_mode_val)==2;' }
+          then:
+            - mqtt.publish_json:
+                topic: ${mqtt_prefix}/w1/io48/dallas
+                payload: |-
+                  root["temperature"]=x; root["unit"]="°C";
+                retain: true
+  - platform: dallas_temp
+    id: dallas_io47
+    one_wire_id: ow_bus_47
+    internal: true
+    update_interval: never
+    on_value:
+      - if:
+          condition: { lambda: 'return id(io47_mode_val)==2;' }
+          then:
+            - mqtt.publish_json:
+                topic: ${mqtt_prefix}/w1/io47/dallas
+                payload: |-
+                  root["temperature"]=x; root["unit"]="°C";
+                retain: true
+  # A0 (Volt)
+  - platform: ads1115
+    id: ads_a0
+    multiplexer: A0_GND
+    gain: 6.144
+    resolution: 16_BITS
+    update_interval: 1s
+    on_value:
+      - if:
+          condition:
+            lambda: |-
+              uint32_t now=millis();
+              uint32_t iv=(uint32_t)(id(a0_interval_s)*1000.0f);
+              if (iv<200) iv=200;
+              return (now - id(a0_last_ms)) >= iv;
+          then:
+            - lambda: 'id(a0_last_ms)=millis();'
+            - mqtt.publish:
+                topic: ${mqtt_prefix}/analog/a0/raw_v
+                payload: !lambda 'char b[24]; snprintf(b,sizeof(b),"%.5f", x); return std::string(b);'
+                retain: true
+            - mqtt.publish:
+                topic: ${mqtt_prefix}/analog/a0
+                payload: !lambda |-
+                  float v=x; float dx=id(a0_map_x2)-id(a0_map_x1);
+                  float y=v;
+                  if (fabsf(dx)>1e-9f) y = id(a0_map_y1) + (v - id(a0_map_x1)) * (id(a0_map_y2)-id(a0_map_y1)) / dx;
+                  char b[24]; snprintf(b,sizeof(b),"%.5f", y); return std::string(b);
+                retain: true
+
+  # A1 (Volt)
+  - platform: ads1115
+    id: ads_a1
+    multiplexer: A1_GND
+    gain: 6.144
+    resolution: 16_BITS
+    update_interval: 1s
+    on_value:
+      - if:
+          condition:
+            lambda: |-
+              uint32_t now=millis();
+              uint32_t iv=(uint32_t)(id(a1_interval_s)*1000.0f);
+              if (iv<200) iv=200;
+              return (now - id(a1_last_ms)) >= iv;
+          then:
+            - lambda: 'id(a1_last_ms)=millis();'
+            - mqtt.publish:
+                topic: ${mqtt_prefix}/analog/a1/raw_v
+                payload: !lambda 'char b[24]; snprintf(b,sizeof(b),"%.5f", x); return std::string(b);'
+                retain: true
+            - mqtt.publish:
+                topic: ${mqtt_prefix}/analog/a1
+                payload: !lambda |-
+                  float v=x; float dx=id(a1_map_x2)-id(a1_map_x1);
+                  float y=v;
+                  if (fabsf(dx)>1e-9f) y = id(a1_map_y1) + (v - id(a1_map_x1)) * (id(a1_map_y2)-id(a1_map_y1)) / dx;
+                  char b[24]; snprintf(b,sizeof(b),"%.5f", y); return std::string(b);
+                retain: true
+
+  # A2 (Strom: V -> mA, dann Mapping auf mA)
+  - platform: ads1115
+    id: ads_a2
+    multiplexer: A2_GND
+    gain: 6.144
+    resolution: 16_BITS
+    update_interval: 1s
+    on_value:
+      - if:
+          condition:
+            lambda: |-
+              uint32_t now=millis();
+              uint32_t iv=(uint32_t)(id(a2_interval_s)*1000.0f);
+              if (iv<200) iv=200;
+              return (now - id(a2_last_ms)) >= iv;
+          then:
+            - lambda: 'id(a2_last_ms)=millis();'
+            - mqtt.publish:
+                topic: ${mqtt_prefix}/analog/a2/raw_v
+                payload: !lambda 'char b[24]; snprintf(b,sizeof(b),"%.5f", x); return std::string(b);'
+                retain: true
+            - mqtt.publish:
+                topic: ${mqtt_prefix}/analog/a2/current_ma
+                payload: !lambda |-
+                  float ma = x * 4.0f; char b[24]; snprintf(b,sizeof(b),"%.5f", ma); return std::string(b);
+                retain: true
+            - mqtt.publish:
+                topic: ${mqtt_prefix}/analog/a2
+                payload: !lambda |-
+                  float ma = x * 4.0f; float dx=id(a2_map_x2)-id(a2_map_x1);
+                  float y = ma;
+                  if (fabsf(dx)>1e-9f) y = id(a2_map_y1) + (ma - id(a2_map_x1)) * (id(a2_map_y2)-id(a2_map_y1)) / dx;
+                  char b[24]; snprintf(b,sizeof(b),"%.5f", y); return std::string(b);
+                retain: true
+
+  # A3 (Strom)
+  - platform: ads1115
+    id: ads_a3
+    multiplexer: A3_GND
+    gain: 6.144
+    resolution: 16_BITS
+    update_interval: 1s
+    on_value:
+      - if:
+          condition:
+            lambda: |-
+              uint32_t now=millis();
+              uint32_t iv=(uint32_t)(id(a3_interval_s)*1000.0f);
+              if (iv<200) iv=200;
+              return (now - id(a3_last_ms)) >= iv;
+          then:
+            - lambda: 'id(a3_last_ms)=millis();'
+            - mqtt.publish:
+                topic: ${mqtt_prefix}/analog/a3/raw_v
+                payload: !lambda 'char b[24]; snprintf(b,sizeof(b),"%.5f", x); return std::string(b);'
+                retain: true
+            - mqtt.publish:
+                topic: ${mqtt_prefix}/analog/a3/current_ma
+                payload: !lambda |-
+                  float ma = x * 4.0f; char b[24]; snprintf(b,sizeof(b),"%.5f", ma); return std::string(b);
+                retain: true
+            - mqtt.publish:
+                topic: ${mqtt_prefix}/analog/a3
+                payload: !lambda |-
+                  float ma = x * 4.0f; float dx=id(a3_map_x2)-id(a3_map_x1);
+                  float y = ma;
+                  if (fabsf(dx)>1e-9f) y = id(a3_map_y1) + (ma - id(a3_map_x1)) * (id(a3_map_y2)-id(a3_map_y1)) / dx;
+                  char b[24]; snprintf(b,sizeof(b),"%.5f", y); return std::string(b);
+                retain: true
+
+# ---------- Intervall-Trigger für DHT/Dallas ----------
+interval:
+  - interval: 10s
+    then:
+      # IO40
+      - if: { condition: { lambda: 'return id(io40_mode_val)==1;' }, then: [ component.update: dht_io40 ] }
+      - if: { condition: { lambda: 'return id(io40_mode_val)==2;' }, then: [ component.update: dallas_io40 ] }
+      # IO15
+      - if: { condition: { lambda: 'return id(io15_mode_val)==1;' }, then: [ component.update: dht_io15 ] }
+      - if: { condition: { lambda: 'return id(io15_mode_val)==2;' }, then: [ component.update: dallas_io15 ] }
+      # IO48
+      - if: { condition: { lambda: 'return id(io48_mode_val)==1;' }, then: [ component.update: dht_io48 ] }
+      - if: { condition: { lambda: 'return id(io48_mode_val)==2;' }, then: [ component.update: dallas_io48 ] }
+      # IO47
+      - if: { condition: { lambda: 'return id(io47_mode_val)==1;' }, then: [ component.update: dht_io47 ] }
+      - if: { condition: { lambda: 'return id(io47_mode_val)==2;' }, then: [ component.update: dallas_io47 ] }
+  - interval: 1s
+    then:
+      - lambda: |-
+          uint32_t now = millis();
+          if (id(page_index)!=1 && (now - id(last_page_ms) > 60000)) {
+            id(page_index)=1;
+            id(oled).show_page(id(page_home));
+            id(last_page_ms)=now;
+          }
+
+# ---------- ADS1115 + Analog-Mapping ----------
+ads1115:
+  - address: 0x48
+
+
+# ---------- Number-Entities für Analog-Konfig ----------
+number:
+  # A0
+  - platform: template
+    id: a0_interval_num
+    name: "A0 Update-Intervall (s)"
+    entity_category: config
+    min_value: 1
+    max_value: 3600
+    step: 1
+    restore_value: true
+    initial_value: 10
+    set_action:
+      - lambda: 'id(a0_interval_s)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a0/update_interval    
+          payload: !lambda 'char b[16]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a0_map_x1_num
+    name: "A0 Map X1 (V)"
+    entity_category: config
+    min_value: -10
+    max_value: 10
+    step: 0.001
+    restore_value: true
+    initial_value: 0
+    set_action:
+      - lambda: 'id(a0_map_x1)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a0/map/x1    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a0_map_y1_num
+    name: "A0 Map Y1"
+    entity_category: config
+    min_value: -100000
+    max_value: 100000
+    step: 0.001
+    restore_value: true
+    initial_value: 0
+    set_action:
+      - lambda: 'id(a0_map_y1)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a0/map/y1    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a0_map_x2_num
+    name: "A0 Map X2 (V)"
+    entity_category: config
+    min_value: -10
+    max_value: 10
+    step: 0.001
+    restore_value: true
+    initial_value: 10
+    set_action:
+      - lambda: 'id(a0_map_x2)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a0/map/x2    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a0_map_y2_num
+    name: "A0 Map Y2"
+    entity_category: config
+    min_value: -100000
+    max_value: 100000
+    step: 0.001
+    restore_value: true
+    initial_value: 10
+    set_action:
+      - lambda: 'id(a0_map_y2)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a0/map/y2    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true
+  # A1
+  - platform: template
+    id: a1_interval_num
+    name: "A1 Update-Intervall (s)"
+    entity_category: config
+    min_value: 1
+    max_value: 3600
+    step: 1
+    restore_value: true
+    initial_value: 10
+    set_action:
+      - lambda: 'id(a1_interval_s)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a1/update_interval    
+          payload: !lambda 'char b[16]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a1_map_x1_num
+    name: "A1 Map X1 (V)"
+    entity_category: config
+    min_value: -10
+    max_value: 10
+    step: 0.001
+    restore_value: true
+    initial_value: 0
+    set_action:
+      - lambda: 'id(a1_map_x1)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a1/map/x1    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a1_map_y1_num
+    name: "A1 Map Y1"
+    entity_category: config
+    min_value: -100000
+    max_value: 100000
+    step: 0.001
+    restore_value: true
+    initial_value: 0
+    set_action:
+      - lambda: 'id(a1_map_y1)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a1/map/y1    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a1_map_x2_num
+    name: "A1 Map X2 (V)"
+    entity_category: config
+    min_value: -10
+    max_value: 10
+    step: 0.001
+    restore_value: true
+    initial_value: 10
+    set_action:
+      - lambda: 'id(a1_map_x2)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a1/map/x2    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a1_map_y2_num
+    name: "A1 Map Y2"
+    entity_category: config
+    min_value: -100000
+    max_value: 100000
+    step: 0.001
+    restore_value: true
+    initial_value: 10
+    set_action:
+      - lambda: 'id(a1_map_y2)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a1/map/y2    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true
+  # A2 (x in mA)
+  - platform: template
+    id: a2_interval_num
+    name: "A2 Update-Intervall (s)"
+    entity_category: config
+    min_value: 1
+    max_value: 3600
+    step: 1
+    restore_value: true
+    initial_value: 10
+    set_action:
+      - lambda: 'id(a2_interval_s)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a2/update_interval    
+          payload: !lambda 'char b[16]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a2_map_x1_num
+    name: "A2 Map X1 (mA)"
+    entity_category: config
+    min_value: 0
+    max_value: 25
+    step: 0.001
+    restore_value: true
+    initial_value: 0
+    set_action:
+      - lambda: 'id(a2_map_x1)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a2/map/x1    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a2_map_y1_num
+    name: "A2 Map Y1"
+    entity_category: config
+    min_value: -100000
+    max_value: 100000
+    step: 0.001
+    restore_value: true
+    initial_value: 0
+    set_action:
+      - lambda: 'id(a2_map_y1)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a2/map/y1    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a2_map_x2_num
+    name: "A2 Map X2 (mA)"
+    entity_category: config
+    min_value: 0
+    max_value: 25
+    step: 0.001
+    restore_value: true
+    initial_value: 20
+    set_action:
+      - lambda: 'id(a2_map_x2)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a2/map/x2    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a2_map_y2_num
+    name: "A2 Map Y2"
+    entity_category: config
+    min_value: -100000
+    max_value: 100000
+    step: 0.001
+    restore_value: true
+    initial_value: 20
+    set_action:
+      - lambda: 'id(a2_map_y2)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a2/map/y2    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true
+  # A3 (x in mA)
+  - platform: template
+    id: a3_interval_num
+    name: "A3 Update-Intervall (s)"
+    entity_category: config
+    min_value: 1
+    max_value: 3600
+    step: 1
+    restore_value: true
+    initial_value: 10
+    set_action:
+      - lambda: 'id(a3_interval_s)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a3/update_interval    
+          payload: !lambda 'char b[16]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a3_map_x1_num
+    name: "A3 Map X1 (mA)"
+    entity_category: config
+    min_value: 0
+    max_value: 25
+    step: 0.001
+    restore_value: true
+    initial_value: 0
+    set_action:
+      - lambda: 'id(a3_map_x1)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a3/map/x1    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a3_map_y1_num
+    name: "A3 Map Y1"
+    entity_category: config
+    min_value: -100000
+    max_value: 100000
+    step: 0.001
+    restore_value: true
+    initial_value: 0
+    set_action:
+      - lambda: 'id(a3_map_y1)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a3/map/y1    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a3_map_x2_num
+    name: "A3 Map X2 (mA)"
+    entity_category: config
+    min_value: 0
+    max_value: 25
+    step: 0.001
+    restore_value: true
+    initial_value: 20
+    set_action:
+      - lambda: 'id(a3_map_x2)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a3/map/x2    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true  
+  - platform: template
+    id: a3_map_y2_num
+    name: "A3 Map Y2"
+    entity_category: config
+    min_value: -100000
+    max_value: 100000
+    step: 0.001
+    restore_value: true
+    initial_value: 20
+    set_action:
+      - lambda: 'id(a3_map_y2)=x;'
+      - mqtt.publish:    
+          topic: ${mqtt_prefix}/config/analog/a3/map/y2    
+          payload: !lambda 'char b[24]; sprintf(b    x); return std: :string(b);'    
+          retain: true
+# ---------- TextSensor: Ethernet IP + Homescreen-Zeilen ----------
+text_sensor:
+  - platform: ethernet_info
+    ip_address:
+      id: ip_addr
+      name: "IP Address"
+    mac_address:
+      id: mac_addr
+      name: "MAC Address"
+
+  - platform: template
+    id: home_line1
+    name: "Display Home Line 1"
+    update_interval: never
+    lambda: 'return {"Line 1"};'
+  - platform: template
+    id: home_line2
+    name: "Display Home Line 2"
+    update_interval: never
+    lambda: 'return {"Line 2"};'
+  - platform: template
+    id: home_line3
+    name: "Display Home Line 3"
+    update_interval: never
+    lambda: 'return {"Line 3"};'
+  - platform: template
+    id: home_line4
+    name: "Display Home Line 4"
+    update_interval: never
+    lambda: 'return {"Line 4"};'
+
+# ---------- Fonts für OLED ----------
+font:
+  - id: font_small
+    file: "gfonts://Roboto Mono"
+    size: 10
+  - id: font_medium
+    file: "gfonts://Roboto Mono"
+    size: 12
+  - id: font_large
+    file: "gfonts://Roboto"
+    size: 14
+
+
+# ---------- OLED Display mit Pages ----------
+display:
+  - platform: ssd1306_i2c
+    id: oled
+    i2c_id: bus_a
+    model: "SSD1306 128x64"
+    address: 0x3C
+    update_interval: 500ms
+    pages:
+      # Page 1: Homescreen
+      - id: page_home
+        lambda: |-
+          it.printf(0, 0,  id(font_medium), "B16M");
+          it.printf(0, 16, id(font_small), "%s", id(home_line1).state.c_str());
+          it.printf(0, 28, id(font_small), "%s", id(home_line2).state.c_str());
+          it.printf(0, 40, id(font_small), "%s", id(home_line3).state.c_str());
+          it.printf(0, 52, id(font_small), "%s", id(home_line4).state.c_str());
+
+      # Page 2: Temperatur-Sensordaten
+      - id: page_temp
+        lambda: |-
+          it.printf(0, 0, id(font_medium), "Temperaturen");
+          // IO40
+          if (id(io40_mode_val)==1) { // DHT
+            it.printf(0, 16, id(font_small), "40 DHT %5.1fC %4.0f%%", id(dht_io40_t).state, id(dht_io40_h).state);
+          } else if (id(io40_mode_val)==2) { // Dallas
+            it.printf(0, 16, id(font_small), "40 DS  %5.1fC", id(dallas_io40).state);
+          } else {
+            it.printf(0, 16, id(font_small), "40 --");
+          }
+          // IO15
+          if (id(io15_mode_val)==1) {
+            it.printf(0, 28, id(font_small), "15 DHT %5.1fC %4.0f%%", id(dht_io15_t).state, id(dht_io15_h).state);
+          } else if (id(io15_mode_val)==2) {
+            it.printf(0, 28, id(font_small), "15 DS  %5.1fC", id(dallas_io15).state);
+          } else {
+            it.printf(0, 28, id(font_small), "15 --");
+          }
+          // IO48
+          if (id(io48_mode_val)==1) {
+            it.printf(0, 40, id(font_small), "48 DHT %5.1fC %4.0f%%", id(dht_io48_t).state, id(dht_io48_h).state);
+          } else if (id(io48_mode_val)==2) {
+            it.printf(0, 40, id(font_small), "48 DS  %5.1fC", id(dallas_io48).state);
+          } else {
+            it.printf(0, 40, id(font_small), "48 --");
+          }
+          // IO47
+          if (id(io47_mode_val)==1) {
+            it.printf(0, 52, id(font_small), "47 DHT %5.1fC %4.0f%%", id(dht_io47_t).state, id(dht_io47_h).state);
+          } else if (id(io47_mode_val)==2) {
+            it.printf(0, 52, id(font_small), "47 DS  %5.1fC", id(dallas_io47).state);
+          } else {
+            it.printf(0, 52, id(font_small), "47 --");
+          }
+
+      # Page 3: Analogdaten
+      - id: page_analog
+        lambda: |-
+          it.printf(0, 0, id(font_medium), "Analog");
+          // Hinweise: Rohwerte werden per MQTT publiziert. Hier Anzeige via Lambdas unten:
+          // Zur Anzeige nutzen wir 'App.get_component' nicht; stattdessen merken wir die letzte MQTT-Payload?
+          // Hier einfache Darstellung: "nutze letzte berechnete Werte aus MQTT nicht direkt" -> statisch als Platzhalter
+          // Da die Sensorzustände hier nicht als eigene IDs gespeichert sind, empfehlen wir optional Template-Sensoren anzulegen.
+          // Kompakte Anzeige:
+          it.printf(0, 16, id(font_small), "A0 raw/m:  via MQTT");
+          it.printf(0, 28, id(font_small), "A1 raw/m:  via MQTT");
+          it.printf(0, 40, id(font_small), "A2 V/mA/m: via MQTT");
+          it.printf(0, 52, id(font_small), "A3 V/mA/m: via MQTT");
+
+      # Page 4: Verbindungsstatus
+      - id: page_status
+        lambda: |-
+          bool ha_ok = id(api_server).is_connected();
+          bool mq_ok = id(mqtt_client).is_connected();
+          it.printf(0, 0,  id(font_medium), "Netzwerk");
+          it.printf(0, 16, id(font_small), "IP: %s", id(ip_addr).state.c_str());
+          it.printf(0, 28, id(font_small), "HA: %s", ha_ok ? "verbunden" : "nicht");
+          it.printf(0, 40, id(font_small), "MQTT: %s", mq_ok ? "verbunden" : "nicht");
+          it.printf(0, 52, id(font_small), "MAC: %s", id(mac_addr).state.c_str())
+
+# ---------- Script: Seiten anzeigen gemäß page_index ----------
+script:
+  - id: show_current_page
+    mode: queued
+    then:
+      - lambda: |-
+          switch (id(page_index)) {
+            case 1: id(oled).show_page(id(page_home)); break;
+            case 2: id(oled).show_page(id(page_temp)); break;
+            case 3: id(oled).show_page(id(page_analog)); break;
+            case 4: id(oled).show_page(id(page_status)); break;
+            default: id(oled).show_page(id(page_home)); id(page_index)=1; break;
+          }
+# ---------- Webserver (optional) ----------
+web_server:
+  port: 80
+
+# ---------- On Boot: Status & Konfig announcen + Startseite ----------

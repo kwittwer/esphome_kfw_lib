@@ -1,0 +1,9 @@
+# script:
+#   - id: Test
+#     parameters:
+#       delay_ms: int
+#     then:
+#       # - switch.turn_on: DO_3
+#       # # The param delay_ms is accessible using a lambda
+#       # - delay: !lambda return delay_ms;
+#       # - switch.turn_off: DO_3

@@ -1,0 +1,518 @@
+external_components:
+  - source:
+      type: local
+      path: B16M_components/components
+    components: [dummy_thermostat]
+
+
+
+switch:
+  - platform: template
+    name: "Lokale Heizregelung"
+    id: local_control_switch
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: template
+    name: "Heizung Hauptschalter"
+    id: heating_master_switch
+    restore_mode: RESTORE_DEFAULT_OFF
+    entity_category: config
+    optimistic: true
+
+binary_sensor:
+- platform: template
+  name: "Heizung Hauptschalter"
+  id: hw_master_sw
+  entity_category: diagnostic
+  lambda: |-
+    if (id(DI1).state == true) {
+    return true;
+    } else {
+    return false;
+    }
+
+- platform: template
+  name: "Thermostat1 Fallback active - Temperature Sensor"
+  id: t1_fallback_temp_active
+  entity_category: diagnostic
+  lambda: |-
+    return id(thermostat1).is_using_fallback_temperature();
+
+- platform: template
+  name: "Thermostat2 Fallback active - Temperature Sensor"
+  id: t2_fallback_temp_active
+  entity_category: diagnostic
+  lambda: |-
+    return id(thermostat2).is_using_fallback_temperature();
+
+- platform: template
+  name: "Thermostat3 Fallback active - Temperature Sensor"
+  id: t3_fallback_temp_active
+  entity_category: diagnostic
+  lambda: |-
+    return id(thermostat3).is_using_fallback_temperature();
+
+- platform: template
+  name: "Thermostat4 Fallback active - Temperature Sensor"
+  id: t4_fallback_temp_active
+  entity_category: diagnostic
+  lambda: |-
+    return id(thermostat4).is_using_fallback_temperature();
+
+- platform: template
+  name: "Thermostat5 Fallback active - Temperature Sensor"
+  id: t5_fallback_temp_active
+  entity_category: diagnostic
+  lambda: |-
+    return id(thermostat5).is_using_fallback_temperature();
+
+- platform: template
+  name: "Thermostat6 Fallback active - Temperature Sensor"
+  id: t6_fallback_temp_active
+  entity_category: diagnostic
+  lambda: |-
+    return id(thermostat6).is_using_fallback_temperature();
+
+- platform: template
+  name: "Thermostat7 Fallback active - Temperature Sensor"
+  id: t7_fallback_temp_active
+  entity_category: diagnostic
+  lambda: |-
+    return id(thermostat7).is_using_fallback_temperature();
+
+- platform: template
+  name: "Thermostat8 Fallback active - Temperature Sensor"
+  id: t8_fallback_temp_active
+  entity_category: diagnostic
+  lambda: |-
+    return id(thermostat8).is_using_fallback_temperature();
+
+- platform: template
+  name: "Thermostat9 Fallback active - Temperature Sensor"
+  id: t9_fallback_temp_active
+  entity_category: diagnostic
+  lambda: |-
+    return id(thermostat9).is_using_fallback_temperature();
+
+- platform: template
+  name: "Thermostat10 Fallback active - Temperature Sensor"
+  id: t10_fallback_temp_active
+  entity_category: diagnostic
+  lambda: |-
+    return id(thermostat10).is_using_fallback_temperature();
+api:
+  services:
+    - service: set_current_temperature_thermostat1
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat1).set_current_temperature(wert);
+    - service: set_current_humidity_thermostat1
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat1).set_current_humidity(wert);
+    - service: set_valve_state_thermostat1
+      variables:
+        valve: bool
+      then:
+        - lambda: |-
+            id(thermostat1).set_valve_state(valve);
+
+
+    - service: set_current_temperature_thermostat2
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat2).set_current_temperature(wert);
+    - service: set_current_humidity_thermostat2
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat2).set_current_humidity(wert);
+    - service: set_valve_state_thermostat2
+      variables:
+        valve: bool
+      then:
+        - lambda: |-
+            id(thermostat2).set_valve_state(valve);
+
+
+    - service: set_current_temperature_thermostat3
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat3).set_current_temperature(wert);
+    - service: set_current_humidity_thermostat3
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat3).set_current_humidity(wert);
+    - service: set_valve_state_thermostat3
+      variables:
+        valve: bool
+      then:
+        - lambda: |-
+            id(thermostat3).set_valve_state(valve);
+
+    - service: set_current_temperature_thermostat4
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat4).set_current_temperature(wert);
+    - service: set_current_humidity_thermostat4
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat4).set_current_humidity(wert);
+    - service: set_valve_state_thermostat4
+      variables:
+        valve: bool
+      then:
+        - lambda: |-
+            id(thermostat4).set_valve_state(valve);
+
+    - service: set_current_temperature_thermostat5
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat5).set_current_temperature(wert);
+    - service: set_current_humidity_thermostat5
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat5).set_current_humidity(wert);
+    - service: set_valve_state_thermostat5
+      variables:
+        valve: bool
+      then:
+        - lambda: |-
+            id(thermostat5).set_valve_state(valve);
+
+
+    - service: set_current_temperature_thermostat6
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat6).set_current_temperature(wert);
+    - service: set_current_humidity_thermostat6
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat6).set_current_humidity(wert);
+    - service: set_valve_state_thermostat6
+      variables:
+        valve: bool
+      then:
+        - lambda: |-
+            id(thermostat6).set_valve_state(valve);
+
+    - service: set_current_temperature_thermostat7
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat7).set_current_temperature(wert);
+    - service: set_current_humidity_thermostat7
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat7).set_current_humidity(wert);
+    - service: set_valve_state_thermostat7
+      variables:
+        valve: bool
+      then:
+        - lambda: |-
+            id(thermostat7).set_valve_state(valve);
+
+    - service: set_current_temperature_thermostat8
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat8).set_current_temperature(wert);
+    - service: set_current_humidity_thermostat8
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat8).set_current_humidity(wert);
+    - service: set_valve_state_thermostat8
+      variables:
+        valve: bool
+      then:
+        - lambda: |-
+            id(thermostat8).set_valve_state(valve);
+
+    - service: set_current_temperature_thermostat9
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat9).set_current_temperature(wert);
+    - service: set_current_humidity_thermostat9
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat9).set_current_humidity(wert);
+    - service: set_valve_state_thermostat9
+      variables:
+        valve: bool
+      then:
+        - lambda: |-
+            id(thermostat9).set_valve_state(valve);
+
+    - service: set_current_temperature_thermostat10
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat10).set_current_temperature(wert);
+    - service: set_current_humidity_thermostat10
+      variables:
+        wert: float
+      then:
+        - lambda: |-
+            id(thermostat10).set_current_humidity(wert);
+    - service: set_valve_state_thermostat10
+      variables:
+        valve: bool
+      then:
+        - lambda: |-
+            id(thermostat10).set_valve_state(valve);
+
+climate:
+  - platform: dummy_thermostat
+    name: "Thermostat1"
+    id: thermostat1
+    fallback_sensor: ${T2_name}_temperature                 # ✅ Fallback (lokal)
+    sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    fallback_humidity_sensor: ${T2_name}_humidity     # ✅ Fallback (lokal)
+    humidity_sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    valve_switch: DO1
+    valve_update_timeout: 300  # 60sec
+    valve_control_enabled: !lambda |-
+      return(id(heating_master_switch).state & id(hw_master_sw).state);
+    use_local_valve_control: !lambda |-
+      return id(local_control_switch).state;
+    heating_deadband: 0.5      # Startet Heizung bei T_ist < T_soll - 0.5°C
+    heating_overrun: 0.1       # Stoppt Heizung bei T_ist >= T_soll + 0.5°C
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+
+  - platform: dummy_thermostat
+    name: "Thermostat2"
+    id: thermostat2
+    fallback_sensor: ${T2_name}_temperature                 # ✅ Fallback (lokal)
+    sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    fallback_humidity_sensor: ${T2_name}_humidity     # ✅ Fallback (lokal)
+    humidity_sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    valve_switch: DO2
+    valve_update_timeout: 300  # 60sec
+    valve_control_enabled: !lambda |-
+      return(id(heating_master_switch).state & id(hw_master_sw).state);
+    use_local_valve_control: !lambda |-
+      return id(local_control_switch).state;
+    heating_deadband: 0.5      # Startet Heizung bei T_ist < T_soll - 0.5°C
+    heating_overrun: 0.1       # Stoppt Heizung bei T_ist >= T_soll + 0.5°C
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+
+  - platform: dummy_thermostat
+    name: "Thermostat3"
+    id: thermostat3
+    fallback_sensor: ${T2_name}_temperature                 # ✅ Fallback (lokal)
+    sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    fallback_humidity_sensor: ${T2_name}_humidity     # ✅ Fallback (lokal)
+    humidity_sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    valve_switch: DO3
+    valve_update_timeout: 300  # 60sec
+    valve_control_enabled: !lambda |-
+      return(id(heating_master_switch).state & id(hw_master_sw).state);
+    use_local_valve_control: !lambda |-
+      return id(local_control_switch).state;
+    heating_deadband: 0.5      # Startet Heizung bei T_ist < T_soll - 0.5°C
+    heating_overrun: 0.1       # Stoppt Heizung bei T_ist >= T_soll + 0.5°C
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+
+  - platform: dummy_thermostat
+    name: "Thermostat4"
+    id: thermostat4
+    fallback_sensor: ${T2_name}_temperature                 # ✅ Fallback (lokal)
+    sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    fallback_humidity_sensor: ${T2_name}_humidity     # ✅ Fallback (lokal)
+    humidity_sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    valve_switch: DO4
+    valve_update_timeout: 300  # 60sec
+    valve_control_enabled: !lambda |-
+      return(id(heating_master_switch).state & id(hw_master_sw).state);
+    use_local_valve_control: !lambda |-
+      return id(local_control_switch).state;
+    heating_deadband: 0.5      # Startet Heizung bei T_ist < T_soll - 0.5°C
+    heating_overrun: 0.1       # Stoppt Heizung bei T_ist >= T_soll + 0.5°C
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+
+  - platform: dummy_thermostat
+    name: "Thermostat5"
+    id: thermostat5
+    fallback_sensor: ${T2_name}_temperature                 # ✅ Fallback (lokal)
+    sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    fallback_humidity_sensor: ${T2_name}_humidity     # ✅ Fallback (lokal)
+    humidity_sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    valve_switch: DO5
+    valve_update_timeout: 300  # 300sec
+    valve_control_enabled: !lambda |-
+      return(id(heating_master_switch).state & id(hw_master_sw).state);
+    use_local_valve_control: !lambda |-
+      return id(local_control_switch).state;
+    heating_deadband: 0.5      # Startet Heizung bei T_ist < T_soll - 0.5°C
+    heating_overrun: 0.1       # Stoppt Heizung bei T_ist >= T_soll + 0.5°C
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+
+  - platform: dummy_thermostat
+    name: "Thermostat6"
+    id: thermostat6
+    fallback_sensor: ${T2_name}_temperature                 # ✅ Fallback (lokal)
+    sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    fallback_humidity_sensor: ${T2_name}_humidity     # ✅ Fallback (lokal)
+    humidity_sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    valve_switch: DO6
+    valve_update_timeout: 300  # 300sec
+    valve_control_enabled: !lambda |-
+      return(id(heating_master_switch).state & id(hw_master_sw).state);
+    use_local_valve_control: !lambda |-
+      return id(local_control_switch).state;
+    heating_deadband: 0.5      # Startet Heizung bei T_ist < T_soll - 0.5°C
+    heating_overrun: 0.1       # Stoppt Heizung bei T_ist >= T_soll + 0.5°C
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+
+  - platform: dummy_thermostat
+    name: "Thermostat7"
+    id: thermostat7
+    fallback_sensor: ${T2_name}_temperature                 # ✅ Fallback (lokal)
+    sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    fallback_humidity_sensor: ${T2_name}_humidity     # ✅ Fallback (lokal)
+    humidity_sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    valve_switch: DO7
+    valve_update_timeout: 300  # 300sec
+    valve_control_enabled: !lambda |-
+      return(id(heating_master_switch).state & id(hw_master_sw).state);
+    use_local_valve_control: !lambda |-
+      return id(local_control_switch).state;
+    heating_deadband: 0.5      # Startet Heizung bei T_ist < T_soll - 0.5°C
+    heating_overrun: 0.1       # Stoppt Heizung bei T_ist >= T_soll + 0.5°C
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+
+  - platform: dummy_thermostat
+    name: "Thermostat8"
+    id: thermostat8
+    fallback_sensor: ${T2_name}_temperature                 # ✅ Fallback (lokal)
+    sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    fallback_humidity_sensor: ${T2_name}_humidity     # ✅ Fallback (lokal)
+    humidity_sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    valve_switch: DO8
+    valve_update_timeout: 300  # 300sec
+    valve_control_enabled: !lambda |-
+      return(id(heating_master_switch).state & id(hw_master_sw).state);
+    use_local_valve_control: !lambda |-
+      return id(local_control_switch).state;
+    heating_deadband: 0.5      # Startet Heizung bei T_ist < T_soll - 0.5°C
+    heating_overrun: 0.1       # Stoppt Heizung bei T_ist >= T_soll + 0.5°C
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+
+  - platform: dummy_thermostat
+    name: "Thermostat9"
+    id: thermostat9
+    fallback_sensor: ${T2_name}_temperature                 # ✅ Fallback (lokal)
+    sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    fallback_humidity_sensor: ${T2_name}_humidity     # ✅ Fallback (lokal)
+    humidity_sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    valve_switch: DO9
+    valve_update_timeout: 300  # 300sec
+    valve_control_enabled: !lambda |-
+      return(id(heating_master_switch).state & id(hw_master_sw).state);
+    use_local_valve_control: !lambda |-
+      return id(local_control_switch).state;
+    heating_deadband: 0.5      # Startet Heizung bei T_ist < T_soll - 0.5°C
+    heating_overrun: 0.1       # Stoppt Heizung bei T_ist >= T_soll + 0.5°C
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+
+  - platform: dummy_thermostat
+    name: "Thermostat10"
+    id: thermostat10
+    fallback_sensor: ${T2_name}_temperature                 # ✅ Fallback (lokal)
+    sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    fallback_humidity_sensor: ${T2_name}_humidity     # ✅ Fallback (lokal)
+    humidity_sensor_timeout: ${Thermostat_external_sensor_timeout} # 5Min und 10 sec
+    valve_switch: DO10
+    valve_update_timeout: 300  # 60sec
+    valve_control_enabled: !lambda |-
+      return(id(heating_master_switch).state & id(hw_master_sw).state);
+    use_local_valve_control: !lambda |-
+      return id(local_control_switch).state;
+    heating_deadband: 0.5      # Startet Heizung bei T_ist < T_soll - 0.5°C
+    heating_overrun: 0.1       # Stoppt Heizung bei T_ist >= T_soll + 0.5°C
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1

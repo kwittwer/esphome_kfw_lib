@@ -1,0 +1,56 @@
+name: ESPHome Build
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Repository auschecken
+        uses: actions/checkout@v3
+
+      - name: Python Setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: ESPHome installieren
+        run: |
+          pip install --upgrade esphome
+          esphome version
+      
+      - name: ESPHome compilieren
+        run: |
+          esphome compile b16m.yaml
+      
+      - name: Build-Artefakte mit Datumsstempel sammeln
+        if: success()
+        run: |
+          mkdir -p build-artifacts
+          TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+          
+          # Dateien mit Datumsstempel kopieren
+          cp .esphome/build/b16m/.pioenvs/b16m/firmware.ota.bin build-artifacts/firmware.ota_${TIMESTAMP}.bin
+          cp .esphome/build/b16m/.pioenvs/b16m/firmware.factory.bin build-artifacts/firmware.factory_${TIMESTAMP}.bin 2>/dev/null || true
+          
+          ls -la build-artifacts/
+      
+      - name: Artefakte ins Repo committen
+        if: success()
+        run: |
+          git config user.name "ESPHome CI"
+          git config user.email "ci@local"
+          git add build-artifacts/
+          git commit -m "🚀 b16m Build erfolgreich - $(date +%Y-%m-%d\ %H:%M)" || echo "Keine neuen Artefakte"
+          git push
+      
+      - name: ❌ Build fehlgeschlagen
+        if: failure()
+        run: |
+          echo "ESPHome Build ist fehlgeschlagen!"
+          exit 1

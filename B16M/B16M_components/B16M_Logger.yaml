@@ -1,0 +1,215 @@
+globals:
+  - id: LogFilePath_string
+    type: std::string
+    restore_value: yes
+    max_restore_data_length: 60
+
+  - id: error_counter
+    type: int
+    restore_value: yes
+    initial_value: '0'
+
+  - id: warning_counter
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+
+
+api:
+  services:
+    - service: reset_error_counter
+      then:
+      - script.execute: Quittierung_script
+
+
+
+
+external_components:
+  # - source: 
+  #     type: local
+  #     path: B16M_components/components
+
+  - source: github://n-serrette/esphome_sd_card
+    components: [ sd_file_server,  sd_mmc_card]
+
+
+sd_mmc_card:
+    id: sd_card
+    mode_1bit: true
+    clk_pin: 11
+    cmd_pin: 10
+    data0_pin: 12
+    #data3_pin:9
+
+logger:
+  level: INFO #makes uart stream available in esphome logstream
+  baud_rate: 0 #disable logging over uart
+  on_message:
+    level: INFO
+    then:
+      - if:
+          condition:
+            - lambda: return (level == 1);
+          then:
+            - sd_mmc_card.append_file:
+                path: !lambda "return \"/ERROR_\" + id(rtc_time).now().strftime(\"%Y-%m-%d\") + \".log\";"
+                data: !lambda |
+                  std::string str(id(rtc_time).now().strftime("%c")+": " + message);
+                  str += "\n";
+                  return std::vector<uint8_t>(str.begin(), str.end());
+            - lambda: |-
+                id(error_counter) += 1;
+      - if:
+          condition:
+            - lambda: return (level == 2);
+          then:
+            - sd_mmc_card.append_file:
+                path: !lambda "return \"/Warning_\" + id(rtc_time).now().strftime(\"%Y-%m-%d\") + \".log\";"
+                data: !lambda |
+                  std::string str(id(rtc_time).now().strftime("%c")+": " + message);
+                  str += "\n";
+                  return std::vector<uint8_t>(str.begin(), str.end());
+            - lambda: |-
+                id(warning_counter) += 1;
+                
+      - sd_mmc_card.append_file:
+          path: !lambda "return \"/LOG_\" + id(rtc_time).now().strftime(\"%Y-%m-%d%H\") + \".log\";"
+          data: !lambda |
+            std::string str(id(rtc_time).now().strftime("%c")+": " + message);
+            str += "\n";
+            return std::vector<uint8_t>(str.begin(), str.end());      
+
+
+
+button:
+  - platform: template
+    name: "Fehler quittieren"
+    id: quittieren_button
+    on_press:
+      - script.execute: Quittierung_script
+  - platform: template
+    name: "Fehler simulieren"
+    on_press:
+      - logger.log: 
+          tag: time
+          level: ERROR
+          format: "This is a Error"
+
+  - platform: template
+    name: "Warning simulieren"
+    on_press:
+      - logger.log: 
+          level: WARN
+          format: "This is a warning"
+
+
+
+time:
+  - id: !extend rtc_time
+    on_time:
+      - seconds: 0
+        minutes: 0
+        hours: 0
+        then:
+          - lambda: |-
+              id(error_counter) = 0;
+              id(warning_counter) = 0;
+  - id: !extend rtc_time
+    on_time:
+      - seconds: 0
+        minutes: 0
+        hours: 0
+        then:
+          - lambda: |-
+              id(error_counter) = 0;
+              id(warning_counter) = 0;
+
+binary_sensor:
+  - platform: template
+    name: "SD Card fast voll"
+    lambda: |-
+      if (id(SD_free_space).state < 1) {
+        return true;
+      } else {
+        return false;
+      }
+
+sensor:
+  - platform: sd_mmc_card
+    type: used_space
+    unit_of_measurement: Mb
+    name: "SD card used space"
+    entity_category: diagnostic
+    filters:
+      - lambda: return sd_mmc_card::convertBytes(x, sd_mmc_card::MemoryUnits::MegaByte);
+
+  - platform: sd_mmc_card
+    type: total_space
+    name: "SD card total space"
+    entity_category: diagnostic
+    unit_of_measurement: Gb
+    filters:
+      - lambda: return sd_mmc_card::convertBytes(x, sd_mmc_card::MemoryUnits::GigaByte);
+
+  - platform: sd_mmc_card
+    id: SD_free_space
+    type: free_space
+    name: "SD card free space"
+    entity_category: diagnostic
+    unit_of_measurement: Gb
+    filters:
+      - lambda: return sd_mmc_card::convertBytes(x, sd_mmc_card::MemoryUnits::GigaByte);
+
+  # - platform: sd_mmc_card
+  #   type: file_size
+  #   name: "logfile size"
+  #   unit_of_measurement: Kb
+  #   path: LogFilePath_string
+  #   filters:
+  #     - lambda: return sd_mmc_card::convertBytes(x, sd_mmc_card::MemoryUnits::KiloByte);
+
+  - platform: template
+    name: "Fehlerzähler"
+    entity_category: diagnostic
+    lambda: |-
+      return id(error_counter);
+    update_interval: 60s
+
+  - platform: template
+    name: "Warnungszähler"
+    entity_category: diagnostic
+    lambda: |-
+      return id(warning_counter);
+    update_interval: 60s
+
+
+
+
+text_sensor:
+  - platform: sd_mmc_card
+    sd_card_type:
+      name: "SD card type"
+
+sd_file_server:
+  id: file_server
+  url_prefix: "file"
+  root_path: "/"
+  enable_deletion: true
+  enable_download: true
+  enable_upload: false
+
+script:
+  - id: Quittierung_script
+    mode: restart
+    then:
+      - logger.log: 
+          level: INFO
+          format: "Feheler wurden quittiert"
+      - lambda: |-
+          //Error
+          id(error_counter) = 0;
+          //warn
+          id(warning_counter) = 0;
+
+

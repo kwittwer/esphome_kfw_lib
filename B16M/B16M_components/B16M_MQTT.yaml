@@ -1,0 +1,73 @@
+mqtt:
+  broker: !secret MQTT_url
+  username: !secret MQTT_user
+  password: !secret MQTT_password
+  reboot_timeout: 0s
+  discovery: false
+  # on_connect: 
+  #   then:
+  #     - mqtt.publish_json: 
+  #         topic: homeassistant/climate/wohnzimmer2/config
+  #         payload: !lambda |-
+  #           return('{
+  #               "name": "Wohnzimmer",
+  #               "unique_id": "climate_wohnzimmer_001",
+  #               "modes": [
+  #                   "off",
+  #                   "heat",
+  #                   "cool",
+  #                   "auto"
+  #               ],
+  #               "mode_command_topic": "wohnzimmer/climate/mode/set",
+  #               "mode_state_topic": "wohnzimmer/climate/mode/state",
+  #               "temperature_command_topic": "wohnzimmer/climate/temperature/set",
+  #               "temperature_state_topic": "wohnzimmer/climate/temperature/state",
+  #               "current_temperature_topic": "wohnzimmer/climate/current_temperature",
+  #               "action_topic": "wohnzimmer/climate/action",
+  #               "min_temp": 15,
+  #               "max_temp": 30,
+  #               "temp_step": 0.5,
+  #               "temperature_unit": "C",
+  #               "icon": "mdi:thermostat"}');
+
+
+
+
+
+# root["name"] = "Wohnzimmer 2";
+# root["unique_id"] = "climate_wohnzimmer_002";
+# root["mode_command_topic"] = "wohnzimmer2/climate/mode/set";
+# root["mode_state_topic"] = "wohnzimmer2/climate/mode/state":
+# root["temperature_command_topic"] = "wohnzimmer2/climate/temperature/set";
+# root["temperature_state_topic"] = "wohnzimmer2/climate/temperature/state";
+# root["current_temperature_topic"] = "wohnzimmer2/climate/current_temperature";
+# root["action_topic"] = "wohnzimmer2/climate/action";
+# root["min_temp"] = 15;
+# root["max_temp"] = 30;
+# root["temp_step"] = 0.5;
+# root["temperature_unit"] = "C";
+# root["icon"] = "mdi:thermostat"; 
+
+#            //root["modes"] = ["off","heat","cool","auto"];
+
+# {
+#     "name": "Wohnzimmer",
+#     "unique_id": "climate_wohnzimmer_001",
+#     "modes": [
+#         "off",
+#         "heat",
+#         "cool",
+#         "auto"
+#     ],
+#     "mode_command_topic": "wohnzimmer/climate/mode/set",
+#     "mode_state_topic": "wohnzimmer/climate/mode/state",
+#     "temperature_command_topic": "wohnzimmer/climate/temperature/set",
+#     "temperature_state_topic": "wohnzimmer/climate/temperature/state",
+#     "current_temperature_topic": "wohnzimmer/climate/current_temperature",
+#     "action_topic": "wohnzimmer/climate/action",
+#     "min_temp": 15,
+#     "max_temp": 30,
+#     "temp_step": 0.5,
+#     "temperature_unit": "C",
+#     "icon": "mdi:thermostat"
+# }

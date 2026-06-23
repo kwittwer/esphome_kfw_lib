@@ -1,0 +1,52 @@
+ads1115:
+  - address: 0x48
+
+sensor:
+  - platform: ads1115
+    multiplexer: 'A0_GND'
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_1
+    name: "AI 1"
+    internal: true
+    unit_of_measurement: "V"
+    update_interval: 5s
+    
+  - platform: ads1115
+    multiplexer: 'A1_GND'
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_2
+    name: "AI 2"
+    internal: true
+    unit_of_measurement: "V"
+    update_interval: 5s
+    
+  - platform: ads1115
+    multiplexer: 'A2_GND'
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_3
+    unit_of_measurement: "mA"
+    accuracy_decimals: 2
+    internal: true  # Versteckt den Spannungswert
+    update_interval: 5s
+    filters:
+      - calibrate_linear:
+          - 0.0 -> 0.0
+          - 0.59 -> 3.95
+    
+  - platform: ads1115
+    multiplexer: 'A3_GND'
+    name: "Strom AI_4"
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_4
+    unit_of_measurement: "mA"
+    accuracy_decimals: 2
+    internal: true  # Versteckt den Spannungswert
+    update_interval: 5s
+    filters:
+      - calibrate_linear:
+          - 0.0 -> 0.0
+          - 0.59 -> 3.95

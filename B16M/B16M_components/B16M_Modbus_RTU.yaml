@@ -1,0 +1,182 @@
+# ============================================
+# B16M Modbus Master Configuration
+# Lesen und Schreiben von Modbus Slaves
+# ============================================
+
+# ============================================
+# UART KONFIGURATION
+# ============================================
+
+uart:
+  - id: uart_1
+    tx_pin: GPIO18
+    rx_pin: GPIO8
+    baud_rate: 19200     # ← Hier ändern
+    data_bits: 8         # ← Hier ändern
+    stop_bits: 1         # ← Hier ändern
+    parity: EVEN         # ← NONE, EVEN, ODD
+
+# ============================================
+# MODBUS CONTROLLER
+# ============================================
+
+modbus:
+  id: modbus_master
+  uart_id: uart_1
+  send_wait_time: 200ms
+
+# modbus_controller:
+#   - id: modbus_device
+#     address: 1
+#     modbus_id: modbus_master
+#     setup_priority: -10
+#     update_interval: 5s
+#     command_throttle: 100ms
+
+
+# number:
+#   # Beispiel: Holding Register 100 schreiben
+#   - platform: modbus_controller
+#     modbus_controller_id: modbus_device
+#     name: "Modbus Register 100 Schreiben"
+#     id: modbus_write_reg_100
+#     register_type: holding
+#     address: 100
+#     value_type: U_WORD
+#     min_value: 0
+#     max_value: 65535
+#     step: 1
+#     mode: box
+#     multiply: 1
+
+#   # Beispiel: Holding Register 101 schreiben (mit Skalierung)
+#   - platform: modbus_controller
+#     modbus_controller_id: modbus_device
+#     name: "Modbus Register 101 Schreiben (x10)"
+#     id: modbus_write_reg_101
+#     register_type: holding
+#     address: 101
+#     value_type: U_WORD
+#     min_value: 0
+#     max_value: 1000
+#     step: 0.1
+#     mode: box
+#     multiply: 10
+
+# select:
+#   # Register Typ
+#   - platform: template
+#     name: "Modbus Register Typ"
+#     id: modbus_register_type_select
+#     optimistic: true
+#     restore_value: true
+#     icon: "mdi:format-list-bulleted-type"
+#     entity_category: config
+#     options:
+#       - "coil"
+#       - "discrete_input"
+#       - "holding"
+#       - "read"
+#     set_action:
+#       then:
+#         - logger.log:
+#             format: "Modbus Register Typ: %s"
+#             args: ['x.c_str()']
+
+
+
+# # ============================================
+# # MODBUS SENSOREN (Beispiele - anpassen!)
+# # ============================================
+
+# sensor:
+#   - platform: modbus_controller
+#     modbus_controller_id: modbus_device
+#     name: "Modbus Holding Register 0"
+#     id: modbus_holding_0
+#     register_type: holding
+#     address: 0
+#     value_type: U_WORD
+#     unit_of_measurement: ""
+#     accuracy_decimals: 0
+
+#   - platform: modbus_controller
+#     modbus_controller_id: modbus_device
+#     name: "Modbus Holding Register 1"
+#     id: modbus_holding_1
+#     register_type: holding
+#     address: 1
+#     value_type: U_WORD
+#     unit_of_measurement: ""
+#     accuracy_decimals: 0
+
+#   - platform: modbus_controller
+#     modbus_controller_id: modbus_device
+#     name: "Modbus Input Register 0"
+#     id: modbus_input_0
+#     register_type: read
+#     address: 0
+#     value_type: S_WORD
+#     unit_of_measurement: ""
+#     accuracy_decimals: 0
+
+#   - platform: modbus_controller
+#     modbus_controller_id: modbus_device
+#     name: "Modbus Float Register 10"
+#     id: modbus_float_10
+#     register_type: holding
+#     address: 10
+#     value_type: FP32
+#     unit_of_measurement: ""
+#     accuracy_decimals: 2
+
+#   - platform: modbus_controller
+#     modbus_controller_id: modbus_device
+#     name: "Modbus DWORD Register 20"
+#     id: modbus_dword_20
+#     register_type: holding
+#     address: 20
+#     value_type: U_DWORD
+#     unit_of_measurement: ""
+#     accuracy_decimals: 0
+
+# # ============================================
+# # MODBUS BINARY SENSOREN
+# # ============================================
+
+# binary_sensor:
+#   - platform: modbus_controller
+#     modbus_controller_id: modbus_device
+#     name: "Modbus Coil 0"
+#     id: modbus_coil_0
+#     register_type: coil
+#     address: 0
+
+#   - platform: modbus_controller
+#     modbus_controller_id: modbus_device
+#     name: "Modbus Discrete Input 0"
+#     id: modbus_discrete_0
+#     register_type: discrete_input
+#     address: 0
+
+# # ============================================
+# # MODBUS SWITCHES
+# # ============================================
+
+# switch:
+#   - platform: modbus_controller
+#     modbus_controller_id: modbus_device
+#     name: "Modbus Coil 0 Schreiben"
+#     id: modbus_coil_write_0
+#     register_type: coil
+#     address: 0
+#     icon: "mdi:light-switch"
+
+#   - platform: modbus_controller
+#     modbus_controller_id: modbus_device
+#     name: "Modbus Coil 1 Schreiben"
+#     id: modbus_coil_write_1
+#     register_type: coil
+#     address: 1
+#     icon: "mdi:light-switch"
+

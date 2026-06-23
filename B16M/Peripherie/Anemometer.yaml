@@ -1,0 +1,72 @@
+# ============================================
+# Anemometer Configuration
+# Wind Speed Sensor (Analog) ZTS-3000-FSJT-* Ver 2.0
+# 
+# DC power supply (default)
+#10~30V DC
+#
+# Maximum power consumption
+#Current output
+#1.2W
+# 
+#Voltage output
+#1.2W
+# 
+# Resolution
+#0.1m/s
+#
+# Precision
+#± (0.2+0.03V)m/s  V represents wind speed
+#
+# The working temperature of the transmitter circuit
+#-20℃~+60℃, 0%RH~80%RH
+#
+# Measuring range
+#Default 0~30m/s (can be customized 0-70m/s)
+#
+# Start-up speed
+#≤0.2 m/s
+#
+# Dynamic response time
+#≤1s
+#
+# Output signal
+#Current output
+#4~20 mALoad capacity
+#Current output
+#≤600Ω
+# 
+# Power supply
+#Brown
+# The power supply is positive
+# 
+#Black
+#Negative power supply
+# 
+# Send out	Blue
+#The wind speed signal is positive
+# 
+# Green
+# Negative wind speed signal
+# 
+# Current output signal conversion calculation
+# The measuring range is 0~30m/s, and the output is 4~20mA. When the output signal is 12mA, the current wind speed is calculated. The span of the wind speed range is 30m/s, expressed by a 16mA current signal, 30m/s/16mA=1.875m/s/mA, that is, the current change of 1mA wind speed change of 1.875m/s. Then you can calculate the measured value of 12mA-4mA=8mA.8mA*1.875m/s/mA=15m/s, then the current wind speed = 15m/s.
+#
+# ============================================
+
+sensor:
+  - id: !extend AI_3
+    internal: true
+
+  - platform: template
+    name: Windspeed Sensor
+    id: wind_speed
+    lambda: |-
+      return id(AI_4).state;
+    update_interval: 1s
+    unit_of_measurement: m/s
+    device_class: "wind_speed"
+    filters:
+      - calibrate_linear:
+          - 3.95 ->  0.0
+          - 20 -> 30.0
