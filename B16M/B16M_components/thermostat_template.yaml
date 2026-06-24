@@ -37,6 +37,26 @@ climate:
         target_temperature: 0.5
         current_temperature: 0.1
 
+text:
+  - platform: template
+    name: "Thermostat ${thermostat_id} Name"
+    id: thermostat${thermostat_id}_name
+    icon: "mdi:rename-box"
+    entity_category: config
+    mode: text
+    optimistic: true
+    restore_value: true
+    initial_value: "${thermostat_name}"
+    min_length: 1
+    max_length: 63
+    set_action:
+      then:
+        - lambda: |-
+            auto new_name = x;
+            if (new_name.empty()) {
+              new_name = "${thermostat_name}";
+            }
+
 binary_sensor:
   - platform: template
     name: "${thermostat_name} Fallback active - Temperature Sensor"
@@ -51,8 +71,12 @@ display:
       - id: page_thermostat_${thermostat_id}
         lambda: |-
           auto thermostat = id(thermostat${thermostat_id});
+          auto runtime_name = id(thermostat${thermostat_id}_name).state;
+          if (runtime_name.empty()) {
+            runtime_name = "${thermostat_name}";
+          }
           it.printf(0, 0, id(small), "Thermostat ${thermostat_id}");
-          it.print(0, 11, id(tiny), "${thermostat_name}");
+          it.print(0, 11, id(tiny), runtime_name.c_str());
           it.line(0, 21, 127, 21);
 
           if (!isnan(thermostat->current_temperature)) {
@@ -75,6 +99,18 @@ display:
 
 api:
   services:
+    - service: set_display_name_thermostat${thermostat_id}
+      variables:
+        name: string
+      then:
+        - text.set:
+            id: thermostat${thermostat_id}_name
+            value: !lambda |-
+              if (name.empty()) {
+                return std::string("${thermostat_name}");
+              }
+              return name;
+
     - service: set_current_temperature_thermostat${thermostat_id}
       variables:
         wert: float
@@ -95,3 +131,15 @@ api:
       then:
         - lambda: |-
             id(thermostat${thermostat_id}).set_valve_state(valve);
+
+esphome:
+  on_boot:
+    priority: -100
+    then:
+      - text.set:
+          id: thermostat${thermostat_id}_name
+          value: !lambda |-
+            if (id(thermostat${thermostat_id}_name).state.empty()) {
+              return std::string("${thermostat_name}");
+            }
+            return id(thermostat${thermostat_id}_name).state;

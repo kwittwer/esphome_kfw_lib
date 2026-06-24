@@ -299,11 +299,28 @@ packages:
 | Variable | Beschreibung |
 |---|---|
 | `thermostat_id` | Eindeutige Nummer (1–10), keine doppelten |
-| `thermostat_name` | Anzeigename in Home Assistant |
+| `thermostat_name` | Initialer Anzeigename (Default) |
 | `thermostat_fallback_sensor` | ESPHome Sensor-ID des Fallback-Temperatursensors (z.B. aus `dht_name + "_temperature"`) |
 | `thermostat_fallback_humidity_sensor` | ESPHome Sensor-ID des Fallback-Feuchtigkeitssensors |
 | `thermostat_valve_switch` | DO-ID des Ventil-Ausgangs (z.B. `DO1`) |
 | `Thermostat_external_sensor_timeout` | Timeout in Sekunden bis zum Fallback-Sensor (Standard: `"900"`) |
+
+### Thermostat-Namen zur Laufzeit aendern (persistent)
+
+Ab Firmware-Stand 2026.6.x erzeugt jede Thermostat-Instanz zusaetzlich ein editierbares Text-Entity:
+
+- `text.thermostat<id>_name` (in Home Assistant und im ESPHome-Webinterface sichtbar)
+
+Verhalten:
+
+- Aenderungen werden persistent gespeichert (`restore_value: true`) und nach Reboot wiederhergestellt.
+- Die OLED-Thermostatseite nutzt diesen gespeicherten Laufzeitnamen.
+- Leerer Eingabewert faellt automatisch auf `thermostat_name` aus der YAML zurueck.
+- Climate-Entity-IDs bleiben stabil und werden nicht zur Laufzeit umbenannt.
+
+Optionaler API-Service pro Instanz:
+
+- `set_display_name_thermostat<thermostat_id>`
 
 > **Fallback-Sensor ID:**  
 > Die Sensor-IDs werden aus dem jeweiligen Sensor-Slot-Namen gebildet.  
@@ -567,9 +584,11 @@ Thermostat-Instanz (B16M_components/thermostat_template.yaml), pro Thermostat ei
 Automatisch erzeugt pro Thermostatinstanz:
 
 - climate id thermostat<thermostat_id>
+- text id thermostat<thermostat_id>_name (persistenter Laufzeit-Anzeigename)
 - Diagnose binary_sensor t<thermostat_id>_fallback_temp_active
 - Display-Seite page_thermostat_<thermostat_id>
 - API-Services:
+  - set_display_name_thermostat<thermostat_id>
   - set_current_temperature_thermostat<thermostat_id>
   - set_current_humidity_thermostat<thermostat_id>
   - set_valve_state_thermostat<thermostat_id>

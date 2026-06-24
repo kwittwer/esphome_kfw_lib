@@ -16,10 +16,6 @@
 #include "esphome/components/switch/switch.h"
 #endif
 
-#ifdef USE_SELECT
-#include "esphome/components/select/select.h"
-#endif
-
 namespace esphome {
 namespace dummy_thermostat {
 
@@ -31,6 +27,7 @@ class DummyThermostat : public climate::Climate, public Component {
 
   void set_fallback_sensor(sensor::Sensor *sensor) { this->fallback_sensor_ = sensor; }
   void set_sensor_timeout(uint32_t timeout) { this->temp_sensor_timeout_ = timeout; }
+  void set_fallback_sensor_timeout(uint32_t timeout) { this->fallback_sensor_timeout_ = timeout; }
   
   void set_fallback_humidity_sensor(sensor::Sensor *sensor) { this->fallback_humidity_sensor_ = sensor; }
   void set_humidity_sensor_timeout(uint32_t timeout) { this->humidity_sensor_timeout_ = timeout; }
@@ -43,21 +40,10 @@ class DummyThermostat : public climate::Climate, public Component {
 #ifdef USE_SWITCH
   void set_valve_switch(switch_::Switch *sw) { this->valve_switch_ = sw; }
 #endif
-  
-    
-  // ENTFERNE DIESE ZEILEN (kommentiere sie aus):
-  // void set_valve_control_enabled(bool value) {
-  //   this->valve_control_enabled_value_ = value;
-  // }
 
   void set_valve_control_enabled(std::function<bool()> &&f) {
     this->valve_control_enabled_func_ = f;
   }
-
-  // ENTFERNE DIESE ZEILEN (kommentiere sie aus):
-  // void set_use_local_valve_control(bool value) {
-  //   this->use_local_valve_control_value_ = value;
-  // }
 
   void set_use_local_valve_control(std::function<bool()> &&f) {
     this->use_local_valve_control_func_ = f;
@@ -69,10 +55,7 @@ class DummyThermostat : public climate::Climate, public Component {
 
   climate::ClimateTraits traits() override;
   void control(const climate::ClimateCall &call) override;
-  
-  // Public method for manual MQTT publishing
-  // void publish_mqtt_status_();
-  
+
   // Public getter methods for use in lambdas
   bool is_valve_control_enabled() { return this->get_valve_control_enabled_(); }
   bool is_using_local_valve_control() { return this->get_use_local_valve_control_(); }
@@ -95,11 +78,13 @@ class DummyThermostat : public climate::Climate, public Component {
   
   bool get_valve_control_enabled_();
   bool get_use_local_valve_control_();
-  bool get_valve_state_from_input_();
   
   sensor::Sensor *fallback_sensor_{nullptr};
-  uint32_t temp_sensor_timeout_{0};
+  uint32_t temp_sensor_timeout_{600};
   uint32_t last_temp_sensor_update_{0};
+  uint32_t fallback_sensor_timeout_{600};
+  uint32_t last_fallback_sensor_update_{0};
+  bool fallback_sensor_timed_out_{false};
   bool using_fallback_temperature_{true};
   
   sensor::Sensor *fallback_humidity_sensor_{nullptr};
@@ -111,10 +96,6 @@ class DummyThermostat : public climate::Climate, public Component {
   uint32_t valve_update_timeout_{0};
   uint32_t last_valve_state_update_{0};
   bool valve_timeout_active_{true};
-  
-  std::string status_topic_{""};
-  uint32_t status_update_interval_{0};
-  uint32_t last_status_publish_{0};
   
 #ifdef USE_OUTPUT
   output::BinaryOutput *valve_output_{nullptr};

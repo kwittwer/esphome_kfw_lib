@@ -27,7 +27,9 @@ void DummyThermostat::setup() {
   this->action = climate::CLIMATE_ACTION_OFF;
   
   if (this->fallback_sensor_ != nullptr) {
+    this->last_fallback_sensor_update_ = esphome::millis();
     this->fallback_sensor_->add_on_state_callback([this](float state) {
+      this->last_fallback_sensor_update_ = esphome::millis();
       this->update_temp_sensor_();
     });
   }
@@ -48,46 +50,60 @@ void DummyThermostat::setup() {
 }
 
 void DummyThermostat::loop() {
+  const uint32_t now = esphome::millis();
+
   // Check sensor timeout
   if (this->temp_sensor_timeout_ > 0 && this->fallback_sensor_ != nullptr) {
-    uint32_t now = esphome::millis();
-    if (now - this->last_temp_sensor_update_ > this->temp_sensor_timeout_ * 1000) {
-      if (!this->using_fallback_temperature_) {
+    const bool timeout_active =
+        (now - this->last_temp_sensor_update_) > this->temp_sensor_timeout_ * 1000UL;
+    if (timeout_active != this->using_fallback_temperature_) {
+      this->using_fallback_temperature_ = timeout_active;
+      if (timeout_active) {
         ESP_LOGW(TAG, "Temperature sensor timeout! Switching to fallback sensor.");
-        this->using_fallback_temperature_ = true;
-        this->update_temp_sensor_();
-      }
-    } else {
-      if (this->using_fallback_temperature_) {
+      } else {
         ESP_LOGI(TAG, "Temperature sensor recovered. Switching back to main sensor.");
-        this->using_fallback_temperature_ = false;
+        this->fallback_sensor_timed_out_ = false;
+      }
+      this->update_temp_sensor_();
+    }
+  }
+
+  // Check fallback sensor timeout (only when in fallback mode)
+  if (this->fallback_sensor_timeout_ > 0 && this->fallback_sensor_ != nullptr
+      && this->using_fallback_temperature_) {
+    const bool timed_out =
+        (now - this->last_fallback_sensor_update_) > this->fallback_sensor_timeout_ * 1000UL;
+    if (timed_out != this->fallback_sensor_timed_out_) {
+      this->fallback_sensor_timed_out_ = timed_out;
+      if (timed_out) {
+        ESP_LOGW(TAG, "Fallback sensor timeout! No valid temperature source available.");
+        this->current_temperature = NAN;
+        this->publish_state();
+      } else {
+        ESP_LOGI(TAG, "Fallback sensor recovered.");
         this->update_temp_sensor_();
       }
     }
   }
-  
+
   // Check humidity sensor timeout
   if (this->humidity_sensor_timeout_ > 0 && this->fallback_humidity_sensor_ != nullptr) {
-    uint32_t now = esphome::millis();
-    if (now - this->last_humidity_sensor_update_ > this->humidity_sensor_timeout_ * 1000) {
-      if (!this->using_fallback_humidity_) {
+    const bool timeout_active =
+        (now - this->last_humidity_sensor_update_) > this->humidity_sensor_timeout_ * 1000UL;
+    if (timeout_active != this->using_fallback_humidity_) {
+      this->using_fallback_humidity_ = timeout_active;
+      if (timeout_active) {
         ESP_LOGW(TAG, "Humidity sensor timeout! Switching to fallback sensor.");
-        this->using_fallback_humidity_ = true;
-        this->update_humidity_sensor_();
-      }
-    } else {
-      if (this->using_fallback_humidity_) {
+      } else {
         ESP_LOGI(TAG, "Humidity sensor recovered. Switching back to main sensor.");
-        this->using_fallback_humidity_ = false;
-        this->update_humidity_sensor_();
       }
+      this->update_humidity_sensor_();
     }
   }
   
   // Check valve state switch timeout
   if (this->valve_update_timeout_ > 0) {
-    uint32_t now = esphome::millis();
-    if (now - this->last_valve_state_update_ > this->valve_update_timeout_ * 1000) {
+    if (now - this->last_valve_state_update_ > this->valve_update_timeout_ * 1000UL) {
       if (!this->valve_timeout_active_) {
         ESP_LOGW(TAG, "Valve update timeout! Switching to local controll.");
         this->valve_timeout_active_ = true;
@@ -118,6 +134,7 @@ void DummyThermostat::dump_config() {
   // ESP_LOGCONFIG(TAG, "  Sensor: %s", this->sensor_ ? this->sensor_->get_name().c_str() : "None");
   ESP_LOGCONFIG(TAG, "  Fallback Sensor: %s", this->fallback_sensor_ ? this->fallback_sensor_->get_name().c_str() : "None");
   ESP_LOGCONFIG(TAG, "  Temp Sensor Timeout: %u seconds", this->temp_sensor_timeout_);
+  ESP_LOGCONFIG(TAG, "  Fallback Sensor Timeout: %u seconds", this->fallback_sensor_timeout_);
   // ESP_LOGCONFIG(TAG, "  Humidity Sensor: %s", this->humidity_sensor_ ? this->humidity_sensor_->get_name().c_str() : "None");
   ESP_LOGCONFIG(TAG, "  Fallback Humidity Sensor: %s", this->fallback_humidity_sensor_ ? this->fallback_humidity_sensor_->get_name().c_str() : "None");
   ESP_LOGCONFIG(TAG, "  Humidity Sensor Timeout: %u seconds", this->humidity_sensor_timeout_);
@@ -157,9 +174,11 @@ void DummyThermostat::dump_config() {
 
 void DummyThermostat::update_temp_sensor_() {
   float temperature = NAN;
+  const uint32_t now = esphome::millis();
   
   if (this->using_fallback_temperature_ && this->fallback_sensor_ != nullptr) {
     temperature = this->fallback_sensor_->state;
+    this->last_fallback_sensor_update_ = now;
   } 
   // else if (this->sensor_ != nullptr) {
   //   temperature = this->sensor_->state;
@@ -173,9 +192,11 @@ void DummyThermostat::update_temp_sensor_() {
 
 void DummyThermostat::update_humidity_sensor_() {
   float humidity = NAN;
+  const uint32_t now = esphome::millis();
   
   if (this->using_fallback_humidity_ && this->fallback_humidity_sensor_ != nullptr) {
     humidity = this->fallback_humidity_sensor_->state;
+    this->last_humidity_sensor_update_ = now;
   } 
   // else if (this->humidity_sensor_ != nullptr) {
   //   humidity = this->humidity_sensor_->state;
@@ -375,18 +396,13 @@ bool DummyThermostat::get_use_local_valve_control_() {
 
 climate::ClimateTraits DummyThermostat::traits() {
   auto traits = climate::ClimateTraits();
-  // traits.set_supports_current_temperature(true);
-  // traits.set_supports_current_humidity(true);
-  // traits.set_supports_two_point_target_temperature(false);
-  // traits.set_supports_action(true);
   traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_TEMPERATURE);
   traits.add_feature_flags(climate::CLIMATE_SUPPORTS_CURRENT_HUMIDITY);
   traits.add_feature_flags(climate::CLIMATE_SUPPORTS_ACTION);
   traits.set_supported_modes({
     climate::CLIMATE_MODE_OFF,
     climate::CLIMATE_MODE_HEAT,
-    // climate::CLIMATE_MODE_COOL,
-    climate::CLIMATE_MODE_HEAT_COOL,
+    climate::CLIMATE_MODE_COOL,
   });
   
   traits.set_visual_min_temperature(10.0f);
@@ -403,6 +419,11 @@ void DummyThermostat::control(const climate::ClimateCall &call) {
   if (call.get_target_temperature().has_value()) {
     this->target_temperature = *call.get_target_temperature();
   }
+  if (this->get_use_local_valve_control_() || this->valve_timeout_active_) {
+    this->calculate_local_valve_state_();
+  }
+  this->calculate_action_from_valve_and_mode_();
+  this->update_valve_output_();
   this->publish_state();
 }
 
@@ -411,7 +432,9 @@ void DummyThermostat::set_valve_state(bool state)
     ESP_LOGI(TAG, "Valve updated by service %s", state ? "true" : "false");
     this->valve_state_ = state; 
     this->last_valve_state_update_ = esphome::millis();
+  this->calculate_action_from_valve_and_mode_();
     this->update_valve_output_();
+  this->publish_state();
 }
 
 void DummyThermostat::set_current_temperature(float value) 
@@ -419,6 +442,11 @@ void DummyThermostat::set_current_temperature(float value)
     ESP_LOGI(TAG, "Current Temp updated by service %.2f", value);
     this->current_temperature= value; 
     this->last_temp_sensor_update_ = esphome::millis();
+  if (this->get_use_local_valve_control_() || this->valve_timeout_active_) {
+    this->calculate_local_valve_state_();
+  }
+  this->calculate_action_from_valve_and_mode_();
+  this->update_valve_output_();
     this->publish_state();
 }
 void DummyThermostat::set_current_humidity(float value) 
@@ -426,6 +454,7 @@ void DummyThermostat::set_current_humidity(float value)
     ESP_LOGI(TAG, "Current Hum updated by service %.2f", value);
     this->current_humidity= value; 
     this->last_humidity_sensor_update_ = esphome::millis();
+  this->calculate_action_from_valve_and_mode_();
     this->publish_state();
 }
 

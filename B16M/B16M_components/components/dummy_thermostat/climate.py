@@ -1,10 +1,8 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import climate, sensor, select, text_sensor, switch, output
+from esphome.components import climate, sensor, switch, output
 from esphome.const import (
     CONF_ID,
-    CONF_SENSOR,
-    CONF_OUTPUT,
 )
 
 CODEOWNERS = ["@your_username"]
@@ -18,16 +16,10 @@ DummyThermostat = dummy_thermostat_ns.class_(
 # Configuration keys
 CONF_FALLBACK_SENSOR = "fallback_sensor"
 CONF_SENSOR_TIMEOUT = "sensor_timeout"
-#CONF_HUMIDITY_SENSOR = "humidity_sensor"
+CONF_FALLBACK_SENSOR_TIMEOUT = "fallback_sensor_timeout"
 CONF_FALLBACK_HUMIDITY_SENSOR = "fallback_humidity_sensor"
 CONF_HUMIDITY_SENSOR_TIMEOUT = "humidity_sensor_timeout"
-CONF_VALVE_STATE_SELECT = "valve_state_select"
-#CONF_VALVE_STATE_TEXT_SENSOR = "valve_state_text_sensor"
-#CONF_VALVE_STATE_TEXT_SENSOR_TIMEOUT = "valve_state_text_sensor_timeout"
-# CONF_VALVE_STATE_SWITCH = "valve_state_switch"
 CONF_VALVE_UPDATE_TIMEOUT = "valve_update_timeout"
-#CONF_STATUS_TOPIC = "status_topic"
-#CONF_STATUS_UPDATE_INTERVAL = "status_update_interval"
 CONF_VALVE_OUTPUT = "valve_output"
 CONF_VALVE_SWITCH = "valve_switch"
 CONF_VALVE_CONTROL_ENABLED = "valve_control_enabled"
@@ -41,17 +33,11 @@ CONF_COOLING_OVERRUN = "cooling_overrun"
 CONFIG_SCHEMA = climate.climate_schema(DummyThermostat).extend(
     {
         cv.Optional(CONF_FALLBACK_SENSOR): cv.use_id(sensor.Sensor),
-        cv.Optional(CONF_SENSOR_TIMEOUT, default=0): cv.positive_int,
-#        cv.Optional(CONF_HUMIDITY_SENSOR): cv.use_id(sensor.Sensor),
+        cv.Optional(CONF_SENSOR_TIMEOUT, default=600): cv.positive_int,
+        cv.Optional(CONF_FALLBACK_SENSOR_TIMEOUT, default=600): cv.positive_int,
         cv.Optional(CONF_FALLBACK_HUMIDITY_SENSOR): cv.use_id(sensor.Sensor),
         cv.Optional(CONF_HUMIDITY_SENSOR_TIMEOUT, default=0): cv.positive_int,
-        cv.Optional(CONF_VALVE_STATE_SELECT): cv.use_id(select.Select),
-#        cv.Optional(CONF_VALVE_STATE_TEXT_SENSOR): cv.use_id(text_sensor.TextSensor),
-#        cv.Optional(CONF_VALVE_STATE_TEXT_SENSOR_TIMEOUT, default=0): cv.positive_int,
-        # cv.Optional(CONF_VALVE_STATE_SWITCH): cv.use_id(switch.Switch),
         cv.Optional(CONF_VALVE_UPDATE_TIMEOUT, default=0): cv.positive_int,
-#        cv.Optional(CONF_STATUS_TOPIC, default=""): cv.string,
-#        cv.Optional(CONF_STATUS_UPDATE_INTERVAL, default=0): cv.positive_int,
         cv.Optional(CONF_VALVE_OUTPUT): cv.use_id(output.FloatOutput),
         cv.Optional(CONF_VALVE_SWITCH): cv.use_id(switch.Switch),
         cv.Optional(CONF_VALVE_CONTROL_ENABLED, default=False): cv.templatable(cv.boolean),
@@ -75,10 +61,7 @@ async def to_code(config):
         cg.add(var.set_fallback_sensor(fallback_sens))
 
     cg.add(var.set_sensor_timeout(config[CONF_SENSOR_TIMEOUT]))
-
-    # if CONF_HUMIDITY_SENSOR in config:
-    #     humidity_sens = await cg.get_variable(config[CONF_HUMIDITY_SENSOR])
-    #     cg.add(var.set_humidity_sensor(humidity_sens))
+    cg.add(var.set_fallback_sensor_timeout(config[CONF_FALLBACK_SENSOR_TIMEOUT]))
 
     if CONF_FALLBACK_HUMIDITY_SENSOR in config:
         fallback_humidity_sens = await cg.get_variable(config[CONF_FALLBACK_HUMIDITY_SENSOR])
@@ -86,23 +69,7 @@ async def to_code(config):
 
     cg.add(var.set_humidity_sensor_timeout(config[CONF_HUMIDITY_SENSOR_TIMEOUT]))
 
-    if CONF_VALVE_STATE_SELECT in config:
-        valve_select = await cg.get_variable(config[CONF_VALVE_STATE_SELECT])
-        cg.add(var.set_valve_state_select(valve_select))
-
-    # if CONF_VALVE_STATE_TEXT_SENSOR in config:
-    #     valve_text = await cg.get_variable(config[CONF_VALVE_STATE_TEXT_SENSOR])
-    #     cg.add(var.set_valve_state_text_sensor(valve_text))
-
-    # if CONF_VALVE_STATE_SWITCH in config:
-    #     valve_switch = await cg.get_variable(config[CONF_VALVE_STATE_SWITCH])
-    #     cg.add(var.set_valve_state_switch(valve_switch))
-
     cg.add(var.set_valve_update_timeout(config[CONF_VALVE_UPDATE_TIMEOUT]))
-  #  cg.add(var.set_valve_state_switch_timeout(config[CONF_VALVE_STATE_SWITCH_TIMEOUT]))
-
-    # cg.add(var.set_status_topic(config[CONF_STATUS_TOPIC]))
-    # cg.add(var.set_status_update_interval(config[CONF_STATUS_UPDATE_INTERVAL]))
 
     if CONF_VALVE_OUTPUT in config:
         valve_out = await cg.get_variable(config[CONF_VALVE_OUTPUT])
