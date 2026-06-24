@@ -51,6 +51,7 @@ class ModbusTCPServer : public Component {
   void set_max_registers(uint16_t max) { max_registers_ = max; }
   void set_max_coils(uint16_t max) { max_coils_ = max; }
   void set_unit_id(uint8_t unit_id) { unit_id_ = unit_id; }
+  uint8_t get_unit_id() const { return unit_id_; }
 
   // Public API für Register/Coils
   void set_holding_register(uint16_t address, uint16_t value);

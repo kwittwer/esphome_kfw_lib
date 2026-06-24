@@ -1,8 +1,11 @@
 #pragma once
 
 #include "esphome/core/component.h"
+#include "esphome/components/modbus_tcp_server/modbus_tcp_server.h"
 
-#if defined(USE_ETHERNET)
+#if defined(USE_ESP_IDF)
+// ESP-IDF builds use the internal loopback path and do not require Arduino TCP client headers.
+#elif defined(USE_ETHERNET)
 #include <Ethernet.h>
 using ModbusTCPClient = EthernetClient;
 #else
@@ -43,8 +46,15 @@ class ModbusTCP :  public Component {
   void set_send_wait_time(uint16_t time_in_ms) { send_wait_time_ = time_in_ms; }
   void set_host(const std::string &host) { this->host_ = host; }
   void set_port(uint16_t port) { this->port_ = port; }
+  void set_internal_loopback(bool internal_loopback) { this->internal_loopback_ = internal_loopback; }
+  void set_loopback_server(modbus_tcp_server::ModbusTCPServer *server) { this->loopback_server_ = server; }
  
  protected:
+  void dispatch_loopback_data_(const std::vector<uint8_t> &data);
+  void dispatch_loopback_error_(uint8_t function_code, uint8_t exception_code);
+  bool process_internal_loopback_request_(uint8_t address, uint8_t function_code, uint16_t start_address,
+                                          uint16_t number_of_entities, uint8_t payload_len,
+                                          const uint8_t *payload);
  
 
   //bool parse_modbus_byte_(uint8_t byte);
@@ -55,9 +65,13 @@ class ModbusTCP :  public Component {
   uint32_t last_send_{0};
   std::vector<ModbusDevice *> devices_;
   uint16_t Transaction_Identifier = 0;
+#if !defined(USE_ESP_IDF)
   ModbusTCPClient client;
+#endif
   uint16_t port_;
   std::string host_;
+  bool internal_loopback_{false};
+  modbus_tcp_server::ModbusTCPServer *loopback_server_{nullptr};
    
 };
 

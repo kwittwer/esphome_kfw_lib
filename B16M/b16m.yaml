@@ -12,6 +12,9 @@ packages:
   # Alternativen: net_ethernet_static.yaml | net_wifi.yaml | net_wifi_static.yaml
   network: !include B16M_components/net_ethernet.yaml
 
+  # Modbus TCP (Master + Slave, interner Loopback standardmäßig aktiv)
+  modbus: !include B16M_components/B16M_Modbus_TCP.yaml
+
   # Sensor-Slots: Slot 1-3 als DHT, Slot 4 als Dallas Bus mit 16 Sensoren
   sensor_slot_1: !include
     file: B16M_components/ow_dht_slot.yaml

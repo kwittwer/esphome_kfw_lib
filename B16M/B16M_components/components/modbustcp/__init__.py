@@ -5,11 +5,14 @@ from typing import Literal
 from esphome import pins
 import esphome.codegen as cg
 import esphome.config_validation as cv
+from esphome.components import modbus_tcp_server
 from esphome.const import CONF_ADDRESS, CONF_ID
 import esphome.final_validate as fv
 
 CONF_IP_ADDRESS = 'host'
 CONF_PORT = 'port'
+CONF_INTERNAL_LOOPBACK = "internal_loopback"
+CONF_LOOPBACK_SERVER_ID = "loopback_server_id"
 
 DEPENDENCIES = ["network"]
 
@@ -30,6 +33,8 @@ CONFIG_SCHEMA = (
             cv.Optional(
                 CONF_SEND_WAIT_TIME, default="250ms"
             ): cv.positive_time_period_milliseconds,
+            cv.Optional(CONF_INTERNAL_LOOPBACK, default=False): cv.boolean,
+            cv.Optional(CONF_LOOPBACK_SERVER_ID): cv.use_id(modbus_tcp_server.ModbusTCPServer),
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
@@ -43,6 +48,10 @@ async def to_code(config):
     cg.add(var.set_host(str(config[CONF_IP_ADDRESS])))
     cg.add(var.set_port(config["port"]))
     cg.add(var.set_send_wait_time(config[CONF_SEND_WAIT_TIME]))
+    cg.add(var.set_internal_loopback(config[CONF_INTERNAL_LOOPBACK]))
+    if CONF_LOOPBACK_SERVER_ID in config:
+        server = await cg.get_variable(config[CONF_LOOPBACK_SERVER_ID])
+        cg.add(var.set_loopback_server(server))
    
 def modbus_device_schema(default_address):
     schema = {

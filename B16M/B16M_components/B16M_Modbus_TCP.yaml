@@ -16,8 +16,10 @@ defaults:
   modbus_tcp_port: 502
   modbus_tcp_unit_id: 1
   modbus_tcp_send_wait_time: 250ms
+  modbus_tcp_internal_loopback: true
   modbus_tcp_max_registers: 100
   modbus_tcp_max_coils: 100
+  modbus_tcp_test_register_1_initial: 123
 
 external_components:
   - source:
@@ -37,41 +39,40 @@ modbustcp:
   host: ${modbus_tcp_host}
   port: ${modbus_tcp_port}
   send_wait_time: ${modbus_tcp_send_wait_time}
+  internal_loopback: ${modbus_tcp_internal_loopback}
+  loopback_server_id: modbus_tcp_slave
 
 modbustcp_controller:
   id: modbus_tcp_master
   modbustcp_id: modbus_tcp_transport
   address: ${modbus_tcp_unit_id}
-
-number:
-  - platform: modbustcp_controller
-    modbustcp_controller_id: modbus_tcp_master
-    name: "Modbus TCP Register 100 Schreiben"
-    id: modbus_tcp_write_reg_100
-    register_type: holding
-    address: 100
-    value_type: U_WORD
-    min_value: 0
-    max_value: 65535
-    step: 1
-    mode: box
-    multiply: 1
+  update_interval: 2s
 
 sensor:
   - platform: modbustcp_controller
     modbustcp_controller_id: modbus_tcp_master
-    name: "Modbus TCP Holding Register 0"
+    name: "Modbus TCP Loopback Holding 0"
     id: modbus_tcp_holding_0
     register_type: holding
     address: 0
     value_type: U_WORD
-    unit_of_measurement: ""
+    unit_of_measurement: "raw"
+    accuracy_decimals: 0
+
+  - platform: modbustcp_controller
+    modbustcp_controller_id: modbus_tcp_master
+    name: "Modbus TCP Loopback Holding 1"
+    id: modbus_tcp_holding_1
+    register_type: holding
+    address: 1
+    value_type: U_WORD
+    unit_of_measurement: "raw"
     accuracy_decimals: 0
 
 binary_sensor:
   - platform: modbustcp_controller
     modbustcp_controller_id: modbus_tcp_master
-    name: "Modbus TCP Coil 0"
+    name: "Modbus TCP Loopback Coil 0"
     id: modbus_tcp_coil_0
     register_type: coil
     address: 0
@@ -79,11 +80,48 @@ binary_sensor:
 switch:
   - platform: modbustcp_controller
     modbustcp_controller_id: modbus_tcp_master
-    name: "Modbus TCP Coil 0 Schreiben"
+    name: "Modbus TCP Loopback Coil 0 Schreiben"
     id: modbus_tcp_coil_write_0
     register_type: coil
     address: 0
     icon: "mdi:light-switch"
+
+number:
+  - platform: template
+    name: "Modbus TCP Loopback Sollwert Register 1"
+    id: modbus_tcp_test_register_1_value
+    min_value: 0
+    max_value: 65535
+    step: 1
+    optimistic: true
+    restore_value: true
+    initial_value: ${modbus_tcp_test_register_1_initial}
+    mode: box
+    icon: "mdi:numeric"
+    set_action:
+      - lambda: |-
+          uint16_t v = static_cast<uint16_t>(x);
+          id(modbus_tcp_slave)->set_holding_register(1, v);
+          id(modbus_tcp_slave)->set_input_register(1, v);
+
+# Loopback-Testdaten:
+# - Holding/Input Register 0 folgt dem Uptime-Wert (uint16)
+# - Discrete Input 0 folgt Coil 0
+interval:
+  - interval: 2s
+    then:
+      - lambda: |-
+          if (id(uptime_seconds).has_state()) {
+            uint16_t v = static_cast<uint16_t>(static_cast<uint32_t>(id(uptime_seconds).state) & 0xFFFF);
+            id(modbus_tcp_slave)->set_holding_register(0, v);
+            id(modbus_tcp_slave)->set_input_register(0, v);
+          }
+          if (id(modbus_tcp_test_register_1_value).has_state()) {
+            uint16_t v1 = static_cast<uint16_t>(id(modbus_tcp_test_register_1_value).state);
+            id(modbus_tcp_slave)->set_holding_register(1, v1);
+            id(modbus_tcp_slave)->set_input_register(1, v1);
+          }
+          id(modbus_tcp_slave)->set_discrete_input(0, id(modbus_tcp_slave)->get_coil(0));
 
 # ============================================
 # MODBUS TCP SLAVE

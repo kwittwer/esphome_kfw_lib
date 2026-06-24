@@ -29,6 +29,8 @@ modbustcp:
   host: 192.168.1.10
   port: 502
   send_wait_time: 250ms
+  internal_loopback: true
+  loopback_server_id: tcp_slave
 
 modbustcp_controller:
   id: tcp_master
