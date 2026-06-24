@@ -11,6 +11,8 @@ import esphome.final_validate as fv
 CONF_IP_ADDRESS = 'host'
 CONF_PORT = 'port'
 
+DEPENDENCIES = ["network"]
+
 modbustcp_ns = cg.esphome_ns.namespace("modbustcp")
 ModbusTCP = modbustcp_ns.class_("ModbusTCP", cg.Component)
 ModbusDevice = modbustcp_ns.class_("ModbusDevice")

@@ -36,7 +36,7 @@ from .const import (
 
 #CODEOWNERS = ["@martgras"]
 
-DEPENDENCIES = ["modbustcp"]
+DEPENDENCIES = ["network", "modbustcp"]
 
 
 CONF_READ_LAMBDA = "read_lambda"

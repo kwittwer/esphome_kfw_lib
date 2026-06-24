@@ -161,7 +161,7 @@ void ModbusTCPServer::loop() {
       client_ = server_->available();
       ESP_LOGI(TAG, "New client connected: %s", client_.remoteIP().toString().c_str());
     } else {
-      WiFiClient temp_client = server_->available();
+      ModbusTCPServerClient temp_client = server_->available();
       ESP_LOGW(TAG, "Connection rejected - already connected");
       temp_client.stop();
     }

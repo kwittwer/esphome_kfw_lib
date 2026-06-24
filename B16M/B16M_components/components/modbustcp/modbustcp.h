@@ -1,7 +1,14 @@
 #pragma once
 
 #include "esphome/core/component.h"
+
+#if defined(USE_ETHERNET)
+#include <Ethernet.h>
+using ModbusTCPClient = EthernetClient;
+#else
 #include <WiFiClient.h>
+using ModbusTCPClient = WiFiClient;
+#endif
 
 #include "esphome/components/modbustcp/modbustcp_definitions.h"
 
@@ -48,7 +55,7 @@ class ModbusTCP :  public Component {
   uint32_t last_send_{0};
   std::vector<ModbusDevice *> devices_;
   uint16_t Transaction_Identifier = 0;
-  WiFiClient client;
+  ModbusTCPClient client;
   uint16_t port_;
   std::string host_;
    

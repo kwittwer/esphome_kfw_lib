@@ -16,10 +16,18 @@
   #include <freertos/FreeRTOS.h>
   #include <freertos/task.h>  // FÜR vTaskDelay
 #else
-  #ifdef USE_ESP32
-    #include <WiFi.h>
-  #elif defined(USE_ESP8266)
-    #include <ESP8266WiFi.h>
+  #if defined(USE_ETHERNET)
+    #include <Ethernet.h>
+    using ModbusTCPServerClient = EthernetClient;
+    using ModbusTCPServerSocket = EthernetServer;
+  #else
+    #ifdef USE_ESP32
+      #include <WiFi.h>
+    #elif defined(USE_ESP8266)
+      #include <ESP8266WiFi.h>
+    #endif
+    using ModbusTCPServerClient = WiFiClient;
+    using ModbusTCPServerSocket = WiFiServer;
   #endif
 #endif
 
@@ -72,8 +80,8 @@ class ModbusTCPServer : public Component {
   int server_socket_{-1};
   int client_socket_{-1};
 #else
-  WiFiServer *server_{nullptr};
-  WiFiClient client_;
+  ModbusTCPServerSocket *server_{nullptr};
+  ModbusTCPServerClient client_;
 #endif
 
   std::vector<uint16_t> holding_registers_;

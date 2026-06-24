@@ -1,0 +1,52 @@
+external_components:
+  - source:
+      type: local
+      path: B16M_components/components
+    components:
+      - modbustcp
+      - modbustcp_controller
+      - modbus_tcp_server
+
+packages:
+  base: !include
+    file: B16M_components/B16M_base.yaml
+    vars:
+      device_name: b16m-tcp-smoke
+      friendly_name: "B16M TCP Smoke"
+      version: "2025.12.10.1"
+  network: !include B16M_components/net_ethernet.yaml
+
+api:
+  encryption:
+    key: "GvfbcydpffzMhFZJ9Jm59Vv86K8pZFtVq3BzSGj5Rek="
+
+ota:
+  - platform: esphome
+    password: "ac6feaa1334ddf6f9876e1f3203074fd"
+
+modbustcp:
+  id: tcp_transport
+  host: 192.168.1.10
+  port: 502
+  send_wait_time: 250ms
+
+modbustcp_controller:
+  id: tcp_master
+  modbustcp_id: tcp_transport
+  address: 1
+
+sensor:
+  - platform: modbustcp_controller
+    modbustcp_controller_id: tcp_master
+    name: "TCP Holding 0"
+    id: tcp_holding_0
+    register_type: holding
+    address: 0
+    value_type: U_WORD
+
+modbus_tcp_server:
+  id: tcp_slave
+  port: 502
+  unit_id: 1
+  max_registers: 8
+  max_coils: 8

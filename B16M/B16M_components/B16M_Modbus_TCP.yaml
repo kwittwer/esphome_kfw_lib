@@ -1,74 +1,105 @@
+# ============================================
+# B16M Modbus TCP Template
+#
+# TCP-Gegenstück zu B16M_Modbus.yaml.
+# Die Struktur bleibt absichtlich nah an der RTU-Variante:
+# - modbustcp: transport/host/port
+# - modbustcp_controller: Master
+# - modbus_tcp_server: Slave
+#
+# Der Transport nutzt automatisch das aktive Netzwerkpaket
+# (z. B. net_ethernet.yaml oder net_wifi.yaml).
+# ============================================
+
+defaults:
+  modbus_tcp_host: "192.168.1.10"
+  modbus_tcp_port: 502
+  modbus_tcp_unit_id: 1
+  modbus_tcp_send_wait_time: 250ms
+  modbus_tcp_max_registers: 100
+  modbus_tcp_max_coils: 100
+
 external_components:
   - source:
       type: local
-      path:  B16M_components/components # Pfad zum components/ Ordner
-    components: [ modbus_tcp_server ]
+      path: B16M_components/components
+    components:
+      - modbustcp
+      - modbustcp_controller
+      - modbus_tcp_server
 
+# ============================================
+# MODBUS TCP MASTER
+# ============================================
 
-# Modbus TCP Server Konfiguration
+modbustcp:
+  id: modbus_tcp_transport
+  host: ${modbus_tcp_host}
+  port: ${modbus_tcp_port}
+  send_wait_time: ${modbus_tcp_send_wait_time}
+
+modbustcp_controller:
+  id: modbus_tcp_master
+  modbustcp_id: modbus_tcp_transport
+  address: ${modbus_tcp_unit_id}
+
+number:
+  - platform: modbustcp_controller
+    modbustcp_controller_id: modbus_tcp_master
+    name: "Modbus TCP Register 100 Schreiben"
+    id: modbus_tcp_write_reg_100
+    register_type: holding
+    address: 100
+    value_type: U_WORD
+    min_value: 0
+    max_value: 65535
+    step: 1
+    mode: box
+    multiply: 1
+
+sensor:
+  - platform: modbustcp_controller
+    modbustcp_controller_id: modbus_tcp_master
+    name: "Modbus TCP Holding Register 0"
+    id: modbus_tcp_holding_0
+    register_type: holding
+    address: 0
+    value_type: U_WORD
+    unit_of_measurement: ""
+    accuracy_decimals: 0
+
+binary_sensor:
+  - platform: modbustcp_controller
+    modbustcp_controller_id: modbus_tcp_master
+    name: "Modbus TCP Coil 0"
+    id: modbus_tcp_coil_0
+    register_type: coil
+    address: 0
+
+switch:
+  - platform: modbustcp_controller
+    modbustcp_controller_id: modbus_tcp_master
+    name: "Modbus TCP Coil 0 Schreiben"
+    id: modbus_tcp_coil_write_0
+    register_type: coil
+    address: 0
+    icon: "mdi:light-switch"
+
+# ============================================
+# MODBUS TCP SLAVE
+# ============================================
+
 modbus_tcp_server:
-  id: modbus_server
-  port: 502
-  unit_id: 1
-  max_registers: 100
-  max_coils: 100
-    # Callback wenn Register geschrieben wird
-  on_write_register:
-    - lambda: |-
-        ESP_LOGI("modbus", "Register %d = %d", address, value);
-        
-        // Beispiel: Register 10 steuert etwas
-        if (address == 10 && value > 0) {
-          ESP_LOGI("modbus", "Spezielle Aktion für Register 10");
-        }
-  
-  # Callback wenn Coil geschrieben wird
-  on_write_coil:
-    - lambda: |-
-        ESP_LOGI("modbus", "Coil %d = %s", address, value ? "ON" : "OFF");
+  id: modbus_tcp_slave
+  port: ${modbus_tcp_port}
+  unit_id: ${modbus_tcp_unit_id}
+  max_registers: ${modbus_tcp_max_registers}
+  max_coils: ${modbus_tcp_max_coils}
 
-# # Beispiel: Temperatur-Sensor
-# sensor:
-#   - platform: dht
-#     pin: GPIO4
-#     temperature:
-#       name: "Temperatur"
-#       id: temp_sensor
-#       filters:
-#         - multiply: 10  # Für Modbus als Integer
-#       on_value:
-#         then:
-#           - lambda: |-
-#               id(modbus_server)->set_holding_register(0, (uint16_t)x);
-#               id(modbus_server)->set_input_register(0, (uint16_t)x);
-#     humidity:
-#       name: "Luftfeuchtigkeit"
-#       id: hum_sensor
-#       filters:
-#         - multiply: 10
-#       on_value:
-#         then:
-#           - lambda: |-
-#               id(modbus_server)->set_holding_register(1, (uint16_t)x);
-#               id(modbus_server)->set_input_register(1, (uint16_t)x);
-
-# Beispiel: Schalter über Modbus steuern
-
-
-# Modbus Coil auf GPIO abbilden
-interval:
-  - interval: 100ms
-    then:
-      - lambda: |-
-          // Coil 0 -> Relais 1
-          bool coil_state = id(modbus_server)->get_coil(0);
-          if (coil_state != id(DO6).state) {
-            if (coil_state) {
-              id(DO6).turn_on();
-            } else {
-              id(DO6).turn_off();
-            }
-          }
-          
-          // Relais Status zurück in Discrete Input schreiben
-          id(modbus_server)->set_discrete_input(0, id(DO6).state);
+# Beispiel-Callbacks für den Slave:
+# on_write_register:
+#   - lambda: |-
+#       ESP_LOGI("modbus", "Register %d = %d", address, value);
+# on_write_coil:
+#   - lambda: |-
+#       ESP_LOGI("modbus", "Coil %d = %s", address, value ? "ON" : "OFF");
