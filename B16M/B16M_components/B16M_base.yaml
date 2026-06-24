@@ -543,9 +543,14 @@ text_sensor:
     name: "IP Address"
     update_interval: 5s
     lambda: |-
-      auto ip = network::get_ip_address();
-      if (ip.is_set()) {
-        return ip.str();
+      auto ips = network::get_ip_addresses();
+      for (auto &ip : ips) {
+        if (!ip.is_set()) {
+          continue;
+        }
+        char buf[network::IP_ADDRESS_BUFFER_SIZE];
+        ip.str_to(buf);
+        return {buf};
       }
       return {"n/a"};
 
