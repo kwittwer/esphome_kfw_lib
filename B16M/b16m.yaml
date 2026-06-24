@@ -208,6 +208,24 @@ packages:
       thermostat_valve_switch: DO4
       Thermostat_external_sensor_timeout: "900"
 
+  heating_power_1: !include
+    file: B16M_components/heating_power_template.yaml
+    vars:
+      heating_power_index: 1
+      heating_power_name: "Heizkreis 1"
+      heating_power_supply_sensor_id: Temp1_temperature
+      heating_power_return_sensor_id: Temp2_temperature
+      heating_power_flow_initial_l_min: 5.0
+
+  heating_power_2: !include
+    file: B16M_components/heating_power_template.yaml
+    vars:
+      heating_power_index: 2
+      heating_power_name: "Heizkreis 2"
+      heating_power_supply_sensor_id: Temp3_temperature
+      heating_power_return_sensor_id: Temp1_temperature
+      heating_power_flow_initial_l_min: 3.5
+
 # ============================================
 # API & OTA
 # ============================================

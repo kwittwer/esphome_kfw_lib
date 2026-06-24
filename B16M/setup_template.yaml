@@ -154,6 +154,31 @@ packages:
 
   # Weitere Thermostate bei Bedarf genauso ergänzen (thermostat3 ... thermostat10)
 
+  # ============================================
+  # HEIZLEISTUNG PRO HEIZKREIS (optional)
+  # Delta-T = Vorlauf - Ruecklauf
+  # P[W] = 69.77 * l/min * Delta-T
+  # Mehrfach einbindbar mit unterschiedlichen Sensoren/Namen.
+  # ============================================
+
+  heating_power_1: !include
+    file: B16M_components/heating_power_template.yaml
+    vars:
+      heating_power_index: 1
+      heating_power_name: "Heizkreis EG"
+      heating_power_supply_sensor_id: Sensor1_temperature
+      heating_power_return_sensor_id: Sensor2_temperature
+      heating_power_flow_initial_l_min: 5.0
+
+  heating_power_2: !include
+    file: B16M_components/heating_power_template.yaml
+    vars:
+      heating_power_index: 2
+      heating_power_name: "Heizkreis OG"
+      heating_power_supply_sensor_id: Sensor3_temperature
+      heating_power_return_sensor_id: Sensor4_temperature
+      heating_power_flow_initial_l_min: 3.5
+
 # ============================================
 # API & OTA (Schlüssel anpassen!)
 # ============================================

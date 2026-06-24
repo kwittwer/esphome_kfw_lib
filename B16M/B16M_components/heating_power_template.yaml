@@ -1,0 +1,62 @@
+# ============================================
+# Heizleistungs-Template pro Heizkreis
+#
+# Berechnet aus Vorlauf, Ruecklauf und Volumenstrom:
+#   Delta-T [K] = T_vorlauf - T_ruecklauf
+#   P[W] = 69.77 * l/min * Delta-T
+#
+# Mehrfach einbindbar ueber !include mit vars.
+# ============================================
+
+defaults:
+  heating_power_index: 1
+  heating_power_name: "Heizkreis 1"
+  heating_power_supply_sensor_id: Temp1_temperature
+  heating_power_return_sensor_id: Temp2_temperature
+  heating_power_update_interval: 5s
+  heating_power_flow_initial_l_min: 5.0
+  heating_power_flow_min_l_min: 0.0
+  heating_power_flow_max_l_min: 40.0
+  heating_power_flow_step_l_min: 0.1
+
+number:
+  - platform: template
+    name: "${heating_power_name} Volumenstrom"
+    id: hp${heating_power_index}_flow_l_min
+    unit_of_measurement: "l/min"
+    min_value: ${heating_power_flow_min_l_min}
+    max_value: ${heating_power_flow_max_l_min}
+    step: ${heating_power_flow_step_l_min}
+    mode: box
+    optimistic: true
+    restore_value: true
+    initial_value: ${heating_power_flow_initial_l_min}
+    entity_category: config
+
+sensor:
+  - platform: template
+    name: "${heating_power_name} Delta T"
+    id: hp${heating_power_index}_delta_t
+    unit_of_measurement: "K"
+    state_class: measurement
+    accuracy_decimals: 2
+    update_interval: ${heating_power_update_interval}
+    lambda: |-
+      if (!id(${heating_power_supply_sensor_id}).has_state() || !id(${heating_power_return_sensor_id}).has_state()) {
+        return NAN;
+      }
+      return id(${heating_power_supply_sensor_id}).state - id(${heating_power_return_sensor_id}).state;
+
+  - platform: template
+    name: "${heating_power_name} Heizleistung"
+    id: hp${heating_power_index}_power_w
+    unit_of_measurement: "W"
+    device_class: power
+    state_class: measurement
+    accuracy_decimals: 1
+    update_interval: ${heating_power_update_interval}
+    lambda: |-
+      if (!id(hp${heating_power_index}_delta_t).has_state() || !id(hp${heating_power_index}_flow_l_min).has_state()) {
+        return NAN;
+      }
+      return 69.77f * id(hp${heating_power_index}_flow_l_min).state * id(hp${heating_power_index}_delta_t).state;

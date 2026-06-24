@@ -148,6 +148,7 @@ binary_sensor:
   - platform: gpio
     name: "DI1"
     id: DI1
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 0
@@ -157,6 +158,7 @@ binary_sensor:
   - platform: gpio
     name: "DI2"
     id: DI2
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 1
@@ -166,6 +168,7 @@ binary_sensor:
   - platform: gpio
     name: "DI3"
     id: DI3
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 2
@@ -175,6 +178,7 @@ binary_sensor:
   - platform: gpio
     name: "DI4"
     id: DI4
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 3
@@ -184,6 +188,7 @@ binary_sensor:
   - platform: gpio
     name: "DI5"
     id: DI5
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 4
@@ -193,6 +198,7 @@ binary_sensor:
   - platform: gpio
     name: "DI6"
     id: DI6
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 5
@@ -202,6 +208,7 @@ binary_sensor:
   - platform: gpio
     name: "DI7"
     id: DI7
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 6
@@ -211,6 +218,7 @@ binary_sensor:
   - platform: gpio
     name: "DI8"
     id: DI8
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 7
@@ -220,6 +228,7 @@ binary_sensor:
   - platform: gpio
     name: "DI9"
     id: DI9
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 8
@@ -229,6 +238,7 @@ binary_sensor:
   - platform: gpio
     name: "DI10"
     id: DI10
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 9
@@ -238,6 +248,7 @@ binary_sensor:
   - platform: gpio
     name: "DI11"
     id: DI11
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 10
@@ -247,6 +258,7 @@ binary_sensor:
   - platform: gpio
     name: "DI12"
     id: DI12
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 11
@@ -256,6 +268,7 @@ binary_sensor:
   - platform: gpio
     name: "DI13"
     id: DI13
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 12
@@ -265,6 +278,7 @@ binary_sensor:
   - platform: gpio
     name: "DI14"
     id: DI14
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 13
@@ -274,6 +288,7 @@ binary_sensor:
   - platform: gpio
     name: "DI15"
     id: DI15
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 14
@@ -283,6 +298,7 @@ binary_sensor:
   - platform: gpio
     name: "DI16"
     id: DI16
+    use_interrupt: false
     pin:
       pcf8574: pcf8574_hub_in_1
       number: 15
