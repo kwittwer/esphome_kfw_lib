@@ -1,8 +1,18 @@
 packages:
   raffstore_common: !include
+<<<<<<< HEAD
     file: kfw_shutter_lib/device_shelly_2pm_gen3_base.yaml
     vars:
       device_name: raffstore1
       friendly_name: Raffstore 1
       cover_id: raffstore1
       cover_friendly_name: Raffstore 1
+=======
+    file: shelly_2pm_raffstore_common.yaml
+    vars:
+      device_name: raffstore1
+      friendly_name: Raffstore 1
+
+web_server:
+  port: 80
+>>>>>>> 79adc67e18ba124586053d12cb17c73113fb1e6b

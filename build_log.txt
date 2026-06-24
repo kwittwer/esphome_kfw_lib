@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [2026-06-01 21:04:33] [Warning] Output-Verzeichnis existiert bereits, räume auf...
 [2026-06-01 21:04:33] [Success] Output-Verzeichnis erstellt
 [2026-06-01 21:04:33] [Info] Verarbeite: Shutter\shelly_2pm_raffstore1.yaml [1/4]
@@ -40,3 +41,47 @@
 [2026-06-01 21:39:49] [Info] 
 [2026-06-01 21:39:49] [Info] Binaries sind verfügbar unter:
 [2026-06-01 21:39:49] [Success] Script erfolgreich beendet
+=======
+[2026-06-01 12:05:35] [Warning] Output-Verzeichnis existiert bereits, räume auf...
+[2026-06-01 12:05:36] [Success] Output-Verzeichnis erstellt
+[2026-06-01 12:05:36] [Info] Verarbeite: Shutter\shelly_2pm_raffstore1.yaml [1/4]
+[2026-06-01 12:05:36] [Info] Starte Compilation...
+[2026-06-01 12:08:22] [Success] Compilation erfolgreich
+[2026-06-01 12:08:22] [Info] Suche Ziel-Binaries in: C:\Users\kwitt\Documents\gittea\esphome_kfw_lib\Shutter\.esphome\build\raffstore1\.pioenvs\raffstore1
+[2026-06-01 12:08:22] [Success] Kopiert: shelly_2pm_raffstore1-firmware.bin
+[2026-06-01 12:08:22] [Success] Kopiert: shelly_2pm_raffstore1-firmware.factory.bin
+[2026-06-01 12:08:22] [Success] Kopiert: shelly_2pm_raffstore1-firmware.ota.bin
+[2026-06-01 12:08:22] [Success] Fertig: Shutter\shelly_2pm_raffstore1.yaml erfolgreich verarbeitet
+[2026-06-01 12:08:22] [Info] Verarbeite: Shutter\shelly_2pm_raffstore2.yaml [2/4]
+[2026-06-01 12:08:22] [Info] Starte Compilation...
+[2026-06-01 12:11:00] [Success] Compilation erfolgreich
+[2026-06-01 12:11:00] [Info] Suche Ziel-Binaries in: C:\Users\kwitt\Documents\gittea\esphome_kfw_lib\Shutter\.esphome\build\raffstore2\.pioenvs\raffstore2
+[2026-06-01 12:11:00] [Success] Kopiert: shelly_2pm_raffstore2-firmware.bin
+[2026-06-01 12:11:00] [Success] Kopiert: shelly_2pm_raffstore2-firmware.factory.bin
+[2026-06-01 12:11:00] [Success] Kopiert: shelly_2pm_raffstore2-firmware.ota.bin
+[2026-06-01 12:11:00] [Success] Fertig: Shutter\shelly_2pm_raffstore2.yaml erfolgreich verarbeitet
+[2026-06-01 12:11:00] [Info] Verarbeite: Shutter\shelly_2pm_raffstore3.yaml [3/4]
+[2026-06-01 12:11:00] [Info] Starte Compilation...
+[2026-06-01 12:13:46] [Success] Compilation erfolgreich
+[2026-06-01 12:13:46] [Info] Suche Ziel-Binaries in: C:\Users\kwitt\Documents\gittea\esphome_kfw_lib\Shutter\.esphome\build\raffstore3\.pioenvs\raffstore3
+[2026-06-01 12:13:46] [Success] Kopiert: shelly_2pm_raffstore3-firmware.bin
+[2026-06-01 12:13:46] [Success] Kopiert: shelly_2pm_raffstore3-firmware.factory.bin
+[2026-06-01 12:13:46] [Success] Kopiert: shelly_2pm_raffstore3-firmware.ota.bin
+[2026-06-01 12:13:46] [Success] Fertig: Shutter\shelly_2pm_raffstore3.yaml erfolgreich verarbeitet
+[2026-06-01 12:13:46] [Info] Verarbeite: Shutter\shelly_2pm_raffstore4.yaml [4/4]
+[2026-06-01 12:13:46] [Info] Starte Compilation...
+[2026-06-01 12:16:26] [Success] Compilation erfolgreich
+[2026-06-01 12:16:26] [Info] Suche Ziel-Binaries in: C:\Users\kwitt\Documents\gittea\esphome_kfw_lib\Shutter\.esphome\build\raffstore4\.pioenvs\raffstore4
+[2026-06-01 12:16:26] [Success] Kopiert: shelly_2pm_raffstore4-firmware.bin
+[2026-06-01 12:16:26] [Success] Kopiert: shelly_2pm_raffstore4-firmware.factory.bin
+[2026-06-01 12:16:26] [Success] Kopiert: shelly_2pm_raffstore4-firmware.ota.bin
+[2026-06-01 12:16:26] [Success] Fertig: Shutter\shelly_2pm_raffstore4.yaml erfolgreich verarbeitet
+[2026-06-01 12:16:26] [Info] Gesamt:       4
+[2026-06-01 12:16:26] [Success] Erfolgreich:  4
+[2026-06-01 12:16:26] [Error] Fehlgeschlagen: 0
+[2026-06-01 12:16:26] [Warning] Uebersprungen: 0
+[2026-06-01 12:16:26] [Success] Firmware-Dateien im Output-Ordner: 12
+[2026-06-01 12:16:26] [Info] 
+[2026-06-01 12:16:26] [Info] Binaries sind verfügbar unter:
+[2026-06-01 12:16:26] [Success] Script erfolgreich beendet
+>>>>>>> 79adc67e18ba124586053d12cb17c73113fb1e6b
