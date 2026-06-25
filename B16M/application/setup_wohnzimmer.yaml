@@ -6,83 +6,79 @@
 # ============================================
 
 packages:
-  base: !include
-    file: ../platform/B16M_base.yaml
-    vars:
-      device_name: b16m_wohnzimmer
-      friendly_name: "B16M Wohnzimmer"
-      version: "2025.12.10.1"
-  # Ethernet W5500 mit DHCP (Standard B16M-Hardware)
-  # Alternativen: net_ethernet_static.yaml | net_wifi.yaml | net_wifi_static.yaml
-  network: !include ../packages/networking/net_ethernet.yaml
+  b16m_application:
+    url: https://github.com/kwittwer/esphome_kfw_lib
+    ref: main
+    refresh: 1d
+    files:
+      - path: B16M/platform/B16M_base.yaml
+        vars:
+          device_name: b16m_wohnzimmer
+          friendly_name: "B16M Wohnzimmer"
+          version: "2025.12.10.1"
+      # Ethernet W5500 mit DHCP (Standard B16M-Hardware)
+      # Alternativen: net_ethernet_static.yaml | net_wifi.yaml | net_wifi_static.yaml
+      - B16M/packages/networking/net_ethernet.yaml
 
-  # Sensor-Slots: Standardmaessig 4x DHT
-  sensor_slot_1: !include
-    file: ../packages/sensors/ow_dht_slot.yaml
-    vars:
-      dht_pin: "40"
-      dht_name: "Wohnzimmer_Temp"
-      dht_id: "T1"
-      dht_update_interval: 10s
-  sensor_slot_2: !include
-    file: ../packages/sensors/ow_dht_slot.yaml
-    vars:
-      dht_pin: "15"
-      dht_name: "Schlafzimmer_Temp"
-      dht_id: "T2"
-      dht_update_interval: 1s
-  sensor_slot_3: !include
-    file: ../packages/sensors/ow_dht_slot.yaml
-    vars:
-      dht_pin: "48"
-      dht_name: "Kinderzimmer_Temp"
-      dht_id: "T3"
-      dht_update_interval: 10s
-  sensor_slot_4: !include
-    file: ../packages/sensors/ow_dht_slot.yaml
-    vars:
-      dht_pin: "47"
-      dht_name: "Kueche_Temp"
-      dht_id: "T4"
-      dht_update_interval: 10s
+      # Sensor-Slots: Standardmaessig 4x DHT
+      - path: B16M/packages/sensors/ow_dht_slot.yaml
+        vars:
+          dht_pin: "40"
+          dht_name: "Wohnzimmer_Temp"
+          dht_id: "T1"
+          dht_update_interval: 10s
+      - path: B16M/packages/sensors/ow_dht_slot.yaml
+        vars:
+          dht_pin: "15"
+          dht_name: "Schlafzimmer_Temp"
+          dht_id: "T2"
+          dht_update_interval: 1s
+      - path: B16M/packages/sensors/ow_dht_slot.yaml
+        vars:
+          dht_pin: "48"
+          dht_name: "Kinderzimmer_Temp"
+          dht_id: "T3"
+          dht_update_interval: 10s
+      - path: B16M/packages/sensors/ow_dht_slot.yaml
+        vars:
+          dht_pin: "47"
+          dht_name: "Kueche_Temp"
+          dht_id: "T4"
+          dht_update_interval: 10s
 
-  thermostat_base: !include ../shared/Thermostate.yaml
-  thermostat1: !include
-    file: ../packages/heating/thermostat_template.yaml
-    vars:
-      thermostat_id: 1
-      thermostat_name: "Wohnzimmer"
-      thermostat_fallback_sensor: Schlafzimmer_Temp_temperature
-      thermostat_fallback_humidity_sensor: Schlafzimmer_Temp_humidity
-      thermostat_valve_switch: DO1
-      Thermostat_external_sensor_timeout: "900"
-  thermostat2: !include
-    file: ../packages/heating/thermostat_template.yaml
-    vars:
-      thermostat_id: 2
-      thermostat_name: "Schlafzimmer"
-      thermostat_fallback_sensor: Wohnzimmer_Temp_temperature
-      thermostat_fallback_humidity_sensor: Wohnzimmer_Temp_humidity
-      thermostat_valve_switch: DO2
-      Thermostat_external_sensor_timeout: "900"
-  thermostat3: !include
-    file: ../packages/heating/thermostat_template.yaml
-    vars:
-      thermostat_id: 3
-      thermostat_name: "Kinderzimmer"
-      thermostat_fallback_sensor: Wohnzimmer_Temp_temperature
-      thermostat_fallback_humidity_sensor: Wohnzimmer_Temp_humidity
-      thermostat_valve_switch: DO3
-      Thermostat_external_sensor_timeout: "900"
-  thermostat4: !include
-    file: ../packages/heating/thermostat_template.yaml
-    vars:
-      thermostat_id: 4
-      thermostat_name: "Kueche"
-      thermostat_fallback_sensor: Schlafzimmer_Temp_temperature
-      thermostat_fallback_humidity_sensor: Schlafzimmer_Temp_humidity
-      thermostat_valve_switch: DO4
-      Thermostat_external_sensor_timeout: "900"
+      - B16M/shared/Thermostate.yaml
+      - path: B16M/packages/heating/thermostat_template.yaml
+        vars:
+          thermostat_id: 1
+          thermostat_name: "Wohnzimmer"
+          thermostat_fallback_sensor: Schlafzimmer_Temp_temperature
+          thermostat_fallback_humidity_sensor: Schlafzimmer_Temp_humidity
+          thermostat_valve_switch: DO1
+          Thermostat_external_sensor_timeout: "900"
+      - path: B16M/packages/heating/thermostat_template.yaml
+        vars:
+          thermostat_id: 2
+          thermostat_name: "Schlafzimmer"
+          thermostat_fallback_sensor: Wohnzimmer_Temp_temperature
+          thermostat_fallback_humidity_sensor: Wohnzimmer_Temp_humidity
+          thermostat_valve_switch: DO2
+          Thermostat_external_sensor_timeout: "900"
+      - path: B16M/packages/heating/thermostat_template.yaml
+        vars:
+          thermostat_id: 3
+          thermostat_name: "Kinderzimmer"
+          thermostat_fallback_sensor: Wohnzimmer_Temp_temperature
+          thermostat_fallback_humidity_sensor: Wohnzimmer_Temp_humidity
+          thermostat_valve_switch: DO3
+          Thermostat_external_sensor_timeout: "900"
+      - path: B16M/packages/heating/thermostat_template.yaml
+        vars:
+          thermostat_id: 4
+          thermostat_name: "Kueche"
+          thermostat_fallback_sensor: Schlafzimmer_Temp_temperature
+          thermostat_fallback_humidity_sensor: Schlafzimmer_Temp_humidity
+          thermostat_valve_switch: DO4
+          Thermostat_external_sensor_timeout: "900"
 
 api:
   reboot_timeout: 6h

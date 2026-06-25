@@ -9,175 +9,166 @@
 # ============================================
 
 packages:
-  # ============================================
-  # BASIS-KONFIGURATION (anpassen!)
-  # Alle nicht genannten Variablen verwenden die Standardwerte aus B16M_base.yaml
-  # ============================================
-  base: !include
-    file: ../platform/B16M_base.yaml
-    vars:
-      device_name: b16m_mysetup              # GerÃ¤tename (fÃ¼r mDNS, API, etc.)
-      friendly_name: "B16M My Setup"         # Anzeigename in Home Assistant
-      version: "2025.12.10.1"                # Firmware-Version
+  b16m_application:
+    url: https://github.com/kwittwer/esphome_kfw_lib
+    ref: main
+    refresh: 1d
+    files:
+      # ============================================
+      # BASIS-KONFIGURATION (anpassen!)
+      # Alle nicht genannten Variablen verwenden die Standardwerte aus B16M_base.yaml
+      # ============================================
+      - path: B16M/platform/B16M_base.yaml
+        vars:
+          device_name: b16m_mysetup              # Geraetename (fuer mDNS, API, etc.)
+          friendly_name: "B16M My Setup"         # Anzeigename in Home Assistant
+          version: "2025.12.10.1"                # Firmware-Version
 
-      # Optional: Hardware-Parameter nur bei abweichender Verdrahtung angeben
-      # logger_level: DEBUG
-      # timezone: "Europe/Berlin"
-      # pcf_in_address: "0x24"
-      # ...
+          # Optional: Hardware-Parameter nur bei abweichender Verdrahtung angeben
+          # logger_level: DEBUG
+          # timezone: "Europe/Berlin"
+          # pcf_in_address: "0x24"
+          # ...
 
-  # ============================================
-  # NETZWERK (anpassen!)
-  # WÃ¤hle EINE der folgenden Optionen:
-  # ============================================
+      # ============================================
+      # NETZWERK (anpassen!)
+      # Waehle EINE der folgenden Optionen:
+      # ============================================
 
-  # Option 1: WiFi mit DHCP (Standard fÃ¼r neue Setups)
-  network: !include
-    file: ../packages/networking/net_wifi.yaml
-    vars:
-      wifi_ssid: "MeinNetzwerk"     # oder: !secret wifi_ssid
-      wifi_password: "MeinPasswort" # oder: !secret wifi_password
+      # Option 1: WiFi mit DHCP (Standard fuer neue Setups)
+      - path: B16M/packages/networking/net_wifi.yaml
+        vars:
+          wifi_ssid: "MeinNetzwerk"     # oder: !secret wifi_ssid
+          wifi_password: "MeinPasswort" # oder: !secret wifi_password
 
-  # Option 2: WiFi mit statischer IP
-  # network: !include
-  #   file: ../packages/networking/net_wifi_static.yaml
-  #   vars:
-  #     wifi_ssid: "MeinNetzwerk"
-  #     wifi_password: "MeinPasswort"
-  #     static_ip: "192.168.1.100"
-  #     gateway: "192.168.1.1"
+      # Option 2: WiFi mit statischer IP
+      # - path: B16M/packages/networking/net_wifi_static.yaml
+      #   vars:
+      #     wifi_ssid: "MeinNetzwerk"
+      #     wifi_password: "MeinPasswort"
+      #     static_ip: "192.168.1.100"
+      #     gateway: "192.168.1.1"
 
-  # Option 3: Ethernet W5500 mit DHCP (Standard B16M-Hardware)
-  # network: !include ../packages/networking/net_ethernet.yaml
+      # Option 3: Ethernet W5500 mit DHCP (Standard B16M-Hardware)
+      # - B16M/packages/networking/net_ethernet.yaml
 
-  # Option 4: Ethernet W5500 mit statischer IP
-  # network: !include
-  #   file: ../packages/networking/net_ethernet_static.yaml
-  #   vars:
-  #     static_ip: "192.168.1.100"
-  #     gateway: "192.168.1.1"
+      # Option 4: Ethernet W5500 mit statischer IP
+      # - path: B16M/packages/networking/net_ethernet_static.yaml
+      #   vars:
+      #     static_ip: "192.168.1.100"
+      #     gateway: "192.168.1.1"
 
-  # ============================================
-  # SENSOR-SLOTS (anpassen!)
-  # Pro Slot genau EINE aktive Variante verwenden:
-  # - ow_dht_slot.yaml fuer genau einen DHT Sensor
-  # - ow_dallas_bus.yaml fuer einen Dallas One-Wire Bus
-  # Auf einem Dallas Bus koennen mehrere Sensoren ueber ow_dallas_sensor.yaml liegen.
-  # Insgesamt koennen bis zu 16 Dallas Sensoren eingebunden werden.
-  # ============================================
+      # ============================================
+      # SENSOR-SLOTS (anpassen!)
+      # Pro Slot genau EINE aktive Variante verwenden:
+      # - ow_dht_slot.yaml fuer genau einen DHT Sensor
+      # - ow_dallas_bus.yaml fuer einen Dallas One-Wire Bus
+      # Auf einem Dallas Bus koennen mehrere Sensoren ueber ow_dallas_sensor.yaml liegen.
+      # Insgesamt koennen bis zu 16 Dallas Sensoren eingebunden werden.
+      # ============================================
 
-  # Slot 1 aktiv als DHT
-  sensor_slot_1: !include
-    file: ../packages/sensors/ow_dht_slot.yaml
-    vars:
-      dht_pin: "40"
-      dht_name: "Sensor1"
-      dht_id: "T1"
-      dht_update_interval: 10s
+      # Slot 1 aktiv als DHT
+      - path: B16M/packages/sensors/ow_dht_slot.yaml
+        vars:
+          dht_pin: "40"
+          dht_name: "Sensor1"
+          dht_id: "T1"
+          dht_update_interval: 10s
 
-  # Alternative: Slot 1 als Dallas Bus
-  # sensor_slot_1: !include
-  #   file: ../packages/sensors/ow_dallas_bus.yaml
-  #   vars:
-  #     dallas_bus_id: ow_slot_1
-  #     dallas_pin: "40"
+      # Alternative: Slot 1 als Dallas Bus
+      # - path: B16M/packages/sensors/ow_dallas_bus.yaml
+      #   vars:
+      #     dallas_bus_id: ow_slot_1
+      #     dallas_pin: "40"
 
-  # Beispiel Dallas Sensor auf Slot 1
-  # dallas_sensor_1: !include
-  #   file: ../packages/sensors/ow_dallas_sensor.yaml
-  #   vars:
-  #     one_wire_id: ow_slot_1
-  #     dallas_address: 0x1234567812345628
-  #     dallas_sensor_name: "Aussen_Temp"
-  #     dallas_sensor_id: outdoor_temp
-  #     dallas_update_interval: 10s
+      # Beispiel Dallas Sensor auf Slot 1
+      # - path: B16M/packages/sensors/ow_dallas_sensor.yaml
+      #   vars:
+      #     one_wire_id: ow_slot_1
+      #     dallas_address: 0x1234567812345628
+      #     dallas_sensor_name: "Aussen_Temp"
+      #     dallas_sensor_id: outdoor_temp
+      #     dallas_update_interval: 10s
 
-  # Slot 2 aktiv als DHT
-  sensor_slot_2: !include
-    file: ../packages/sensors/ow_dht_slot.yaml
-    vars:
-      dht_pin: "15"
-      dht_name: "Sensor2"
-      dht_id: "T2"
-      dht_update_interval: 1s
+      # Slot 2 aktiv als DHT
+      - path: B16M/packages/sensors/ow_dht_slot.yaml
+        vars:
+          dht_pin: "15"
+          dht_name: "Sensor2"
+          dht_id: "T2"
+          dht_update_interval: 1s
 
-  # Slot 3 aktiv als DHT
-  sensor_slot_3: !include
-    file: ../packages/sensors/ow_dht_slot.yaml
-    vars:
-      dht_pin: "48"
-      dht_name: "Sensor3"
-      dht_id: "T3"
-      dht_update_interval: 10s
+      # Slot 3 aktiv als DHT
+      - path: B16M/packages/sensors/ow_dht_slot.yaml
+        vars:
+          dht_pin: "48"
+          dht_name: "Sensor3"
+          dht_id: "T3"
+          dht_update_interval: 10s
 
-  # Slot 4 aktiv als DHT
-  sensor_slot_4: !include
-    file: ../packages/sensors/ow_dht_slot.yaml
-    vars:
-      dht_pin: "47"
-      dht_name: "Sensor4"
-      dht_id: "T4"
-      dht_update_interval: 10s
+      # Slot 4 aktiv als DHT
+      - path: B16M/packages/sensors/ow_dht_slot.yaml
+        vars:
+          dht_pin: "47"
+          dht_name: "Sensor4"
+          dht_id: "T4"
+          dht_update_interval: 10s
 
-  # ============================================
-  # THERMOSTAT BASIS (nicht Ã¤ndern)
-  # ============================================
-  thermostat_base: !include ../shared/Thermostate.yaml
+      # ============================================
+      # THERMOSTAT BASIS (nicht aendern)
+      # ============================================
+      - B16M/shared/Thermostate.yaml
 
-  # ============================================
-  # THERMOSTATEN (anpassen!)
-  # thermostat_fallback_sensor = ID des Sensors aus dem jeweiligen Sensor-Slot
-  # Beispiel: dht_name = "Sensor2" -> thermostat_fallback_sensor: Sensor2_temperature
-  # ============================================
+      # ============================================
+      # THERMOSTATEN (anpassen!)
+      # thermostat_fallback_sensor = ID des Sensors aus dem jeweiligen Sensor-Slot
+      # Beispiel: dht_name = "Sensor2" -> thermostat_fallback_sensor: Sensor2_temperature
+      # ============================================
 
-  # Thermostat 1
-  thermostat1: !include
-    file: ../packages/heating/thermostat_template.yaml
-    vars:
-      thermostat_id: 1
-      thermostat_name: "Raum 1"
-      thermostat_fallback_sensor: Sensor2_temperature
-      thermostat_fallback_humidity_sensor: Sensor2_humidity
-      thermostat_valve_switch: DO1
-      Thermostat_external_sensor_timeout: "900"
+      # Thermostat 1
+      - path: B16M/packages/heating/thermostat_template.yaml
+        vars:
+          thermostat_id: 1
+          thermostat_name: "Raum 1"
+          thermostat_fallback_sensor: Sensor2_temperature
+          thermostat_fallback_humidity_sensor: Sensor2_humidity
+          thermostat_valve_switch: DO1
+          Thermostat_external_sensor_timeout: "900"
 
-  # Thermostat 2
-  thermostat2: !include
-    file: ../packages/heating/thermostat_template.yaml
-    vars:
-      thermostat_id: 2
-      thermostat_name: "Raum 2"
-      thermostat_fallback_sensor: Sensor1_temperature
-      thermostat_fallback_humidity_sensor: Sensor1_humidity
-      thermostat_valve_switch: DO2
-      Thermostat_external_sensor_timeout: "900"
+      # Thermostat 2
+      - path: B16M/packages/heating/thermostat_template.yaml
+        vars:
+          thermostat_id: 2
+          thermostat_name: "Raum 2"
+          thermostat_fallback_sensor: Sensor1_temperature
+          thermostat_fallback_humidity_sensor: Sensor1_humidity
+          thermostat_valve_switch: DO2
+          Thermostat_external_sensor_timeout: "900"
 
-  # Weitere Thermostate bei Bedarf genauso ergÃ¤nzen (thermostat3 ... thermostat10)
+      # Weitere Thermostate bei Bedarf genauso ergaenzen (thermostat3 ... thermostat10)
 
-  # ============================================
-  # HEIZLEISTUNG PRO HEIZKREIS (optional)
-  # Delta-T = Vorlauf - Ruecklauf
-  # P[W] = 69.77 * l/min * Delta-T
-  # Mehrfach einbindbar mit unterschiedlichen Sensoren/Namen.
-  # ============================================
+      # ============================================
+      # HEIZLEISTUNG PRO HEIZKREIS (optional)
+      # Delta-T = Vorlauf - Ruecklauf
+      # P[W] = 69.77 * l/min * Delta-T
+      # Mehrfach einbindbar mit unterschiedlichen Sensoren/Namen.
+      # ============================================
 
-  heating_power_1: !include
-    file: ../packages/heating/heating_power_template.yaml
-    vars:
-      heating_power_index: 1
-      heating_power_name: "Heizkreis EG"
-      heating_power_supply_sensor_id: Sensor1_temperature
-      heating_power_return_sensor_id: Sensor2_temperature
-      heating_power_flow_initial_l_min: 5.0
+      - path: B16M/packages/heating/heating_power_template.yaml
+        vars:
+          heating_power_index: 1
+          heating_power_name: "Heizkreis EG"
+          heating_power_supply_sensor_id: Sensor1_temperature
+          heating_power_return_sensor_id: Sensor2_temperature
+          heating_power_flow_initial_l_min: 5.0
 
-  heating_power_2: !include
-    file: ../packages/heating/heating_power_template.yaml
-    vars:
-      heating_power_index: 2
-      heating_power_name: "Heizkreis OG"
-      heating_power_supply_sensor_id: Sensor3_temperature
-      heating_power_return_sensor_id: Sensor4_temperature
-      heating_power_flow_initial_l_min: 3.5
+      - path: B16M/packages/heating/heating_power_template.yaml
+        vars:
+          heating_power_index: 2
+          heating_power_name: "Heizkreis OG"
+          heating_power_supply_sensor_id: Sensor3_temperature
+          heating_power_return_sensor_id: Sensor4_temperature
+          heating_power_flow_initial_l_min: 3.5
 
 # ============================================
 # API & OTA (SchlÃ¼ssel anpassen!)
