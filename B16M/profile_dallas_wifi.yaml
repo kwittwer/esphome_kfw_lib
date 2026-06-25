@@ -92,7 +92,7 @@ packages:
 
 dashboard_import:
   package_import_url: github://kwittwer/esphome_kfw_lib/B16M/profile_dallas_wifi.yaml@main
-  import_full_config: true
+  import_full_config: false
 
 api:
   encryption:

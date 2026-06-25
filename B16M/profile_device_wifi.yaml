@@ -1,0 +1,61 @@
+# ============================================
+# B16M Geraete-Profil – WiFi
+#
+# Wie profile_device_ethernet.yaml, aber mit WLAN statt Ethernet.
+# Praktisch fuer Tests oder Geraete ohne Ethernet-Anschluss.
+#
+# Enthalten:
+#   - ESP32-S3, PSRAM, Web-Server
+#   - 16x Digital Input  (DI1–DI16)
+#   - 16x Digital Output (DO1–DO16)
+#   - 4x Analog Input    (AI1–AI4 via ADS1115)
+#   - OLED Display (SSD1306, 128x64)
+#   - RTC (DS1307)
+#   - Netzwerk: WiFi + DHCP + Fallback-AP
+#
+# Nicht enthalten (separat hinzufuegen):
+#   - Sensor-Slots (DHT, Dallas)
+#   - Thermostate, Heizungslogik
+#   - Anwendungsspezifische Packages
+#
+# Import-Link:
+#   github://kwittwer/esphome_kfw_lib/B16M/profile_device_wifi.yaml@main
+# ============================================
+
+substitutions:
+  # ---- Geraet (anpassen!) -------------------------------------------
+  device_name: b16m-device-wifi       # Aendern: Hostname (Kleinbuchstaben + Bindestrich)
+  friendly_name: "B16M Device WiFi"   # Aendern: Anzeigename in Home Assistant
+
+  # ---- Netzwerk (anpassen!) -----------------------------------------
+  wifi_ssid: "WLAN-Name-hier"         # Aendern
+  wifi_password: "WLAN-Passwort-hier" # Aendern
+
+packages:
+  # Hardware-Basis: ESP32-S3, I2C, 16DI, 16DO, 4AI, Display, RTC
+  base: !include
+    file: B16M_components/B16M_base.yaml
+    vars:
+      device_name: ${device_name}
+      friendly_name: ${friendly_name}
+
+  # Netzwerk: WiFi
+  network: !include
+    file: B16M_components/net_wifi.yaml
+    vars:
+      wifi_ssid: ${wifi_ssid}
+      wifi_password: ${wifi_password}
+
+dashboard_import:
+  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/profile_device_wifi.yaml@main
+  import_full_config: false
+
+# ---- Sicherheit (anpassen!) -----------------------------------------
+api:
+  encryption:
+    key: "GvfbcydpffzMhFZJ9Jm59Vv86K8pZFtVq3BzSGj5Rek="   # ERSETZEN
+  reboot_timeout: 6h
+
+ota:
+  - platform: esphome
+    password: "CHANGE_ME_OTA_PASSWORD"                      # ERSETZEN
