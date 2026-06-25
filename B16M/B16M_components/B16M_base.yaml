@@ -670,7 +670,7 @@ font:
     id: bold
     size: 10
 
-  - file: "B16M_components/materialdesignicons-webfont.ttf"
+  - file: "https://raw.githubusercontent.com/kwittwer/esphome_kfw_lib/main/B16M/B16M_components/materialdesignicons-webfont.ttf"
     id: icon
     size: 16
     glyphs: [
