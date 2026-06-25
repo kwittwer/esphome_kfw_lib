@@ -472,7 +472,7 @@ sensor:
     resolution: 16_BITS
     id: AI_1
     name: "AI 1"
-    internal: true
+    internal: false
     unit_of_measurement: "V"
     update_interval: 5s
 
@@ -482,7 +482,7 @@ sensor:
     resolution: 16_BITS
     id: AI_2
     name: "AI 2"
-    internal: true
+    internal: false
     unit_of_measurement: "V"
     update_interval: 5s
 
@@ -493,7 +493,7 @@ sensor:
     id: AI_3
     unit_of_measurement: "mA"
     accuracy_decimals: 2
-    internal: true
+    internal: false
     update_interval: 5s
     filters:
       - calibrate_linear:
@@ -508,7 +508,7 @@ sensor:
     id: AI_4
     unit_of_measurement: "mA"
     accuracy_decimals: 2
-    internal: true
+    internal: false
     update_interval: 5s
     filters:
       - calibrate_linear:
@@ -516,24 +516,24 @@ sensor:
           - 0.59 -> 3.95
 
 
-# ============================================
-# ANEMOMETER (Windgeschwindigkeit via AI_4)
-# ============================================
-  - id: !extend AI_3
-    internal: true
+# # ============================================
+# # ANEMOMETER (Windgeschwindigkeit via AI_4)
+# # ============================================
+#   - id: !extend AI_3
+#     internal: true
 
-  - platform: template
-    name: Windspeed Sensor
-    id: wind_speed
-    lambda: |-
-      return id(AI_4).state;
-    update_interval: 1s
-    unit_of_measurement: m/s
-    device_class: "wind_speed"
-    filters:
-      - calibrate_linear:
-          - 3.95 ->  0.0
-          - 20 -> 30.0
+#   - platform: template
+#     name: Windspeed Sensor
+#     id: wind_speed
+#     lambda: |-
+#       return id(AI_4).state;
+#     update_interval: 1s
+#     unit_of_measurement: m/s
+#     device_class: "wind_speed"
+#     filters:
+#       - calibrate_linear:
+#           - 3.95 ->  0.0
+#           - 20 -> 30.0
 
 
 # ============================================
