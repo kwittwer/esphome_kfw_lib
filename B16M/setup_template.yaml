@@ -184,9 +184,9 @@ packages:
 # ============================================
 api:
   encryption:
-    key: "GvfbcydpffzMhFZJ9Jm59Vv86K8pZFtVq3BzSGj5Rek="
+    key: !secret api_encryption_key
   reboot_timeout: 6h
 
 ota:
   - platform: esphome
-    password: "ac6feaa1334ddf6f9876e1f3203074fd"
+    password: !secret ota_pwd

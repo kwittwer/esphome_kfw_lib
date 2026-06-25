@@ -146,7 +146,7 @@ api:
   # HA-Verbindungsstatus in Global setzen
   id: api_server
   encryption:
-    key: "GvfbcydpffzMhFZJ9Jm59Vv86K8pZFtVq3BzSGj5Rek="
+    key: !secret api_encryption_key
   on_client_connected:
     then:
       - lambda: 'id(ha_connected) = true;'
@@ -155,7 +155,7 @@ api:
       - lambda: 'id(ha_connected) = false;'
 ota:
   - platform: esphome
-    password: "ac6feaa1334ddf6f9876e1f3203074fd"
+    password: !secret ota_pwd
 
 mqtt:
   id: mqtt_client

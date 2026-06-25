@@ -72,9 +72,9 @@ dashboard_import:
 
 api:
   encryption:
-    key: "GvfbcydpffzMhFZJ9Jm59Vv86K8pZFtVq3BzSGj5Rek="   # ERSETZEN
+    key: !secret api_encryption_key   # ERSETZEN
   reboot_timeout: 6h
 
 ota:
   - platform: esphome
-    password: "CHANGE_ME_OTA_PASSWORD"                      # ERSETZEN
+    password: !secret ota_pwd                      # ERSETZEN
