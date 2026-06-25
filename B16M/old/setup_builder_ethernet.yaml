@@ -1,21 +1,40 @@
 # ============================================
-# ESPHome B16M - Device Builder Entry (Ethernet)
+# ESPHome B16M - Device Builder Entry (Ethernet with DHCP)
 #
 # This file is intended for ESPHome Device Builder import.
 # It keeps the configuration minimal and editable while
 # reusing package templates directly from GitHub.
+#
+# Beim Import werden diese Felder in der Dashboard-GUI als bearbeitbare Eingabefelder angezeigt:
+#   - Device-Name (für ESPHome Dashboard)
+#   - Friendly Name (Anzeigename)
+#
+# For static IP configuration, use setup_builder_ethernet_static.yaml instead.
+#
+# Dashboard Substitutionen:
+#   - device_name: Gerätekennzeichen für ESPHome Dashboard
+#   - friendly_name: Anzeigename in Home Assistant
 # ============================================
+
+substitutions:
+  # ============================================
+  # DEVICE CONFIGURATION (bearbeitbar in Dashboard GUI)
+  # ============================================
+  # Gerätekennzeichen (ohne Leerzeichen, nur Kleinbuchstaben, Zahlen, Bindestrich)
+  device_name: "b16m-eth"
+  # Anzeigename im Home Assistant und ESPHome Dashboard
+  friendly_name: "B16M Ethernet"
 
 packages:
   b16m_application:
     url: https://github.com/kwittwer/esphome_kfw_lib
     ref: main
-    refresh: 1d
+    refresh: 0s
     files:
       - path: B16M/platform/B16M_base.yaml
         vars:
-          device_name: b16m-builder-eth
-          friendly_name: "B16M Builder Ethernet"
+          device_name: ${device_name}
+          friendly_name: ${friendly_name}
           version: "2025.12.10.1"
       - B16M/packages/networking/net_ethernet.yaml
       - path: B16M/packages/sensors/ow_dht_slot.yaml

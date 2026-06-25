@@ -1,0 +1,85 @@
+# ============================================
+# ESPHome B16M - Device Builder Entry (Ethernet mit statischer IP)
+#
+# This file is intended for ESPHome Device Builder import.
+# Allows configuration of static IP address through Dashboard substitutions.
+#
+# Beim Import werden diese Felder in der Dashboard-GUI als bearbeitbare Eingabefelder angezeigt:
+#   - Device-Name (für ESPHome Dashboard)
+#   - Friendly Name (Anzeigename)
+#   - Statische IP-Adresse
+#   - Gateway/Router-IP
+#   - Subnet-Maske
+#   - DNS-Server
+# ============================================
+
+substitutions:
+  # ============================================
+  # DEVICE CONFIGURATION (bearbeitbar in Dashboard GUI)
+  # ============================================
+  # Gerätekennzeichen (ohne Leerzeichen, nur Kleinbuchstaben, Zahlen, Bindestrich)
+  device_name: "b16m"
+  # Anzeigename im Home Assistant und ESPHome Dashboard
+  friendly_name: "B16M"
+
+  # ============================================
+  # NETZWERK - STATISCHE IP-KONFIGURATION (bearbeitbar in Dashboard GUI)
+  # ============================================
+  # Statische IP-Adresse des Geräts (z.B. 192.168.1.100)
+  eth_static_ip: "192.168.178.59"
+  # Gateway/Router-IP (z.B. 192.168.1.1)
+  eth_gateway: "192.168.178.1"
+  # Subnet-Maske (Standard: 255.255.255.0 für /24-Netzwerk)
+  eth_subnet: "255.255.255.0"
+  # DNS-Server (z.B. 192.168.1.1 oder 8.8.8.8)
+  eth_dns: "192.168.178.1"
+
+  # ============================================
+  # THERMOSTAT 1 (bearbeitbar in Dashboard GUI)
+  # fallback_sensor / fallback_humidity_sensor müssen auf vorhandene Sensor-IDs zeigen
+  # ============================================
+  thermostat1_name: "Raum 1"
+  thermostat1_fallback_sensor: "slot1_temperature"
+  thermostat1_fallback_humidity_sensor: "slot1_humidity"
+  thermostat1_valve_switch: "DO1"
+  thermostat1_sensor_timeout: "900"
+
+packages:
+  b16m_application:
+    url: https://github.com/kwittwer/esphome_kfw_lib
+    ref: main
+    refresh: 0s
+    files:
+      - path: B16M/platform/B16M_base.yaml
+        vars:
+          device_name: ${device_name}
+          friendly_name: ${friendly_name}
+          version: "2026.06.25.1"
+      - path: B16M/packages/networking/net_ethernet_static.yaml
+        vars:
+          static_ip: ${eth_static_ip}
+          gateway: ${eth_gateway}
+          subnet: ${eth_subnet}
+          dns: ${eth_dns}
+      - B16M/shared/Thermostate.yaml
+      - path: B16M/packages/heating/thermostat_template.yaml
+        vars:
+          thermostat_id: 1
+          thermostat_name: ${thermostat1_name}
+          thermostat_fallback_sensor: ${thermostat1_fallback_sensor}
+          thermostat_fallback_humidity_sensor: ${thermostat1_fallback_humidity_sensor}
+          thermostat_valve_switch: ${thermostat1_valve_switch}
+          Thermostat_external_sensor_timeout: ${thermostat1_sensor_timeout}
+
+
+dashboard_import:
+  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/application/setup_builder_ethernet_static.yaml@main
+  import_full_config: false
+
+api:
+  reboot_timeout: 6h
+
+ota:
+  - platform: esphome
+
+

@@ -191,7 +191,45 @@ Wenn deine Sensor-Anordnung exakt einem der folgenden Szenarien entspricht, nutz
 Dann Schritt 2â€“4 wie oben.
 
 ---
+### **Option C: Schnelle Konfiguration mit Substitutionen (Statische IP via Dashboard GUI)**
 
+Für Benutzer, die schnell ein Device mit den Standard-Sensoren und **editierbarer statischer IP in der Dashboard GUI** konfigurieren möchten:
+
+#### Ethernet mit Substitutionen
+
+| Variante | Netzwerk | Import-Link |
+|----------|----------|-------------|
+| **DHCP (Standard)** | Ethernet W5500, DHCP | `github://kwittwer/esphome_kfw_lib/B16M/application/setup_builder_ethernet.yaml@main` |
+| **Statische IP (editierbar)** | Ethernet W5500 + statische IP, alle Parameter in Dashboard-GUI | `github://kwittwer/esphome_kfw_lib/B16M/application/setup_builder_ethernet_static.yaml@main` |
+
+#### WiFi mit Substitutionen
+
+| Variante | Netzwerk | Import-Link |
+|----------|----------|-------------|
+| **DHCP (Standard)** | WLAN, DHCP | `github://kwittwer/esphome_kfw_lib/B16M/application/setup_builder_wifi.yaml@main` |
+| **Statische IP (editierbar)** | WLAN + statische IP, alle Parameter in Dashboard-GUI | `github://kwittwer/esphome_kfw_lib/B16M/application/setup_builder_wifi_static.yaml@main` |
+
+#### Nutzung
+
+1. **Wähle die passende Variante** (z.B. `setup_builder_ethernet_static.yaml` für Ethernet + statische IP)
+2. **Im ESPHome Dashboard**: **Add Device** → **Import** → URL einfügen
+3. **Dashboard zeigt Substitutions-Eingabefelder:**
+   - `device_name`: Device-Identifier (z.B. `b16m-keller`)
+   - `friendly_name`: Anzeigename (z.B. `Keller Sensor`)
+   - Bei statischen Varianten zusätzlich:
+     - `eth_static_ip` oder `wifi_static_ip`: Geräte-IP (z.B. `192.168.1.100`)
+     - `eth_gateway` oder `wifi_gateway`: Gateway/Router (z.B. `192.168.1.1`)
+     - `eth_subnet` oder `wifi_subnet`: Subnet-Mask (z.B. `255.255.255.0`)
+     - `eth_dns` oder `wifi_dns`: DNS-Server (z.B. `192.168.1.1`)
+   - Bei WiFi-Varianten zusätzlich:
+     - `wifi_ssid`: WLAN-Name
+     - `wifi_password`: WLAN-Passwort
+     - `wifi_ap_password`: Fallback AP Passwort
+4. **Alle Werte eingeben** → **Install** → Konfiguration fertig
+
+Diese Variante enthält **bereits 4× DHT-Sensoren** (Slots 1–4) und **Standard-Thermostaten**. Die Konfiguration ist sofort einsatzbereit.
+
+---
 ## Package: `B16M_base.yaml` â€“ Basis-Konfiguration
 
 Enthaelt ESP32-S3, I2C-Bus, PCF8575 I/O-Expander (16 DI / 16 DO), ADS1115 (4 AI), Display, Anemometer, Web-Server, RTC.
