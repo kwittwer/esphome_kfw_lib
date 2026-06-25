@@ -42,11 +42,144 @@ B16M/
 
 ---
 
-## ESPHome Device Builder – Schnellstart
+## ESPHome Device Builder – Zwei Optionen
 
-### Schritt 1: Passendes Profil waehlen
+### **Option A: Flexible Konfiguration (Empfohlen für Anfänger)**
 
-Waehle das Profil nach angeschlossener Hardware und Netzwerktyp:
+Nutzer importiert ein universelles Basis-Profil, editiert dann lokal die YAML und fügt Sensoren selbst hinzu.
+
+#### Schritt 1: Basis-Profil wählen und importieren
+
+Wähle ein Basis-Profil je nach Netzwerk**typ**:
+
+| Profil | Netzwerk | Import-Link |
+|--------|----------|-------------|
+| **Device – WiFi** | WLAN (DHCP, editierbar auf statisch) | `github://kwittwer/esphome_kfw_lib/B16M/profile_device_wifi.yaml@main` |
+| **Device – Ethernet** | Ethernet W5500 (DHCP, editierbar auf statisch) | `github://kwittwer/esphome_kfw_lib/B16M/profile_device_ethernet.yaml@main` |
+
+Im ESPHome Dashboard:
+1. **Add Device** → **Import**
+2. URL einfügen
+3. **Import** klicken
+4. Die Substitutions im Dialog setzen:
+   - `device_name` (z.B. `b16m-keller`)
+   - `friendly_name` (z.B. `Keller Sensor`)
+   - `wifi_ssid` und `wifi_password` (nur WiFi-Profil)
+
+#### Schritt 2: Lokal editieren – Netzwerk anpassen
+
+Im ESPHome Editor die YAML öffnen und die Netzwerk-Einstellung anpassen:
+
+**WiFi mit DHCP** (Standard, nichts ändern nötig):
+```yaml
+packages:
+  network: !include B16M_components/net_wifi.yaml
+```
+
+**WiFi mit statischer IP:**
+```yaml
+packages:
+  network: !include B16M_components/net_wifi_static.yaml
+  
+substitutions:
+  static_ip: "192.168.1.100"
+  gateway: "192.168.1.1"
+  # optional: subnet, dns
+```
+
+**Ethernet mit DHCP** (Standard, nichts ändern nötig):
+```yaml
+packages:
+  network: !include B16M_components/net_ethernet.yaml
+```
+
+**Ethernet mit statischer IP:**
+```yaml
+packages:
+  network: !include B16M_components/net_ethernet_static.yaml
+  
+substitutions:
+  static_ip: "192.168.1.100"
+  gateway: "192.168.1.1"
+```
+
+#### Schritt 3: Sensoren hinzufügen
+
+Unter `packages:` neue Sensor-Packages hinzufügen. Beispiele:
+
+**DHT22 auf Slot 1:**
+```yaml
+packages:
+  dht_slot1: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_slot: "40"              # GPIO für Slot 1
+      dht_name: "keller_temp"     # Interne ID (kein Leerzeichen)
+      dht_display_name: "Keller Temp/Feuchte"
+```
+
+**Dallas One-Wire Bus auf Slot 4:**
+```yaml
+packages:
+  dallas_bus: !include B16M_components/ow_dallas_bus.yaml
+  
+  dallas_sensor_1: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      dallas_id: "dallas_bus"
+      dallas_name: "keller_temp"
+      dallas_address: "0x2800000000000000"  # Adresse aus Logs kopieren
+```
+
+**Mehrere Sensoren (z.B. Slot 1, 2, 3 je DHT; Slot 4 Dallas):**
+```yaml
+packages:
+  dht_slot1: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_slot: "40"
+      dht_name: "og_temp"
+      dht_display_name: "OG Temp/Feuchte"
+      dht_interval: "10s"
+  
+  dht_slot2: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_slot: "15"
+      dht_name: "eg_temp"
+      dht_display_name: "EG Temp/Feuchte"
+  
+  dht_slot3: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_slot: "48"
+      dht_name: "keller_temp"
+      dht_display_name: "Keller Temp/Feuchte"
+  
+  dallas_bus: !include B16M_components/ow_dallas_bus.yaml
+  
+  dallas_sensor_1: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      dallas_id: "dallas_bus"
+      dallas_name: "außen_temp"
+      dallas_address: "0x1234567890ABCDEF"
+```
+
+#### Schritt 4: GPIO-Zuordnung
+
+| Slot | GPIO | Variable |
+|------|------|----------|
+| Slot 1 | 40 | `dht_slot: "40"` |
+| Slot 2 | 15 | `dht_slot: "15"` |
+| Slot 3 | 48 | `dht_slot: "48"` |
+| Slot 4 | 47 | Dallas 1-Wire oder DHT |
+
+---
+
+### **Option B: Vordefinierte Profile (für spezifische Sensor-Konfigurationen)**
+
+Wenn deine Sensor-Anordnung exakt einem der folgenden Szenarien entspricht, nutze ein spezialisiertes Profil:
 
 | Profil | Sensoren Slot 1–4 | Netzwerk | Import-Link |
 |--------|------------------|----------|-------------|
@@ -57,43 +190,7 @@ Waehle das Profil nach angeschlossener Hardware und Netzwerktyp:
 | **C – Mix WiFi** | Slot 1–3 DHT + Slot 4 Dallas | WLAN | `github://kwittwer/esphome_kfw_lib/B16M/profile_mix_wifi.yaml@main` |
 | **C – Mix Ethernet** | Slot 1–3 DHT + Slot 4 Dallas | Ethernet W5500 | `github://kwittwer/esphome_kfw_lib/B16M/profile_mix_ethernet.yaml@main` |
 
-### Schritt 2: Profil importieren und Pflichtfelder setzen
-
-1. Den `github://...` Link im ESPHome Device Builder unter **Add Device → Import** einfuegen.
-2. In der importierten YAML genau diese Felder anpassen:
-
-| Feld | Wo | Was aendern |
-|------|----|-------------|
-| `device_name` | `substitutions:` | Eindeutiger Hostname, z.B. `b16m-keller` |
-| `friendly_name` | `substitutions:` | Anzeigename in Home Assistant |
-| `wifi_ssid` / `wifi_password` | `substitutions:` | Nur bei WiFi-Profilen |
-| `slot1_name` … `slot4_name` | `substitutions:` | Nur bei DHT-Profilen – Anzeigename in HA (Leerzeichen erlaubt) |
-| `slot1_id` … `slot4_id` | `substitutions:` | Nur bei DHT-Profilen – interne ID (kein Leerzeichen, z.B. `wohnzimmer`) |
-| `dallas_sensor_name` | je `dallas_x:` Block | Nur bei Dallas-Profilen |
-| `dallas_address` | je `dallas_x:` Block | Adresse aus Logs kopieren (s. unten) |
-| `api.encryption.key` | direkt im YAML | Neuen Key generieren (ESPHome → Generate Key) |
-| `ota.password` | direkt im YAML | Eigenes Passwort setzen |
-
-### Schritt 3: Dallas-Adressen ermitteln (nur Profil B und C)
-
-1. Profil flashen, Adressen leer lassen (`0x0000000000000000`).
-2. In ESPHome Logs nachschlagen – jede erkannte One-Wire Adresse wird ausgegeben.
-3. Adressen in die `dallas_address:` Felder einsetzen und erneut flashen.
-
-### Schritt 4: Thermostate erweitern (optional)
-
-Weitere Thermostate: Den auskommentierten Thermostat-Block im YAML kopieren, `thermostat_id` hochzaehlen und `thermostat_valve_switch` (DO1..DO16) anpassen.
-
-### Was nicht konfiguriert werden muss
-
-Folgendes ist hardwareseitig fixiert und bewusst nicht in den Profilen editierbar:
-Board, Framework, CPU, PSRAM, I2C-Bus-Pins, I/O-Expander-Adressen, Display, RTC, Web-Server-Port.
-
----
-
-### Hinweis zu bestehenden Setups
-
-`setup_template.yaml`, `setup_wohnzimmer.yaml` und `b16m.yaml` bleiben voll nutzbar und werden nicht veraendert.
+Dann Schritt 2–4 wie oben.
 
 ---
 
