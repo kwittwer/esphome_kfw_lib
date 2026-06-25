@@ -13,164 +13,164 @@ packages:
   network: !include B16M_components/net_ethernet.yaml
 
   # Modbus TCP (Master + Slave, interner Loopback standardmäßig aktiv)
-  modbus: !include B16M_components/B16M_Modbus_TCP.yaml
+  # modbus: !include B16M_components/B16M_Modbus_TCP.yaml
 
-  # Sensor-Slots: Slot 1-3 als DHT, Slot 4 als Dallas Bus mit 16 Sensoren
+  # Sensor-Slots: Slot 1 als Dallas Bus mit 16 Sensoren, Slot 2-3 als DHT, Slot 4 als DHT
   sensor_slot_1: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: B16M_components/ow_dallas_bus.yaml
     vars:
-      dht_pin: "40"
-      dht_name: "Temp1"
-      dht_id: "T1"
-      dht_update_interval: 10s
+      dallas_bus_id: ow_slot_1
+      dallas_pin: "47"
   sensor_slot_2: !include
     file: B16M_components/ow_dht_slot.yaml
     vars:
       dht_pin: "15"
-      dht_name: "Temp2"
+      dht_name: "Temp1"
       dht_id: "T2"
       dht_update_interval: 1s
   sensor_slot_3: !include
     file: B16M_components/ow_dht_slot.yaml
     vars:
       dht_pin: "48"
-      dht_name: "Temp3"
+      dht_name: "Temp2"
       dht_id: "T3"
       dht_update_interval: 10s
 
   sensor_slot_4: !include
-    file: B16M_components/ow_dallas_bus.yaml
+    file: B16M_components/ow_dht_slot.yaml
     vars:
-      dallas_bus_id: ow_slot_4
-      dallas_pin: "47"
+      dht_pin: "40"
+      dht_name: "Temp3"
+      dht_id: "T4"
+      dht_update_interval: 10s
 
-  dallas_slot_4_01: !include
+  dallas_slot_1_01: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x1000000000000001
-      dallas_sensor_name: "Dallas_01"
-      dallas_sensor_id: dallas_01
+      one_wire_id: ow_slot_1
+      dallas_address: 0x59072463bba3b028
+      dallas_sensor_name: "Vorlauf"
+      dallas_sensor_id: dallas_01_vorlauf
       dallas_update_interval: 10s
-  dallas_slot_4_02: !include
+  dallas_slot_1_02: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x1000000000000002
-      dallas_sensor_name: "Dallas_02"
-      dallas_sensor_id: dallas_02
+      one_wire_id: ow_slot_1
+      dallas_address: 0xa60724637d21a428
+      dallas_sensor_name: "Rücklauf1"
+      dallas_sensor_id: dallas_02_ruecklauf1
       dallas_update_interval: 10s
-  dallas_slot_4_03: !include
+  dallas_slot_1_03: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x1000000000000003
-      dallas_sensor_name: "Dallas_03"
-      dallas_sensor_id: dallas_03
+      one_wire_id: ow_slot_1
+      dallas_address: 0xb6092470e1607228
+      dallas_sensor_name: "Rücklauf2"
+      dallas_sensor_id: dallas_03_ruecklauf2
       dallas_update_interval: 10s
-  dallas_slot_4_04: !include
+  dallas_slot_1_04: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x1000000000000004
-      dallas_sensor_name: "Dallas_04"
-      dallas_sensor_id: dallas_04
+      one_wire_id: ow_slot_1
+      dallas_address: 0xd707246402199628
+      dallas_sensor_name: "Rücklauf3"
+      dallas_sensor_id: dallas_04_ruecklauf3
       dallas_update_interval: 10s
-  dallas_slot_4_05: !include
+  dallas_slot_1_05: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x1000000000000005
-      dallas_sensor_name: "Dallas_05"
-      dallas_sensor_id: dallas_05
+      one_wire_id: ow_slot_1
+      dallas_address: 0x0c07246391979e28
+      dallas_sensor_name: "Rücklauf4"
+      dallas_sensor_id: dallas_05_ruecklauf4
       dallas_update_interval: 10s
-  dallas_slot_4_06: !include
+  dallas_slot_1_06: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x1000000000000006
-      dallas_sensor_name: "Dallas_06"
-      dallas_sensor_id: dallas_06
+      one_wire_id: ow_slot_1
+      dallas_address: 0x6f0924712b4a4928
+      dallas_sensor_name: "Rücklauf5"
+      dallas_sensor_id: dallas_06_ruecklauf5
       dallas_update_interval: 10s
-  dallas_slot_4_07: !include
+  dallas_slot_1_07: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x1000000000000007
-      dallas_sensor_name: "Dallas_07"
-      dallas_sensor_id: dallas_07
+      one_wire_id: ow_slot_1
+      dallas_address: 0x250724637f856528
+      dallas_sensor_name: "Rücklauf6"
+      dallas_sensor_id: dallas_07_ruecklauf6
       dallas_update_interval: 10s
-  dallas_slot_4_08: !include
+  dallas_slot_1_08: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x1000000000000008
-      dallas_sensor_name: "Dallas_08"
-      dallas_sensor_id: dallas_08
+      one_wire_id: ow_slot_1
+      dallas_address: 0x38092470dac95d28
+      dallas_sensor_name: "Rücklauf7"
+      dallas_sensor_id: dallas_08_ruecklauf7
       dallas_update_interval: 10s
-  dallas_slot_4_09: !include
+  dallas_slot_1_09: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x1000000000000009
-      dallas_sensor_name: "Dallas_09"
-      dallas_sensor_id: dallas_09
+      one_wire_id: ow_slot_1
+      dallas_address: 0xb6072463c5b80328
+      dallas_sensor_name: "Rücklauf8"
+      dallas_sensor_id: dallas_09_ruecklauf8
       dallas_update_interval: 10s
-  dallas_slot_4_10: !include
+  dallas_slot_1_10: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x100000000000000A
-      dallas_sensor_name: "Dallas_10"
-      dallas_sensor_id: dallas_10
+      one_wire_id: ow_slot_1
+      dallas_address: 0xb4092470c0537328
+      dallas_sensor_name: "Rücklauf9"
+      dallas_sensor_id: dallas_10_ruecklauf9
       dallas_update_interval: 10s
-  dallas_slot_4_11: !include
+  dallas_slot_1_11: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x100000000000000B
-      dallas_sensor_name: "Dallas_11"
-      dallas_sensor_id: dallas_11
+      one_wire_id: ow_slot_1
+      dallas_address: 0x350924707ecdeb28
+      dallas_sensor_name: "Rücklauf10"
+      dallas_sensor_id: dallas_10_ruecklauf10
       dallas_update_interval: 10s
-  dallas_slot_4_12: !include
+  dallas_slot_1_12: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x100000000000000C
-      dallas_sensor_name: "Dallas_12"
-      dallas_sensor_id: dallas_12
+      one_wire_id: ow_slot_1
+      dallas_address: 0xaa07246419823b28
+      dallas_sensor_name: "Rücklauf11"
+      dallas_sensor_id: dallas_11_ruecklauf11
       dallas_update_interval: 10s
-  dallas_slot_4_13: !include
+  dallas_slot_1_13: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x100000000000000D
-      dallas_sensor_name: "Dallas_13"
-      dallas_sensor_id: dallas_13
+      one_wire_id: ow_slot_1
+      dallas_address: 0x56082470cc70a728
+      dallas_sensor_name: "Rücklauf12"
+      dallas_sensor_id: dallas_12_ruecklauf12
       dallas_update_interval: 10s
-  dallas_slot_4_14: !include
+  dallas_slot_1_14: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x100000000000000E
-      dallas_sensor_name: "Dallas_14"
-      dallas_sensor_id: dallas_14
+      one_wire_id: ow_slot_1
+      dallas_address: 0x9a082470f6ed7728
+      dallas_sensor_name: "Rücklauf13"
+      dallas_sensor_id: dallas_13_ruecklauf13
       dallas_update_interval: 10s
-  dallas_slot_4_15: !include
+  dallas_slot_1_15: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x100000000000000F
-      dallas_sensor_name: "Dallas_15"
-      dallas_sensor_id: dallas_15
+      one_wire_id: ow_slot_1
+      dallas_address: 0xac082470c76bcf28
+      dallas_sensor_name: "Rücklauf14"
+      dallas_sensor_id: dallas_14_ruecklauf14
       dallas_update_interval: 10s
-  dallas_slot_4_16: !include
+  dallas_slot_1_16: !include
     file: B16M_components/ow_dallas_sensor.yaml
     vars:
-      one_wire_id: ow_slot_4
-      dallas_address: 0x1000000000000010
-      dallas_sensor_name: "Dallas_16"
-      dallas_sensor_id: dallas_16
+      one_wire_id: ow_slot_1
+      dallas_address: 0x18082470beaed028
+      dallas_sensor_name: "Rücklauf15"
+      dallas_sensor_id: dallas_15_ruecklauf15
       dallas_update_interval: 10s
 
   thermostat_base: !include Peripherie/Thermostate.yaml
@@ -178,7 +178,7 @@ packages:
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 1
-      thermostat_name: "Temp1"
+      thermostat_name: "Thermostat 1"
       thermostat_fallback_sensor: Temp2_temperature
       thermostat_fallback_humidity_sensor: Temp2_humidity
       thermostat_valve_switch: DO1
@@ -187,7 +187,7 @@ packages:
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 2
-      thermostat_name: "Temp2"
+      thermostat_name: "Thermostat 2"
       thermostat_fallback_sensor: Temp1_temperature
       thermostat_fallback_humidity_sensor: Temp1_humidity
       thermostat_valve_switch: DO2
@@ -196,7 +196,7 @@ packages:
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 3
-      thermostat_name: "Temp3"
+      thermostat_name: "Thermostat 3"
       thermostat_fallback_sensor: Temp1_temperature
       thermostat_fallback_humidity_sensor: Temp1_humidity
       thermostat_valve_switch: DO3
@@ -205,7 +205,7 @@ packages:
     file: B16M_components/thermostat_template.yaml
     vars:
       thermostat_id: 4
-      thermostat_name: "Temp4"
+      thermostat_name: "Thermostat 4"
       thermostat_fallback_sensor: Temp2_temperature
       thermostat_fallback_humidity_sensor: Temp2_humidity
       thermostat_valve_switch: DO4
@@ -216,8 +216,8 @@ packages:
     vars:
       heating_power_index: 1
       heating_power_name: "Heizkreis 1"
-      heating_power_supply_sensor_id: Temp1_temperature
-      heating_power_return_sensor_id: Temp2_temperature
+      heating_power_supply_sensor_id: dallas_01_vorlauf
+      heating_power_return_sensor_id: dallas_02_ruecklauf1
       heating_power_flow_initial_l_min: 5.0
 
   heating_power_2: !include
@@ -225,8 +225,8 @@ packages:
     vars:
       heating_power_index: 2
       heating_power_name: "Heizkreis 2"
-      heating_power_supply_sensor_id: Temp3_temperature
-      heating_power_return_sensor_id: Temp1_temperature
+      heating_power_supply_sensor_id: dallas_01_vorlauf
+      heating_power_return_sensor_id: dallas_04_ruecklauf3
       heating_power_flow_initial_l_min: 3.5
 
 # ============================================
