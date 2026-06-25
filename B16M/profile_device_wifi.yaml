@@ -52,10 +52,7 @@ dashboard_import:
 
 # ---- Sicherheit (anpassen!) -----------------------------------------
 api:
-  encryption:
-    key: !secret api_encryption_key
   reboot_timeout: 6h
 
 ota:
   - platform: esphome
-    password: !secret ota_pwd

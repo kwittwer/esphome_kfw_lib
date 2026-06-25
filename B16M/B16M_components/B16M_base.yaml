@@ -839,15 +839,3 @@ display:
             it.print(0, 24, id(small), "Wert: n/a");
             it.print(0, 44, id(tiny), "Status: NO DATA");
           }
-
-      - id: page_sensor_wind
-        lambda: |-
-          it.print(0, 0, id(small), "Sensor Wind");
-          it.line(0, 13, 127, 13);
-          if (id(wind_speed).has_state()) {
-            it.printf(0, 24, id(small), "Wert: %.2f m/s", id(wind_speed).state);
-            it.print(0, 44, id(tiny), "Status: OK");
-          } else {
-            it.print(0, 24, id(small), "Wert: n/a");
-            it.print(0, 44, id(tiny), "Status: NO DATA");
-          }
