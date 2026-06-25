@@ -1,0 +1,112 @@
+# ============================================
+# B16M Profil C – Gemischt: 3x DHT + Dallas Bus, Ethernet (W5500)
+#
+# Passend wenn: Slots 1-3 mit DHT-Sensoren belegt sind,
+#               Slot 4 (GPIO47) als Dallas One-Wire Bus genutzt wird
+#               und das Geraet per Ethernet (W5500, Standard B16M) verbunden ist.
+#
+# MUSS angepasst werden:
+#   device_name, friendly_name,
+#   api.encryption.key, ota.password
+# ============================================
+
+substitutions:
+  # ---- Geraet -------------------------------------------------------
+  device_name: b16m-mix-eth                  # Aendern
+  friendly_name: "B16M Mix Ethernet"          # Aendern
+
+  # ---- DHT Sensor-Namen und IDs (Slots 1-3) ------------------------
+  # slot_name: Anzeigename in HA (Leerzeichen erlaubt)
+  # slot_id:   Technische ID (NUR Buchstaben, Zahlen, Unterstrich)
+  slot1_name: "Sensor Slot 1"
+  slot1_id: "slot1"
+  slot2_name: "Sensor Slot 2"
+  slot2_id: "slot2"
+  slot3_name: "Sensor Slot 3"
+  slot3_id: "slot3"
+
+  slot1_interval: "10s"
+  slot2_interval: "10s"
+  slot3_interval: "10s"
+
+packages:
+  base: !include
+    file: B16M_components/B16M_base.yaml
+    vars:
+      device_name: ${device_name}
+      friendly_name: ${friendly_name}
+
+  network: !include B16M_components/net_ethernet.yaml
+
+  sensor_slot_1: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "40"
+      dht_name: ${slot1_id}
+      dht_id: T1
+      dht_update_interval: ${slot1_interval}
+
+  sensor_slot_2: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "15"
+      dht_name: ${slot2_id}
+      dht_id: T2
+      dht_update_interval: ${slot2_interval}
+
+  sensor_slot_3: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "48"
+      dht_name: ${slot3_id}
+      dht_id: T3
+      dht_update_interval: ${slot3_interval}
+
+  sensor_slot_4: !include
+    file: B16M_components/ow_dallas_bus.yaml
+    vars:
+      dallas_bus_id: ow_bus_1
+      dallas_pin: "47"
+
+  dallas_1: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_bus_1
+      dallas_address: 0x0000000000000000   # ERSETZEN
+      dallas_sensor_name: "Dallas Sensor 1"
+      dallas_sensor_id: dallas_s1
+      dallas_update_interval: 10s
+
+  dallas_2: !include
+    file: B16M_components/ow_dallas_sensor.yaml
+    vars:
+      one_wire_id: ow_bus_1
+      dallas_address: 0x0000000000000000   # ERSETZEN
+      dallas_sensor_name: "Dallas Sensor 2"
+      dallas_sensor_id: dallas_s2
+      dallas_update_interval: 10s
+
+  thermostat_base: !include Peripherie/Thermostate.yaml
+
+  thermostat1: !include
+    file: B16M_components/thermostat_template.yaml
+    vars:
+      thermostat_id: 1
+      thermostat_name: "Thermostat 1"
+      thermostat_fallback_sensor: slot1_temperature
+      thermostat_fallback_humidity_sensor: slot1_humidity
+      thermostat_valve_switch: DO1
+      Thermostat_external_sensor_timeout: "900"
+
+dashboard_import:
+  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/profile_mix_ethernet.yaml@main
+  import_full_config: true
+
+api:
+  encryption:
+    key: "GvfbcydpffzMhFZJ9Jm59Vv86K8pZFtVq3BzSGj5Rek="   # ERSETZEN
+  reboot_timeout: 6h
+
+ota:
+  - platform: esphome
+    password: "CHANGE_ME_OTA_PASSWORD"                      # ERSETZEN

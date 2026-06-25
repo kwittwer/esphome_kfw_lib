@@ -42,6 +42,61 @@ B16M/
 
 ---
 
+## ESPHome Device Builder – Schnellstart
+
+### Schritt 1: Passendes Profil waehlen
+
+Waehle das Profil nach angeschlossener Hardware und Netzwerktyp:
+
+| Profil | Sensoren Slot 1–4 | Netzwerk | Import-Link |
+|--------|------------------|----------|-------------|
+| **A – DHT WiFi** | 4× DHT (Temperatur + Feuchte) | WLAN | `github://kwittwer/esphome_kfw_lib/B16M/profile_dht_wifi.yaml@main` |
+| **A – DHT Ethernet** | 4× DHT | Ethernet W5500 | `github://kwittwer/esphome_kfw_lib/B16M/profile_dht_ethernet.yaml@main` |
+| **B – Dallas WiFi** | Dallas One-Wire Bus (Slot 4) | WLAN | `github://kwittwer/esphome_kfw_lib/B16M/profile_dallas_wifi.yaml@main` |
+| **B – Dallas Ethernet** | Dallas One-Wire Bus (Slot 4) | Ethernet W5500 | `github://kwittwer/esphome_kfw_lib/B16M/profile_dallas_ethernet.yaml@main` |
+| **C – Mix WiFi** | Slot 1–3 DHT + Slot 4 Dallas | WLAN | `github://kwittwer/esphome_kfw_lib/B16M/profile_mix_wifi.yaml@main` |
+| **C – Mix Ethernet** | Slot 1–3 DHT + Slot 4 Dallas | Ethernet W5500 | `github://kwittwer/esphome_kfw_lib/B16M/profile_mix_ethernet.yaml@main` |
+
+### Schritt 2: Profil importieren und Pflichtfelder setzen
+
+1. Den `github://...` Link im ESPHome Device Builder unter **Add Device → Import** einfuegen.
+2. In der importierten YAML genau diese Felder anpassen:
+
+| Feld | Wo | Was aendern |
+|------|----|-------------|
+| `device_name` | `substitutions:` | Eindeutiger Hostname, z.B. `b16m-keller` |
+| `friendly_name` | `substitutions:` | Anzeigename in Home Assistant |
+| `wifi_ssid` / `wifi_password` | `substitutions:` | Nur bei WiFi-Profilen |
+| `slot1_name` … `slot4_name` | `substitutions:` | Nur bei DHT-Profilen – Anzeigename in HA (Leerzeichen erlaubt) |
+| `slot1_id` … `slot4_id` | `substitutions:` | Nur bei DHT-Profilen – interne ID (kein Leerzeichen, z.B. `wohnzimmer`) |
+| `dallas_sensor_name` | je `dallas_x:` Block | Nur bei Dallas-Profilen |
+| `dallas_address` | je `dallas_x:` Block | Adresse aus Logs kopieren (s. unten) |
+| `api.encryption.key` | direkt im YAML | Neuen Key generieren (ESPHome → Generate Key) |
+| `ota.password` | direkt im YAML | Eigenes Passwort setzen |
+
+### Schritt 3: Dallas-Adressen ermitteln (nur Profil B und C)
+
+1. Profil flashen, Adressen leer lassen (`0x0000000000000000`).
+2. In ESPHome Logs nachschlagen – jede erkannte One-Wire Adresse wird ausgegeben.
+3. Adressen in die `dallas_address:` Felder einsetzen und erneut flashen.
+
+### Schritt 4: Thermostate erweitern (optional)
+
+Weitere Thermostate: Den auskommentierten Thermostat-Block im YAML kopieren, `thermostat_id` hochzaehlen und `thermostat_valve_switch` (DO1..DO16) anpassen.
+
+### Was nicht konfiguriert werden muss
+
+Folgendes ist hardwareseitig fixiert und bewusst nicht in den Profilen editierbar:
+Board, Framework, CPU, PSRAM, I2C-Bus-Pins, I/O-Expander-Adressen, Display, RTC, Web-Server-Port.
+
+---
+
+### Hinweis zu bestehenden Setups
+
+`setup_template.yaml`, `setup_wohnzimmer.yaml` und `b16m.yaml` bleiben voll nutzbar und werden nicht veraendert.
+
+---
+
 ## Package: `B16M_base.yaml` – Basis-Konfiguration
 
 Enthaelt ESP32-S3, I2C-Bus, PCF8575 I/O-Expander (16 DI / 16 DO), ADS1115 (4 AI), Display, Anemometer, Web-Server, RTC.

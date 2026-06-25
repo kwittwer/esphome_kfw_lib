@@ -1,0 +1,121 @@
+# ============================================
+# B16M Profil A – 4x DHT Sensoren, WiFi
+#
+# Passend wenn: Alle 4 Sensor-Slots mit DHT-Sensoren belegt werden
+#               und das Geraet per WLAN verbunden ist.
+#
+# MUSS angepasst werden:
+#   device_name, friendly_name, wifi_ssid, wifi_password,
+#   api.encryption.key, ota.password
+#
+# Sensor-Namen: frei waehlbar, werden automatisch in HA sichtbar
+# Sensor-Pins:  unveraendert lassen (fest auf B16M Hardware verdrahtet)
+# ============================================
+
+substitutions:
+  # ---- Geraet -------------------------------------------------------
+  device_name: b16m-dht-wifi           # Aendern: Hostname (nur Kleinbuchstaben, Bindestrich)
+  friendly_name: "B16M DHT WiFi"       # Aendern: Anzeigename in Home Assistant
+
+  # ---- Netzwerk -----------------------------------------------------
+  wifi_ssid: "WLAN-Name-hier"          # Aendern: WLAN-Netzwerkname
+  wifi_password: "WLAN-Passwort-hier"  # Aendern: WLAN-Passwort
+
+  # ---- Sensor-Namen und IDs ----------------------------------------
+  # slot_name: Anzeigename in Home Assistant (Leerzeichen erlaubt)
+  # slot_id:   Technische ID (NUR Buchstaben, Zahlen, Unterstrich)
+  slot1_name: "Sensor Slot 1"          # z.B. "Wohnzimmer"
+  slot1_id: "slot1"                    # z.B. "wohnzimmer" (kein Leerzeichen!)
+  slot2_name: "Sensor Slot 2"
+  slot2_id: "slot2"
+  slot3_name: "Sensor Slot 3"
+  slot3_id: "slot3"
+  slot4_name: "Sensor Slot 4"
+  slot4_id: "slot4"
+
+  # ---- Update-Intervalle (10s bis 60s empfohlen) --------------------
+  slot1_interval: "10s"
+  slot2_interval: "10s"
+  slot3_interval: "10s"
+  slot4_interval: "10s"
+
+packages:
+  base: !include
+    file: B16M_components/B16M_base.yaml
+    vars:
+      device_name: ${device_name}
+      friendly_name: ${friendly_name}
+
+  network: !include
+    file: B16M_components/net_wifi.yaml
+    vars:
+      wifi_ssid: ${wifi_ssid}
+      wifi_password: ${wifi_password}
+
+  sensor_slot_1: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "40"
+      dht_name: ${slot1_id}
+      dht_id: T1
+      dht_update_interval: ${slot1_interval}
+
+  sensor_slot_2: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "15"
+      dht_name: ${slot2_id}
+      dht_id: T2
+      dht_update_interval: ${slot2_interval}
+
+  sensor_slot_3: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "48"
+      dht_name: ${slot3_id}
+      dht_id: T3
+      dht_update_interval: ${slot3_interval}
+
+  sensor_slot_4: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "47"
+      dht_name: ${slot4_id}
+      dht_id: T4
+      dht_update_interval: ${slot4_interval}
+
+  thermostat_base: !include Peripherie/Thermostate.yaml
+
+  thermostat1: !include
+    file: B16M_components/thermostat_template.yaml
+    vars:
+      thermostat_id: 1
+      thermostat_name: "Thermostat 1"            # Aendern: Raumname
+      thermostat_fallback_sensor: slot1_temperature            # Aendern: slot_id + _temperature
+      thermostat_fallback_humidity_sensor: slot1_humidity
+      thermostat_valve_switch: DO1               # Aendern: DO1..DO16
+      Thermostat_external_sensor_timeout: "900"
+
+  # Weitere Thermostate bei Bedarf: Abschnitt kopieren und thermostat_id hochzaehlen
+  # thermostat2: !include
+  #   file: B16M_components/thermostat_template.yaml
+  #   vars:
+  #     thermostat_id: 2
+  #     thermostat_name: "Thermostat 2"
+  #     thermostat_fallback_sensor: slot2_temperature
+  #     thermostat_fallback_humidity_sensor: slot2_humidity
+  #     thermostat_valve_switch: DO2
+  #     Thermostat_external_sensor_timeout: "900"
+
+dashboard_import:
+  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/profile_dht_wifi.yaml@main
+  import_full_config: true
+
+api:
+  encryption:
+    key: "GvfbcydpffzMhFZJ9Jm59Vv86K8pZFtVq3BzSGj5Rek="   # ERSETZEN – neuen Key generieren!
+  reboot_timeout: 6h
+
+ota:
+  - platform: esphome
+    password: "CHANGE_ME_OTA_PASSWORD"                      # ERSETZEN

@@ -1,0 +1,80 @@
+# ============================================
+# ESPHome B16M - Device Builder Entry (WiFi)
+#
+# This file is intended for ESPHome Device Builder import.
+# It keeps the configuration minimal and editable while
+# reusing package templates from B16M_components.
+# ============================================
+
+packages:
+  base: !include
+    file: B16M_components/B16M_base.yaml
+    vars:
+      device_name: b16m-builder-wifi
+      friendly_name: "B16M Builder WiFi"
+      version: "2025.12.10.1"
+
+  network: !include
+    file: B16M_components/net_wifi.yaml
+    vars:
+      wifi_ssid: "CHANGE_ME_WIFI_SSID"
+      wifi_password: "CHANGE_ME_WIFI_PASSWORD"
+      wifi_ap_ssid: "B16M Fallback AP"
+      wifi_ap_password: "CHANGE_ME_FALLBACK_AP_PASSWORD"
+
+  sensor_slot_1: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "40"
+      dht_name: "Sensor1"
+      dht_id: "T1"
+      dht_update_interval: 10s
+
+  sensor_slot_2: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "15"
+      dht_name: "Sensor2"
+      dht_id: "T2"
+      dht_update_interval: 10s
+
+  sensor_slot_3: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "48"
+      dht_name: "Sensor3"
+      dht_id: "T3"
+      dht_update_interval: 10s
+
+  sensor_slot_4: !include
+    file: B16M_components/ow_dht_slot.yaml
+    vars:
+      dht_pin: "47"
+      dht_name: "Sensor4"
+      dht_id: "T4"
+      dht_update_interval: 10s
+
+  thermostat_base: !include Peripherie/Thermostate.yaml
+
+  thermostat1: !include
+    file: B16M_components/thermostat_template.yaml
+    vars:
+      thermostat_id: 1
+      thermostat_name: "Raum 1"
+      thermostat_fallback_sensor: Sensor1_temperature
+      thermostat_fallback_humidity_sensor: Sensor1_humidity
+      thermostat_valve_switch: DO1
+      Thermostat_external_sensor_timeout: "900"
+
+dashboard_import:
+  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/setup_builder_wifi.yaml@main
+  import_full_config: true
+
+api:
+  encryption:
+    key: "GvfbcydpffzMhFZJ9Jm59Vv86K8pZFtVq3BzSGj5Rek="
+  reboot_timeout: 6h
+
+ota:
+  - platform: esphome
+    password: "CHANGE_ME_OTA_PASSWORD"
