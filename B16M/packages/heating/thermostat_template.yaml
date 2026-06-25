@@ -1,8 +1,8 @@
-﻿# ============================================
+# ============================================
 # Thermostat Template
 # Parametrisiertes Template für einen einzelnen Thermostat
 # 
-# Vars (müssen in Peripherie/Thermostate.yaml definiert sein):
+# Vars (müssen in shared/Thermostate.yaml definiert sein):
 #   - thermostat_id: eindeutige ID (z.B. 1, 2, etc.)
 #   - thermostat_name: Anzeigename (z.B. "Wohnzimmer")
 #   - thermostat_fallback_sensor: Fallback sensor ID (aus setup YAML)

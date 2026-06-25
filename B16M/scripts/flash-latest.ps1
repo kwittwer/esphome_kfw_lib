@@ -1,6 +1,10 @@
 # flash-latest.ps1
 # Flasht den letzten erfolgreichen Build
 
+param(
+    [string]$ConfigPath = "application\setup_wohnzimmer.yaml"
+)
+
 # param(
 #     # [Parameter(Mandatory=$false)]
 #     # [ValidateSet("OTA", "USB")]
@@ -14,10 +18,10 @@
 # )
 
 # Konfiguration
-$projectPath = "C:\Users\z004s49s\Documents\B16M_Homecontroller\B16M_Homecontroller"
+$projectPath = Split-Path -Parent $PSScriptRoot
 # $buildsFolder = Join-Path $projectPath "Builds"
 # $latestBin = Join-Path $buildsFolder "b16m_latest.bin"
-$yamlFile = Join-Path $projectPath "b16m.yaml"
+$yamlFile = Join-Path $projectPath $ConfigPath
 
 # Farben für Output
 function Write-ColorOutput($ForegroundColor) {
@@ -63,7 +67,7 @@ function Write-ColorOutput($ForegroundColor) {
 # Write-ColorOutput White "  Groesse: $binSize MB"
 # Write-Host ""
 
-$process = Start-Process -FilePath "esphome" -ArgumentList "upload", $yamlFile, -Wait -PassThru
+$process = Start-Process -FilePath "esphome" -ArgumentList "upload", $yamlFile -NoNewWindow -Wait -PassThru
 
 # # Flash-Methode
 # if ($Method -eq "OTA") {

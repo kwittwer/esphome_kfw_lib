@@ -7,14 +7,14 @@
 #
 # Die 4 Sensor-Slots auf GPIO 40/15/48/47 werden bewusst NICHT hier definiert.
 # Pro Slot bindest du im Top-Level-Setup genau eines der folgenden Packages ein:
-# - B16M_components/ow_dht_slot.yaml
-# - B16M_components/ow_dallas_bus.yaml
+# - packages/sensors/ow_dht_slot.yaml
+# - packages/sensors/ow_dallas_bus.yaml
 # Zusaetzliche Dallas Sensoren werden ueber ow_dallas_sensor.yaml angebunden.
 #
 # Verwendung in einem Setup-File:
 #   packages:
 #     base: !include
-#       file: B16M_components/B16M_base.yaml
+#       file: platform/B16M_base.yaml
 #       vars:
 #         device_name: mein_b16m
 #         friendly_name: "Mein B16M"
@@ -22,10 +22,10 @@
 # ============================================
 
 # ============================================
-# DEFAULTS – Standardwerte (überschreibbar via vars:)
+# DEFAULTS â€“ Standardwerte (Ã¼berschreibbar via vars:)
 # ============================================
 defaults:
-  # --- Gerät ---
+  # --- GerÃ¤t ---
   device_name: b16m
   friendly_name: "B16M Panel"
   version: "2025.12.10.1"
@@ -143,7 +143,7 @@ pcf8574:
 
 
 # ============================================
-# DIGITAL INPUTS (DI1–DI16 via PCF8575)
+# DIGITAL INPUTS (DI1â€“DI16 via PCF8575)
 # ============================================
 binary_sensor:
   - platform: gpio
@@ -311,7 +311,7 @@ binary_sensor:
 
 
 # ============================================
-# DIGITAL OUTPUTS (DO1–DO16 via PCF8575)
+# DIGITAL OUTPUTS (DO1â€“DO16 via PCF8575)
 # ============================================
 switch:
   - platform: gpio
@@ -460,7 +460,7 @@ switch:
 
 
 # ============================================
-# ANALOG INPUTS (AI1–AI4 via ADS1115)
+# ANALOG INPUTS (AI1â€“AI4 via ADS1115)
 # ============================================
 ads1115:
   - address: ${ads_address}
@@ -670,7 +670,7 @@ font:
     id: bold
     size: 10
 
-  - file: "https://raw.githubusercontent.com/kwittwer/esphome_kfw_lib/main/B16M/B16M_components/materialdesignicons-webfont.ttf"
+  - file: "https://raw.githubusercontent.com/kwittwer/esphome_kfw_lib/main/B16M/platform/assets/materialdesignicons-webfont.ttf"
     id: icon
     size: 16
     glyphs: [

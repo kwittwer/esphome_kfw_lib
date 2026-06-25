@@ -2,84 +2,82 @@
 
 Modulare ESPHome-Firmware fuer den **B16M Industrial Controller** (ESP32-S3, 16 DI, 16 DO, 4 AI, W5500 Ethernet, 4 Sensor-Slots, SSD1306 Display).
 
-Die Konfiguration ist vollständig package-template-basiert. Ein neues Setup-File besteht nur aus den Werten, die vom Standard abweichen.
+Die Konfiguration ist vollstaendig package-template-basiert. Die Struktur trennt jetzt klar zwischen Plattformbasis, wiederverwendbaren Paketen und konkreten Anwendungen.
 
 ---
 
 ## Dateistruktur
 
-```
+```text
 B16M/
-├── b16m.yaml                    # Referenz-Konfiguration (alle Standardwerte)
-├── setup_wohnzimmer.yaml        # Beispiel: echtes Setup mit 4 Thermostaten
-├── setup_template.yaml          # Vorlage für neue Setups (hier anfangen!)
-├── secrets.yaml                 # WiFi-Passwörter, API-Keys, OTA-Passwörter
-│
-├── B16M_components/
-│   ├── B16M_base.yaml           # Basis-Konfiguration (ESP32, Hardware, I2C, Display)
-│   ├── net_wifi.yaml            # Netzwerk: WiFi + DHCP
-│   ├── net_wifi_static.yaml     # Netzwerk: WiFi + statische IP
-│   ├── net_ethernet.yaml        # Netzwerk: Ethernet W5500 + DHCP
-│   ├── net_ethernet_static.yaml # Netzwerk: Ethernet W5500 + statische IP
-│   ├── ow_dht_slot.yaml         # Sensor-Slot: DHT Sensor
-│   ├── ow_dallas_bus.yaml       # Sensor-Slot: Dallas One-Wire Bus
-│   ├── ow_dallas_sensor.yaml    # Dallas Sensor per Bus + Adresse
-│   └── thermostat_template.yaml # Thermostat-Instanz (parametrisiert)
-│
-└── Peripherie/
-    └── Thermostate.yaml         # Gemeinsame Thermostat-Basis (Schalter, Master-Sensor)
+|- platform/
+|  |- B16M_base.yaml                 # Hardware-Basis des B16M
+|  |- assets/                        # benoetigte Plattform-Assets
+|  \- components/                    # lokale Custom Components
+|- packages/
+|  |- networking/                    # WiFi/Ethernet Pakete
+|  |- sensors/                       # DHT/Dallas Pakete
+|  \- heating/                       # Thermostat- und Heizungsbausteine
+|- profiles/                         # importierbare Device-Builder-Profile
+|- application/                      # konkrete Setups und Builder-Einstiege
+|- shared/                           # gemeinsame Applikationslogik
+|- scripts/                          # Build-/Flash-Hilfsskripte
+|- build-artifacts/                  # erzeugte Firmware-Artefakte
+|- old/                              # archivierte Altdateien
+|- README.md
+\- secrets.yaml
 ```
 
 ---
 
 ## Neues Setup erstellen
 
-1. `setup_template.yaml` kopieren und umbenennen (z.B. `setup_keller.yaml`)
-2. `base:`-Package anpassen (Gerätename, Sensor-Namen, nur abweichende Werte)
-3. `network:`-Package wählen (siehe unten)
-4. Thermostaten konfigurieren
-5. `api:` und `ota:` Schlüssel anpassen
+1. [B16M/application/setup_template.yaml](B16M/application/setup_template.yaml) kopieren und umbenennen, z. B. `setup_keller.yaml`.
+2. `base:`-Package anpassen: Geraetename, Friendly Name und nur die abweichenden Werte setzen.
+3. Passendes `network:`-Package aus `packages/networking/` waehlen.
+4. Sensor- und Thermostat-Pakete aus `packages/sensors/`, `packages/heating/` und `shared/` einbinden.
+5. Optional API-/OTA-Einstellungen lokal anpassen.
 
 ---
 
-## ESPHome Device Builder – Zwei Optionen
+## ESPHome Device Builder â€“ Zwei Optionen
 
-### **Option A: Flexible Konfiguration (Empfohlen für Anfänger)**
+### **Option A: Flexible Konfiguration (Empfohlen fÃ¼r AnfÃ¤nger)**
 
-Nutzer importiert ein universelles Basis-Profil, editiert dann lokal die YAML und fügt Sensoren selbst hinzu.
+Nutzer importiert ein universelles Basis-Profil, editiert dann lokal die YAML und fÃ¼gt Sensoren selbst hinzu.
 
-#### Schritt 1: Basis-Profil wählen und importieren
+#### Schritt 1: Basis-Profil wÃ¤hlen und importieren
 
-Wähle ein Basis-Profil je nach Netzwerk**typ**:
+WÃ¤hle ein Basis-Profil je nach Netzwerk**typ**:
 
 | Profil | Netzwerk | Import-Link |
 |--------|----------|-------------|
-| **Device – WiFi** | WLAN (DHCP, editierbar auf statisch) | `github://kwittwer/esphome_kfw_lib/B16M/profile_device_wifi.yaml@main` |
-| **Device – Ethernet** | Ethernet W5500 (DHCP, editierbar auf statisch) | `github://kwittwer/esphome_kfw_lib/B16M/profile_device_ethernet.yaml@main` |
+| **Device â€“ WiFi** | WLAN (DHCP, editierbar auf statisch) | `github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_device_wifi.yaml@main` |
+| **Device â€“ Ethernet** | Ethernet W5500 (DHCP, editierbar auf statisch) | `github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_device_ethernet.yaml@main` |
 
 Im ESPHome Dashboard:
-1. **Add Device** → **Import**
-2. URL einfügen
+1. **Add Device** â†’ **Import**
+2. URL einfÃ¼gen
 3. **Import** klicken
 4. Die Substitutions im Dialog setzen:
    - `device_name` (z.B. `b16m-keller`)
    - `friendly_name` (z.B. `Keller Sensor`)
    - `wifi_ssid` und `wifi_password` (nur WiFi-Profil)
 
-#### Schritt 2: Lokal editieren – Netzwerk anpassen
+#### Schritt 2: Lokal editieren â€“ Netzwerk anpassen
 
-Im ESPHome Editor die YAML öffnen und die Netzwerk-Einstellung anpassen:
+Im ESPHome Editor die YAML Ã¶ffnen und die Netzwerk-Einstellung anpassen:
 
-**WiFi mit DHCP** (Standard, nichts ändern nötig):
+**WiFi mit DHCP** (Standard, nichts Ã¤ndern nÃ¶tig):
 ```yaml
 packages:
-  network: !include B16M_components/net_wifi.yaml
+  network: !include packages/networking/net_wifi.yaml
 ```
 
 **WiFi mit statischer IP:**
 ```yaml
 packages:
-  network: !include B16M_components/net_wifi_static.yaml
+  network: !include packages/networking/net_wifi_static.yaml
   
 substitutions:
   static_ip: "192.168.1.100"
@@ -87,33 +85,33 @@ substitutions:
   # optional: subnet, dns
 ```
 
-**Ethernet mit DHCP** (Standard, nichts ändern nötig):
+**Ethernet mit DHCP** (Standard, nichts Ã¤ndern nÃ¶tig):
 ```yaml
 packages:
-  network: !include B16M_components/net_ethernet.yaml
+  network: !include packages/networking/net_ethernet.yaml
 ```
 
 **Ethernet mit statischer IP:**
 ```yaml
 packages:
-  network: !include B16M_components/net_ethernet_static.yaml
+  network: !include packages/networking/net_ethernet_static.yaml
   
 substitutions:
   static_ip: "192.168.1.100"
   gateway: "192.168.1.1"
 ```
 
-#### Schritt 3: Sensoren hinzufügen
+#### Schritt 3: Sensoren hinzufÃ¼gen
 
-Unter `packages:` neue Sensor-Packages hinzufügen. Beispiele:
+Unter `packages:` neue Sensor-Packages hinzufÃ¼gen. Beispiele:
 
 **DHT22 auf Slot 1:**
 ```yaml
 packages:
   dht_slot1: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: packages/sensors/ow_dht_slot.yaml
     vars:
-      dht_slot: "40"              # GPIO für Slot 1
+      dht_slot: "40"              # GPIO fÃ¼r Slot 1
       dht_name: "keller_temp"     # Interne ID (kein Leerzeichen)
       dht_display_name: "Keller Temp/Feuchte"
 ```
@@ -121,10 +119,10 @@ packages:
 **Dallas One-Wire Bus auf Slot 4:**
 ```yaml
 packages:
-  dallas_bus: !include B16M_components/ow_dallas_bus.yaml
+  dallas_bus: !include packages/sensors/ow_dallas_bus.yaml
   
   dallas_sensor_1: !include
-    file: B16M_components/ow_dallas_sensor.yaml
+    file: packages/sensors/ow_dallas_sensor.yaml
     vars:
       dallas_id: "dallas_bus"
       dallas_name: "keller_temp"
@@ -135,7 +133,7 @@ packages:
 ```yaml
 packages:
   dht_slot1: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: packages/sensors/ow_dht_slot.yaml
     vars:
       dht_slot: "40"
       dht_name: "og_temp"
@@ -143,26 +141,26 @@ packages:
       dht_interval: "10s"
   
   dht_slot2: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: packages/sensors/ow_dht_slot.yaml
     vars:
       dht_slot: "15"
       dht_name: "eg_temp"
       dht_display_name: "EG Temp/Feuchte"
   
   dht_slot3: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: packages/sensors/ow_dht_slot.yaml
     vars:
       dht_slot: "48"
       dht_name: "keller_temp"
       dht_display_name: "Keller Temp/Feuchte"
   
-  dallas_bus: !include B16M_components/ow_dallas_bus.yaml
+  dallas_bus: !include packages/sensors/ow_dallas_bus.yaml
   
   dallas_sensor_1: !include
-    file: B16M_components/ow_dallas_sensor.yaml
+    file: packages/sensors/ow_dallas_sensor.yaml
     vars:
       dallas_id: "dallas_bus"
-      dallas_name: "außen_temp"
+      dallas_name: "auÃŸen_temp"
       dallas_address: "0x1234567890ABCDEF"
 ```
 
@@ -177,24 +175,24 @@ packages:
 
 ---
 
-### **Option B: Vordefinierte Profile (für spezifische Sensor-Konfigurationen)**
+### **Option B: Vordefinierte Profile (fÃ¼r spezifische Sensor-Konfigurationen)**
 
 Wenn deine Sensor-Anordnung exakt einem der folgenden Szenarien entspricht, nutze ein spezialisiertes Profil:
 
-| Profil | Sensoren Slot 1–4 | Netzwerk | Import-Link |
+| Profil | Sensoren Slot 1â€“4 | Netzwerk | Import-Link |
 |--------|------------------|----------|-------------|
-| **A – DHT WiFi** | 4× DHT (Temperatur + Feuchte) | WLAN | `github://kwittwer/esphome_kfw_lib/B16M/profile_dht_wifi.yaml@main` |
-| **A – DHT Ethernet** | 4× DHT | Ethernet W5500 | `github://kwittwer/esphome_kfw_lib/B16M/profile_dht_ethernet.yaml@main` |
-| **B – Dallas WiFi** | Dallas One-Wire Bus (Slot 4) | WLAN | `github://kwittwer/esphome_kfw_lib/B16M/profile_dallas_wifi.yaml@main` |
-| **B – Dallas Ethernet** | Dallas One-Wire Bus (Slot 4) | Ethernet W5500 | `github://kwittwer/esphome_kfw_lib/B16M/profile_dallas_ethernet.yaml@main` |
-| **C – Mix WiFi** | Slot 1–3 DHT + Slot 4 Dallas | WLAN | `github://kwittwer/esphome_kfw_lib/B16M/profile_mix_wifi.yaml@main` |
-| **C – Mix Ethernet** | Slot 1–3 DHT + Slot 4 Dallas | Ethernet W5500 | `github://kwittwer/esphome_kfw_lib/B16M/profile_mix_ethernet.yaml@main` |
+| **A â€“ DHT WiFi** | 4Ã— DHT (Temperatur + Feuchte) | WLAN | `github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_dht_wifi.yaml@main` |
+| **A â€“ DHT Ethernet** | 4Ã— DHT | Ethernet W5500 | `github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_dht_ethernet.yaml@main` |
+| **B â€“ Dallas WiFi** | Dallas One-Wire Bus (Slot 4) | WLAN | `github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_dallas_wifi.yaml@main` |
+| **B â€“ Dallas Ethernet** | Dallas One-Wire Bus (Slot 4) | Ethernet W5500 | `github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_dallas_ethernet.yaml@main` |
+| **C â€“ Mix WiFi** | Slot 1â€“3 DHT + Slot 4 Dallas | WLAN | `github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_mix_wifi.yaml@main` |
+| **C â€“ Mix Ethernet** | Slot 1â€“3 DHT + Slot 4 Dallas | Ethernet W5500 | `github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_mix_ethernet.yaml@main` |
 
-Dann Schritt 2–4 wie oben.
+Dann Schritt 2â€“4 wie oben.
 
 ---
 
-## Package: `B16M_base.yaml` – Basis-Konfiguration
+## Package: `B16M_base.yaml` â€“ Basis-Konfiguration
 
 Enthaelt ESP32-S3, I2C-Bus, PCF8575 I/O-Expander (16 DI / 16 DO), ADS1115 (4 AI), Display, Anemometer, Web-Server, RTC.
 Die 4 Sensor-Slots auf GPIO `40`, `15`, `48`, `47` werden separat ueber eigene Packages eingebunden.
@@ -204,16 +202,16 @@ Die 4 Sensor-Slots auf GPIO `40`, `15`, `48`, `47` werden separat ueber eigene P
 ```yaml
 packages:
   base: !include
-    file: B16M_components/B16M_base.yaml
+    file: platform/B16M_base.yaml
     vars:
       device_name: mein_b16m
       friendly_name: "Mein B16M"
-      # Nur abweichende Werte angeben – alles andere nutzt die Standardwerte
+      # Nur abweichende Werte angeben â€“ alles andere nutzt die Standardwerte
 ```
 
 ### Alle Variablen
 
-#### Gerät
+#### GerÃ¤t
 
 | Variable | Standard | Beschreibung |
 |---|---|---|
@@ -221,7 +219,7 @@ packages:
 | `friendly_name` | `"B16M Panel"` | Anzeigename in Home Assistant |
 | `version` | `"2025.12.10.1"` | Firmware-Version |
 | `project_name` | `"Konrad.B16M_Heimsteuerung"` | Projektname |
-| `timezone` | `"Europe/Berlin"` | Zeitzone (für RTC und HA-Sync) |
+| `timezone` | `"Europe/Berlin"` | Zeitzone (fÃ¼r RTC und HA-Sync) |
 | `rtc_update_interval` | `1h` | Wie oft die RTC neu synchronisiert wird |
 | `web_server_port` | `"80"` | Port des eingebauten Web-Servers |
 
@@ -237,9 +235,9 @@ packages:
 
 | Variable | Standard | Beschreibung |
 |---|---|---|
-| `pcf_in_address` | `"0x24"` | I2C-Adresse PCF8575 Eingänge (DI1–DI16) |
-| `pcf_out_address` | `"0x25"` | I2C-Adresse PCF8575 Ausgänge (DO1–DO16) |
-| `ads_address` | `"0x48"` | I2C-Adresse ADS1115 (AI1–AI4) |
+| `pcf_in_address` | `"0x24"` | I2C-Adresse PCF8575 EingÃ¤nge (DI1â€“DI16) |
+| `pcf_out_address` | `"0x25"` | I2C-Adresse PCF8575 AusgÃ¤nge (DO1â€“DO16) |
+| `ads_address` | `"0x48"` | I2C-Adresse ADS1115 (AI1â€“AI4) |
 | `display_address` | `"0x3c"` | I2C-Adresse SSD1306 Display |
 
 #### Logger / Debug
@@ -253,14 +251,14 @@ packages:
 
 ## Packages: Netzwerk
 
-Genau **ein** Netzwerk-Package pro Setup einbinden. Das Netzwerk ist **getrennt** von der Basis-Konfiguration, damit man flexibel WiFi oder Ethernet wählen kann.
+Genau **ein** Netzwerk-Package pro Setup einbinden. Das Netzwerk ist **getrennt** von der Basis-Konfiguration, damit man flexibel WiFi oder Ethernet wÃ¤hlen kann.
 
-### Option 1: WiFi + DHCP *(Standard für neue Setups)*
+### Option 1: WiFi + DHCP *(Standard fÃ¼r neue Setups)*
 
 ```yaml
 packages:
   network: !include
-    file: B16M_components/net_wifi.yaml
+    file: packages/networking/net_wifi.yaml
     vars:
       wifi_ssid: "MeinNetzwerk"
       wifi_password: "MeinPasswort"
@@ -281,7 +279,7 @@ packages:
 ```yaml
 packages:
   network: !include
-    file: B16M_components/net_wifi_static.yaml
+    file: packages/networking/net_wifi_static.yaml
     vars:
       wifi_ssid: "MeinNetzwerk"
       wifi_password: "MeinPasswort"
@@ -305,8 +303,8 @@ packages:
 
 ```yaml
 packages:
-  network: !include B16M_components/net_ethernet.yaml
-  # Pins entsprechen der Standard-B16M-Verdrahtung, keine vars nötig
+  network: !include packages/networking/net_ethernet.yaml
+  # Pins entsprechen der Standard-B16M-Verdrahtung, keine vars nÃ¶tig
 ```
 
 Bei abweichender Verdrahtung:
@@ -314,7 +312,7 @@ Bei abweichender Verdrahtung:
 ```yaml
 packages:
   network: !include
-    file: B16M_components/net_ethernet.yaml
+    file: packages/networking/net_ethernet.yaml
     vars:
       eth_clk_pin: GPIO42   # nur abweichende Pins angeben
       eth_cs_pin: GPIO10
@@ -334,7 +332,7 @@ packages:
 ```yaml
 packages:
   network: !include
-    file: B16M_components/net_ethernet_static.yaml
+    file: packages/networking/net_ethernet_static.yaml
     vars:
       static_ip: "192.168.1.100"
       gateway: "192.168.1.1"
@@ -344,7 +342,7 @@ packages:
 
 | Variable | Standard | Beschreibung |
 |---|---|---|
-| `eth_clk_pin` … `eth_rst_pin` | (s. oben) | SPI-Pins (nur bei abweichender Verdrahtung) |
+| `eth_clk_pin` â€¦ `eth_rst_pin` | (s. oben) | SPI-Pins (nur bei abweichender Verdrahtung) |
 | `static_ip` | `"192.168.1.100"` | Statische IP-Adresse |
 | `gateway` | `"192.168.1.1"` | Standard-Gateway |
 | `subnet` | `"255.255.255.0"` | Subnetzmaske |
@@ -372,7 +370,7 @@ Die Referenzkonfiguration in `b16m.yaml` verwendet standardmaessig:
 ```yaml
 packages:
   sensor_slot_1: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "40"
       dht_name: "Wohnzimmer_Temp"
@@ -394,7 +392,7 @@ Der Name erzeugt automatisch die Sensor-IDs `"<dht_name>_temperature"` und `"<dh
 ```yaml
 packages:
   sensor_slot_1: !include
-    file: B16M_components/ow_dallas_bus.yaml
+    file: packages/sensors/ow_dallas_bus.yaml
     vars:
       dallas_bus_id: ow_slot_1
       dallas_pin: "40"
@@ -410,7 +408,7 @@ packages:
 ```yaml
 packages:
   dallas_sensor_1: !include
-    file: B16M_components/ow_dallas_sensor.yaml
+    file: packages/sensors/ow_dallas_sensor.yaml
     vars:
       one_wire_id: ow_slot_1
       dallas_address: 0x1234567812345628
@@ -431,14 +429,14 @@ Die `dallas_address` entspricht der eindeutigen Sensoradresse aus dem ESPHome Lo
 
 ---
 
-## Package: `thermostat_template.yaml` – Thermostat-Instanz
+## Package: `thermostat_template.yaml` â€“ Thermostat-Instanz
 
-Pro Thermostat ein Eintrag unter `packages:`. Bis zu 10 Thermostate möglich.
+Pro Thermostat ein Eintrag unter `packages:`. Bis zu 10 Thermostate mÃ¶glich.
 
 ```yaml
 packages:
   thermostat1: !include
-    file: B16M_components/thermostat_template.yaml
+    file: packages/heating/thermostat_template.yaml
     vars:
       thermostat_id: 1
       thermostat_name: "Wohnzimmer"
@@ -450,7 +448,7 @@ packages:
 
 | Variable | Beschreibung |
 |---|---|
-| `thermostat_id` | Eindeutige Nummer (1–10), keine doppelten |
+| `thermostat_id` | Eindeutige Nummer (1â€“10), keine doppelten |
 | `thermostat_name` | Initialer Anzeigename (Default) |
 | `thermostat_fallback_sensor` | ESPHome Sensor-ID des Fallback-Temperatursensors (z.B. aus `dht_name + "_temperature"`) |
 | `thermostat_fallback_humidity_sensor` | ESPHome Sensor-ID des Fallback-Feuchtigkeitssensors |
@@ -478,18 +476,18 @@ Optionaler API-Service pro Instanz:
 > Die Sensor-IDs werden aus dem jeweiligen Sensor-Slot-Namen gebildet.  
 > `dht_name: "Schlafzimmer_Temp"` -> `thermostat_fallback_sensor: Schlafzimmer_Temp_temperature`
 
-Außerdem wird `thermostat_base` eingebunden (Heizungsmaster-Schalter, Hardware-Eingang DI1):
+AuÃŸerdem wird `thermostat_base` eingebunden (Heizungsmaster-Schalter, Hardware-Eingang DI1):
 
 ```yaml
 packages:
-  thermostat_base: !include Peripherie/Thermostate.yaml
+  thermostat_base: !include shared/Thermostate.yaml
 ```
 
 ---
 
 ## OLED Display Standardseiten
 
-Die aktive Display-Implementierung liegt in [B16M/B16M_components/B16M_base.yaml](B16M/B16M_components/B16M_base.yaml).
+Die aktive Display-Implementierung liegt in [B16M/platform/B16M_base.yaml](B16M/platform/B16M_base.yaml).
 
 Standardmaessig sind folgende Seiten aktiv:
 
@@ -502,9 +500,9 @@ Standardmaessig sind folgende Seiten aktiv:
 
 Zusaetzlich kommen pro Template-Instanz automatisch Seiten dazu:
 
-- Pro Thermostat-Instanz (aus [B16M/B16M_components/thermostat_template.yaml](B16M/B16M_components/thermostat_template.yaml)): Name, Temperatur, Feuchte, Sollwert, Action/Mode, Ventilstatus, Fallbackstatus
-- Pro DHT-Slot-Instanz (aus [B16M/B16M_components/ow_dht_slot.yaml](B16M/B16M_components/ow_dht_slot.yaml)): Name, Temperatur, Feuchte, Status
-- Pro Dallas-Sensor-Instanz (aus [B16M/B16M_components/ow_dallas_sensor.yaml](B16M/B16M_components/ow_dallas_sensor.yaml)): Name, Wert, Status
+- Pro Thermostat-Instanz (aus [B16M/packages/heating/thermostat_template.yaml](B16M/packages/heating/thermostat_template.yaml)): Name, Temperatur, Feuchte, Sollwert, Action/Mode, Ventilstatus, Fallbackstatus
+- Pro DHT-Slot-Instanz (aus [B16M/packages/sensors/ow_dht_slot.yaml](B16M/packages/sensors/ow_dht_slot.yaml)): Name, Temperatur, Feuchte, Status
+- Pro Dallas-Sensor-Instanz (aus [B16M/packages/sensors/ow_dallas_sensor.yaml](B16M/packages/sensors/ow_dallas_sensor.yaml)): Name, Wert, Status
 
 Navigation:
 
@@ -514,43 +512,43 @@ Navigation:
 
 ---
 
-## Vollständiges Beispiel: Minimales Setup
+## VollstÃ¤ndiges Beispiel: Minimales Setup
 
 ```yaml
 # setup_keller.yaml
 
 packages:
   base: !include
-    file: B16M_components/B16M_base.yaml
+    file: platform/B16M_base.yaml
     vars:
       device_name: b16m_keller
       friendly_name: "B16M Keller"
       version: "2025.12.10.1"
 
   network: !include
-    file: B16M_components/net_ethernet_static.yaml
+    file: packages/networking/net_ethernet_static.yaml
     vars:
       static_ip: "192.168.1.42"
       gateway: "192.168.1.1"
 
   sensor_slot_1: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "40"
       dht_name: "Keller_Temp"
       dht_id: "T1"
 
   sensor_slot_2: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "15"
       dht_name: "Heizraum_Temp"
       dht_id: "T2"
 
-  thermostat_base: !include Peripherie/Thermostate.yaml
+  thermostat_base: !include shared/Thermostate.yaml
 
   thermostat1: !include
-    file: B16M_components/thermostat_template.yaml
+    file: packages/heating/thermostat_template.yaml
     vars:
       thermostat_id: 1
       thermostat_name: "Keller"
@@ -574,7 +572,7 @@ ota:
 ## Kompilieren & Flashen
 
 ```bash
-# Konfiguration prüfen:
+# Konfiguration prÃ¼fen:
 esphome config setup_keller.yaml
 
 # Kompilieren:
@@ -590,7 +588,7 @@ esphome run setup_keller.yaml --device OTA
 
 Dieser Abschnitt dokumentiert alle aktuell verwendeten Konfigurationsoptionen der aktiven Package-Struktur in B16M.
 
-### 1) Base-Package: B16M_components/B16M_base.yaml
+### 1) Base-Package: platform/B16M_base.yaml
 
 Pflicht: keine. Alle Werte haben Defaults.
 
@@ -635,14 +633,14 @@ Hinweis:
 
 Genau eines davon pro Setup einbinden.
 
-WiFi DHCP (B16M_components/net_wifi.yaml):
+WiFi DHCP (packages/networking/net_wifi.yaml):
 
 - wifi_ssid: Bitte_SSID_setzen
 - wifi_password: Bitte_Passwort_setzen
 - wifi_ap_ssid: B16M Fallback AP
 - wifi_ap_password: b16m12345
 
-WiFi statisch (B16M_components/net_wifi_static.yaml):
+WiFi statisch (packages/networking/net_wifi_static.yaml):
 
 - wifi_ssid: Bitte_SSID_setzen
 - wifi_password: Bitte_Passwort_setzen
@@ -653,7 +651,7 @@ WiFi statisch (B16M_components/net_wifi_static.yaml):
 - subnet: 255.255.255.0
 - dns: 192.168.1.1
 
-Ethernet DHCP (B16M_components/net_ethernet.yaml):
+Ethernet DHCP (packages/networking/net_ethernet.yaml):
 
 - eth_clk_pin: GPIO42
 - eth_mosi_pin: GPIO43
@@ -662,7 +660,7 @@ Ethernet DHCP (B16M_components/net_ethernet.yaml):
 - eth_int_pin: GPIO2
 - eth_rst_pin: GPIO1
 
-Ethernet statisch (B16M_components/net_ethernet_static.yaml):
+Ethernet statisch (packages/networking/net_ethernet_static.yaml):
 
 - eth_clk_pin: GPIO42
 - eth_mosi_pin: GPIO43
@@ -679,8 +677,8 @@ Ethernet statisch (B16M_components/net_ethernet_static.yaml):
 
 Pro physischem Slot genau eine Bus-Variante:
 
-- DHT direkt am Slot: B16M_components/ow_dht_slot.yaml
-- Dallas One-Wire Bus am Slot: B16M_components/ow_dallas_bus.yaml
+- DHT direkt am Slot: packages/sensors/ow_dht_slot.yaml
+- Dallas One-Wire Bus am Slot: packages/sensors/ow_dallas_bus.yaml
 
 DHT Slot Variablen:
 
@@ -700,7 +698,7 @@ Dallas Bus Variablen:
 - dallas_bus_id: ow_bus_1
 - dallas_pin: 40
 
-Dallas Sensor Template (B16M_components/ow_dallas_sensor.yaml) pro Sensorinstanz:
+Dallas Sensor Template (packages/sensors/ow_dallas_sensor.yaml) pro Sensorinstanz:
 
 - one_wire_id: ow_bus_1
 - dallas_address: 0x0000000000000000
@@ -715,7 +713,7 @@ Automatisch erzeugt bei Dallas Sensor:
 
 ### 4) Thermostat-Packages
 
-Thermostat-Basis (Peripherie/Thermostate.yaml):
+Thermostat-Basis (shared/Thermostate.yaml):
 
 Wird einmalig eingebunden und stellt bereit:
 
@@ -724,7 +722,7 @@ Wird einmalig eingebunden und stellt bereit:
 - heating_master_switch
 - hw_master_sw (abgeleitet von DI1)
 
-Thermostat-Instanz (B16M_components/thermostat_template.yaml), pro Thermostat einmal:
+Thermostat-Instanz (packages/heating/thermostat_template.yaml), pro Thermostat einmal:
 
 - thermostat_id: Pflicht, eindeutig
 - thermostat_name: Pflicht

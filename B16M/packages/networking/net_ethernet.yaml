@@ -3,12 +3,12 @@
 #
 # Verwendung (Standard-B16M-Verdrahtung):
 #   packages:
-#     network: !include B16M_components/net_ethernet.yaml
+#     network: !include packages/networking/net_ethernet.yaml
 #
 # Verwendung mit abweichenden Pins:
 #   packages:
 #     network: !include
-#       file: B16M_components/net_ethernet.yaml
+#       file: packages/networking/net_ethernet.yaml
 #       vars:
 #         eth_clk_pin: GPIO42
 #         eth_cs_pin: GPIO41

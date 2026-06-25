@@ -4,7 +4,7 @@
 # Verwendung:
 #   packages:
 #     network: !include
-#       file: B16M_components/net_wifi.yaml
+#       file: packages/networking/net_wifi.yaml
 #       vars:
 #         wifi_ssid: "MeinNetzwerk"
 #         wifi_password: "MeinPasswort"

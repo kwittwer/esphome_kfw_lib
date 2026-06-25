@@ -1,34 +1,25 @@
 # ============================================
-# B16M Profil C – Gemischt: 3x DHT + Dallas Bus, WiFi
+# B16M Profil C â€“ Gemischt: 3x DHT + Dallas Bus, Ethernet (W5500)
 #
 # Passend wenn: Slots 1-3 mit DHT-Sensoren belegt sind,
 #               Slot 4 (GPIO47) als Dallas One-Wire Bus genutzt wird
-#               und das Geraet per WLAN verbunden ist.
+#               und das Geraet per Ethernet (W5500, Standard B16M) verbunden ist.
 #
 # MUSS angepasst werden:
-#   device_name, friendly_name, wifi_ssid, wifi_password,
+#   device_name, friendly_name,
 #   api.encryption.key, ota.password
-#
-# Sensor-Adressen fuer Dallas ermitteln:
-#   1. Dieses Profil flashen (Adressen auf 0x000... lassen)
-#   2. In ESPHome Logs die gefundenen One-Wire Adressen ablesen
-#   3. Adressen einsetzen und erneut flashen
 # ============================================
 
 substitutions:
   # ---- Geraet -------------------------------------------------------
-  device_name: b16m-mix-wifi              # Aendern
-  friendly_name: "B16M Mix WiFi"          # Aendern
-
-  # ---- Netzwerk -----------------------------------------------------
-  wifi_ssid: "WLAN-Name-hier"             # Aendern
-  wifi_password: "WLAN-Passwort-hier"     # Aendern
+  device_name: b16m-mix-eth                  # Aendern
+  friendly_name: "B16M Mix Ethernet"          # Aendern
 
   # ---- DHT Sensor-Namen und IDs (Slots 1-3) ------------------------
   # slot_name: Anzeigename in HA (Leerzeichen erlaubt)
   # slot_id:   Technische ID (NUR Buchstaben, Zahlen, Unterstrich)
-  slot1_name: "Sensor Slot 1"             # z.B. "Aussen"
-  slot1_id: "slot1"                       # z.B. "aussen"
+  slot1_name: "Sensor Slot 1"
+  slot1_id: "slot1"
   slot2_name: "Sensor Slot 2"
   slot2_id: "slot2"
   slot3_name: "Sensor Slot 3"
@@ -40,19 +31,15 @@ substitutions:
 
 packages:
   base: !include
-    file: B16M_components/B16M_base.yaml
+    file: ../platform/B16M_base.yaml
     vars:
       device_name: ${device_name}
       friendly_name: ${friendly_name}
 
-  network: !include
-    file: B16M_components/net_wifi.yaml
-    vars:
-      wifi_ssid: ${wifi_ssid}
-      wifi_password: ${wifi_password}
+  network: !include ../packages/networking/net_ethernet.yaml
 
   sensor_slot_1: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: ../packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "40"
       dht_name: ${slot1_id}
@@ -60,7 +47,7 @@ packages:
       dht_update_interval: ${slot1_interval}
 
   sensor_slot_2: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: ../packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "15"
       dht_name: ${slot2_id}
@@ -68,32 +55,30 @@ packages:
       dht_update_interval: ${slot2_interval}
 
   sensor_slot_3: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: ../packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "48"
       dht_name: ${slot3_id}
       dht_id: T3
       dht_update_interval: ${slot3_interval}
 
-  # Dallas Bus auf Slot 4 (GPIO47) – Pin nicht aendern
   sensor_slot_4: !include
-    file: B16M_components/ow_dallas_bus.yaml
+    file: ../packages/sensors/ow_dallas_bus.yaml
     vars:
       dallas_bus_id: ow_bus_1
       dallas_pin: "47"
 
-  # ---- Dallas Sensoren (Adresse + Name anpassen) --------------------
   dallas_1: !include
-    file: B16M_components/ow_dallas_sensor.yaml
+    file: ../packages/sensors/ow_dallas_sensor.yaml
     vars:
       one_wire_id: ow_bus_1
-      dallas_address: 0x0000000000000000   # ERSETZEN: Adresse aus Logs
+      dallas_address: 0x0000000000000000   # ERSETZEN
       dallas_sensor_name: "Dallas Sensor 1"
       dallas_sensor_id: dallas_s1
       dallas_update_interval: 10s
 
   dallas_2: !include
-    file: B16M_components/ow_dallas_sensor.yaml
+    file: ../packages/sensors/ow_dallas_sensor.yaml
     vars:
       one_wire_id: ow_bus_1
       dallas_address: 0x0000000000000000   # ERSETZEN
@@ -101,24 +86,20 @@ packages:
       dallas_sensor_id: dallas_s2
       dallas_update_interval: 10s
 
-  # Weitere Dallas-Sensoren: Abschnitt kopieren (dallas_3 ... dallas_16)
-
-  thermostat_base: !include Peripherie/Thermostate.yaml
+  thermostat_base: !include ../shared/Thermostate.yaml
 
   thermostat1: !include
-    file: B16M_components/thermostat_template.yaml
+    file: ../packages/heating/thermostat_template.yaml
     vars:
       thermostat_id: 1
-      thermostat_name: "Thermostat 1"              # Aendern
-      thermostat_fallback_sensor: slot1_temperature  # Aendern: slot_id + _temperature
+      thermostat_name: "Thermostat 1"
+      thermostat_fallback_sensor: slot1_temperature
       thermostat_fallback_humidity_sensor: slot1_humidity
-      thermostat_valve_switch: DO1                  # Aendern: DO1..DO16
+      thermostat_valve_switch: DO1
       Thermostat_external_sensor_timeout: "900"
 
-  # Weitere Thermostate: Abschnitt kopieren und thermostat_id erhoehen
-
 dashboard_import:
-  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/profile_mix_wifi.yaml@main
+  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_mix_ethernet.yaml@main
   import_full_config: false
 
 api:

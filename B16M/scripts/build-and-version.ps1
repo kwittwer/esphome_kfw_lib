@@ -3,14 +3,14 @@
 
 param(
     [switch]$IncrementCounter = $true,
-    [switch]$ResetCounter = $false
+    [switch]$ResetCounter = $false,
+    [string]$ConfigPath = "application\setup_wohnzimmer.yaml"
 )
 
 # Konfiguration
-$projectPath = "C:\Users\z004s49s\Documents\B16M_Homecontroller\B16M_Homecontroller"
-$yamlFile = Join-Path $projectPath "b16m.yaml"
-$buildsFolder = Join-Path $projectPath "Builds"
-$binSourcePath = Join-Path $projectPath ".esphome\build\b16m\.pioenvs\b16m\firmware.factory.bin"
+$projectPath = Split-Path -Parent $PSScriptRoot
+$yamlFile = Join-Path $projectPath $ConfigPath
+$buildsFolder = Join-Path $projectPath "build-artifacts"
 
 # Farben für Output
 function Write-ColorOutput($ForegroundColor) {
@@ -33,14 +33,23 @@ if (-not (Test-Path $yamlFile)) {
     exit 1
 }
 
+# Lese aktuelle YAML und ermittle den Geraetenamen fuer den Build-Pfad
+$yamlContent = Get-Content $yamlFile -Raw
+if ($yamlContent -match 'device_name:\s*["\'']?([^"\''\r\n]+)') {
+    $deviceName = $matches[1].Trim()
+} else {
+    Write-ColorOutput Red "FEHLER: Konnte device_name in $yamlFile nicht finden!"
+    exit 1
+}
+
+$binSourcePath = Join-Path $projectPath ".esphome\build\$deviceName\.pioenvs\$deviceName\firmware.factory.bin"
+$artifactPrefix = $deviceName -replace '[^A-Za-z0-9._-]', '_'
+
 # Erstelle Builds-Ordner falls nicht vorhanden
 if (-not (Test-Path $buildsFolder)) {
     New-Item -ItemType Directory -Path $buildsFolder | Out-Null
     Write-ColorOutput Green "Builds-Ordner erstellt: $buildsFolder"
 }
-
-# Lese aktuelle YAML
-$yamlContent = Get-Content $yamlFile -Raw
 
 # Extrahiere aktuelle Version
 if ($yamlContent -match 'version:\s*["\''"]?(\d{4})\.(\d{2})\.(\d{2})\.(\d+)["\''"]?') {
@@ -97,7 +106,7 @@ if ($yamlContent -match 'version:\s*["\''"]?[\d\.]+["\''"]?') {
 
 # Speichere aktualisierte YAML
 $yamlContent | Set-Content $yamlFile -NoNewline
-Write-ColorOutput Green "Version in b16m.yaml aktualisiert"
+Write-ColorOutput Green "Version in $ConfigPath aktualisiert"
 Write-Host ""
 
 # Kompiliere mit ESPHome
@@ -126,7 +135,7 @@ if ($process.ExitCode -eq 0) {
     # Prüfe ob .bin Datei existiert
     if (Test-Path $binSourcePath) {
         # Erstelle Dateinamen mit Version
-        $binFileName = "b16m_v$newVersion.bin"
+        $binFileName = "$artifactPrefix`_v$newVersion.bin"
         $binDestPath = Join-Path $buildsFolder $binFileName
         
         # Kopiere .bin Datei
@@ -142,12 +151,12 @@ if ($process.ExitCode -eq 0) {
         Write-Host ""
         
         # Erstelle auch eine "latest" Kopie
-        $latestBinPath = Join-Path $buildsFolder "b16m_latest.bin"
+        $latestBinPath = Join-Path $buildsFolder "$artifactPrefix`_latest.bin"
         Copy-Item -Path $binSourcePath -Destination $latestBinPath -Force
-        Write-ColorOutput Green "Latest-Version erstellt: b16m_latest.bin"
+        Write-ColorOutput Green "Latest-Version erstellt: $artifactPrefix`_latest.bin"
         
         # Erstelle Build-Info Datei
-        $buildInfoPath = Join-Path $buildsFolder "b16m_v$newVersion.txt"
+        $buildInfoPath = Join-Path $buildsFolder "$artifactPrefix`_v$newVersion.txt"
         $buildDate = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
         $esphomeVersion = esphome version 2>&1 | Select-String "Version:" | Out-String
         
@@ -159,12 +168,13 @@ Build Date:     $buildDate
 Build Duration: $durationRounded seconds
 File Size:      $fileSizeMB MB
 Source:         $yamlFile
+Device Name:    $deviceName
 Binary:         $binFileName
 
 ESPHome Version: $esphomeVersion
 "@
         $buildInfo | Set-Content $buildInfoPath
-        Write-ColorOutput Green "Build-Info erstellt: b16m_v$newVersion.txt"
+        Write-ColorOutput Green "Build-Info erstellt: $artifactPrefix`_v$newVersion.txt"
         
         Write-Host ""
         Write-ColorOutput Cyan "=========================================="
@@ -177,7 +187,7 @@ ESPHome Version: $esphomeVersion
         
         # Liste die letzten 5 Builds
         Write-ColorOutput Yellow "Letzte Builds:"
-        Get-ChildItem -Path $buildsFolder -Filter "b16m_v*.bin" | 
+        Get-ChildItem -Path $buildsFolder -Filter "$artifactPrefix`_v*.bin" | 
             Sort-Object LastWriteTime -Descending | 
             Select-Object -First 5 | 
             ForEach-Object {

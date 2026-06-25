@@ -1,11 +1,11 @@
 # ============================================
-# B16M Profil A – 4x DHT Sensoren, Ethernet (W5500)
+# B16M Profil A â€“ 4x DHT Sensoren, WiFi
 #
 # Passend wenn: Alle 4 Sensor-Slots mit DHT-Sensoren belegt werden
-#               und das Geraet per Ethernet (W5500, Standard B16M) verbunden ist.
+#               und das Geraet per WLAN verbunden ist.
 #
 # MUSS angepasst werden:
-#   device_name, friendly_name,
+#   device_name, friendly_name, wifi_ssid, wifi_password,
 #   api.encryption.key, ota.password
 #
 # Sensor-Namen: frei waehlbar, werden automatisch in HA sichtbar
@@ -14,8 +14,12 @@
 
 substitutions:
   # ---- Geraet -------------------------------------------------------
-  device_name: b16m-dht-eth            # Aendern: Hostname (nur Kleinbuchstaben, Bindestrich)
-  friendly_name: "B16M DHT Ethernet"   # Aendern: Anzeigename in Home Assistant
+  device_name: b16m-dht-wifi           # Aendern: Hostname (nur Kleinbuchstaben, Bindestrich)
+  friendly_name: "B16M DHT WiFi"       # Aendern: Anzeigename in Home Assistant
+
+  # ---- Netzwerk -----------------------------------------------------
+  wifi_ssid: "WLAN-Name-hier"          # Aendern: WLAN-Netzwerkname
+  wifi_password: "WLAN-Passwort-hier"  # Aendern: WLAN-Passwort
 
   # ---- Sensor-Namen und IDs ----------------------------------------
   # slot_name: Anzeigename in Home Assistant (Leerzeichen erlaubt)
@@ -37,15 +41,19 @@ substitutions:
 
 packages:
   base: !include
-    file: B16M_components/B16M_base.yaml
+    file: ../platform/B16M_base.yaml
     vars:
       device_name: ${device_name}
       friendly_name: ${friendly_name}
 
-  network: !include B16M_components/net_ethernet.yaml
+  network: !include
+    file: ../packages/networking/net_wifi.yaml
+    vars:
+      wifi_ssid: ${wifi_ssid}
+      wifi_password: ${wifi_password}
 
   sensor_slot_1: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: ../packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "40"
       dht_name: ${slot1_id}
@@ -53,7 +61,7 @@ packages:
       dht_update_interval: ${slot1_interval}
 
   sensor_slot_2: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: ../packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "15"
       dht_name: ${slot2_id}
@@ -61,7 +69,7 @@ packages:
       dht_update_interval: ${slot2_interval}
 
   sensor_slot_3: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: ../packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "48"
       dht_name: ${slot3_id}
@@ -69,29 +77,38 @@ packages:
       dht_update_interval: ${slot3_interval}
 
   sensor_slot_4: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: ../packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "47"
       dht_name: ${slot4_id}
       dht_id: T4
       dht_update_interval: ${slot4_interval}
 
-  thermostat_base: !include Peripherie/Thermostate.yaml
+  thermostat_base: !include ../shared/Thermostate.yaml
 
   thermostat1: !include
-    file: B16M_components/thermostat_template.yaml
+    file: ../packages/heating/thermostat_template.yaml
     vars:
       thermostat_id: 1
       thermostat_name: "Thermostat 1"            # Aendern: Raumname
-      thermostat_fallback_sensor: slot1_temperature
+      thermostat_fallback_sensor: slot1_temperature            # Aendern: slot_id + _temperature
       thermostat_fallback_humidity_sensor: slot1_humidity
       thermostat_valve_switch: DO1               # Aendern: DO1..DO16
       Thermostat_external_sensor_timeout: "900"
 
   # Weitere Thermostate bei Bedarf: Abschnitt kopieren und thermostat_id hochzaehlen
+  # thermostat2: !include
+  #   file: ../packages/heating/thermostat_template.yaml
+  #   vars:
+  #     thermostat_id: 2
+  #     thermostat_name: "Thermostat 2"
+  #     thermostat_fallback_sensor: slot2_temperature
+  #     thermostat_fallback_humidity_sensor: slot2_humidity
+  #     thermostat_valve_switch: DO2
+  #     Thermostat_external_sensor_timeout: "900"
 
 dashboard_import:
-  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/profile_dht_ethernet.yaml@main
+  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_dht_wifi.yaml@main
   import_full_config: false
 
 api:

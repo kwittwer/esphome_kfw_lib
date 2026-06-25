@@ -5,7 +5,7 @@
 # Nur die Werte angeben, die vom Standard abweichen.
 # 
 # Basis-Hardware: B16M (16 DI, 16 DO, 4 AI, Display, OneWire)
-# Thermostaten: Bis zu 10 Stück (je nach Setup)
+# Thermostaten: Bis zu 10 StÃ¼ck (je nach Setup)
 # ============================================
 
 packages:
@@ -14,9 +14,9 @@ packages:
   # Alle nicht genannten Variablen verwenden die Standardwerte aus B16M_base.yaml
   # ============================================
   base: !include
-    file: B16M_components/B16M_base.yaml
+    file: ../platform/B16M_base.yaml
     vars:
-      device_name: b16m_mysetup              # Gerätename (für mDNS, API, etc.)
+      device_name: b16m_mysetup              # GerÃ¤tename (fÃ¼r mDNS, API, etc.)
       friendly_name: "B16M My Setup"         # Anzeigename in Home Assistant
       version: "2025.12.10.1"                # Firmware-Version
 
@@ -28,19 +28,19 @@ packages:
 
   # ============================================
   # NETZWERK (anpassen!)
-  # Wähle EINE der folgenden Optionen:
+  # WÃ¤hle EINE der folgenden Optionen:
   # ============================================
 
-  # Option 1: WiFi mit DHCP (Standard für neue Setups)
+  # Option 1: WiFi mit DHCP (Standard fÃ¼r neue Setups)
   network: !include
-    file: B16M_components/net_wifi.yaml
+    file: ../packages/networking/net_wifi.yaml
     vars:
       wifi_ssid: "MeinNetzwerk"     # oder: !secret wifi_ssid
       wifi_password: "MeinPasswort" # oder: !secret wifi_password
 
   # Option 2: WiFi mit statischer IP
   # network: !include
-  #   file: B16M_components/net_wifi_static.yaml
+  #   file: ../packages/networking/net_wifi_static.yaml
   #   vars:
   #     wifi_ssid: "MeinNetzwerk"
   #     wifi_password: "MeinPasswort"
@@ -48,11 +48,11 @@ packages:
   #     gateway: "192.168.1.1"
 
   # Option 3: Ethernet W5500 mit DHCP (Standard B16M-Hardware)
-  # network: !include B16M_components/net_ethernet.yaml
+  # network: !include ../packages/networking/net_ethernet.yaml
 
   # Option 4: Ethernet W5500 mit statischer IP
   # network: !include
-  #   file: B16M_components/net_ethernet_static.yaml
+  #   file: ../packages/networking/net_ethernet_static.yaml
   #   vars:
   #     static_ip: "192.168.1.100"
   #     gateway: "192.168.1.1"
@@ -68,7 +68,7 @@ packages:
 
   # Slot 1 aktiv als DHT
   sensor_slot_1: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: ../packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "40"
       dht_name: "Sensor1"
@@ -77,14 +77,14 @@ packages:
 
   # Alternative: Slot 1 als Dallas Bus
   # sensor_slot_1: !include
-  #   file: B16M_components/ow_dallas_bus.yaml
+  #   file: ../packages/sensors/ow_dallas_bus.yaml
   #   vars:
   #     dallas_bus_id: ow_slot_1
   #     dallas_pin: "40"
 
   # Beispiel Dallas Sensor auf Slot 1
   # dallas_sensor_1: !include
-  #   file: B16M_components/ow_dallas_sensor.yaml
+  #   file: ../packages/sensors/ow_dallas_sensor.yaml
   #   vars:
   #     one_wire_id: ow_slot_1
   #     dallas_address: 0x1234567812345628
@@ -94,7 +94,7 @@ packages:
 
   # Slot 2 aktiv als DHT
   sensor_slot_2: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: ../packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "15"
       dht_name: "Sensor2"
@@ -103,7 +103,7 @@ packages:
 
   # Slot 3 aktiv als DHT
   sensor_slot_3: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: ../packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "48"
       dht_name: "Sensor3"
@@ -112,7 +112,7 @@ packages:
 
   # Slot 4 aktiv als DHT
   sensor_slot_4: !include
-    file: B16M_components/ow_dht_slot.yaml
+    file: ../packages/sensors/ow_dht_slot.yaml
     vars:
       dht_pin: "47"
       dht_name: "Sensor4"
@@ -120,9 +120,9 @@ packages:
       dht_update_interval: 10s
 
   # ============================================
-  # THERMOSTAT BASIS (nicht ändern)
+  # THERMOSTAT BASIS (nicht Ã¤ndern)
   # ============================================
-  thermostat_base: !include Peripherie/Thermostate.yaml
+  thermostat_base: !include ../shared/Thermostate.yaml
 
   # ============================================
   # THERMOSTATEN (anpassen!)
@@ -132,7 +132,7 @@ packages:
 
   # Thermostat 1
   thermostat1: !include
-    file: B16M_components/thermostat_template.yaml
+    file: ../packages/heating/thermostat_template.yaml
     vars:
       thermostat_id: 1
       thermostat_name: "Raum 1"
@@ -143,7 +143,7 @@ packages:
 
   # Thermostat 2
   thermostat2: !include
-    file: B16M_components/thermostat_template.yaml
+    file: ../packages/heating/thermostat_template.yaml
     vars:
       thermostat_id: 2
       thermostat_name: "Raum 2"
@@ -152,7 +152,7 @@ packages:
       thermostat_valve_switch: DO2
       Thermostat_external_sensor_timeout: "900"
 
-  # Weitere Thermostate bei Bedarf genauso ergänzen (thermostat3 ... thermostat10)
+  # Weitere Thermostate bei Bedarf genauso ergÃ¤nzen (thermostat3 ... thermostat10)
 
   # ============================================
   # HEIZLEISTUNG PRO HEIZKREIS (optional)
@@ -162,7 +162,7 @@ packages:
   # ============================================
 
   heating_power_1: !include
-    file: B16M_components/heating_power_template.yaml
+    file: ../packages/heating/heating_power_template.yaml
     vars:
       heating_power_index: 1
       heating_power_name: "Heizkreis EG"
@@ -171,7 +171,7 @@ packages:
       heating_power_flow_initial_l_min: 5.0
 
   heating_power_2: !include
-    file: B16M_components/heating_power_template.yaml
+    file: ../packages/heating/heating_power_template.yaml
     vars:
       heating_power_index: 2
       heating_power_name: "Heizkreis OG"
@@ -180,7 +180,7 @@ packages:
       heating_power_flow_initial_l_min: 3.5
 
 # ============================================
-# API & OTA (Schlüssel anpassen!)
+# API & OTA (SchlÃ¼ssel anpassen!)
 # ============================================
 api:
   reboot_timeout: 6h

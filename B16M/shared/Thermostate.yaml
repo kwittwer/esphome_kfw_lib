@@ -1,6 +1,6 @@
 # ============================================
 # Thermostate Basis
-# Enthält: externe Component, globale Schalter und Master-Sensorik
+# EnthÃ¤lt: externe Component, globale Schalter und Master-Sensorik
 # 
 # Die eigentlichen Thermostat-Instanzen werden direkt im jeweiligen
 # Setup unter packages: als !include thermostat_template.yaml eingebunden.
@@ -9,11 +9,11 @@
 external_components:
   - source:
       type: local
-      path: B16M_components/components
+      path: ../platform/components
     components: [dummy_thermostat]
 
 # ============================================
-# Global Switches (für alle Thermostaten)
+# Global Switches (fÃ¼r alle Thermostaten)
 # ============================================
 
 switch:
@@ -32,7 +32,7 @@ switch:
     optimistic: true
 
 # ============================================
-# Global Binary Sensor (für Heizung Master-Switch)
+# Global Binary Sensor (fÃ¼r Heizung Master-Switch)
 # ============================================
 
 binary_sensor:

@@ -1,5 +1,5 @@
 # ============================================
-# B16M Profil B – Dallas One-Wire Bus, WiFi
+# B16M Profil B â€“ Dallas One-Wire Bus, WiFi
 #
 # Passend wenn: Slot 4 (GPIO47) als Dallas Bus genutzt wird
 #               und das Geraet per WLAN verbunden ist.
@@ -29,20 +29,20 @@ substitutions:
 
 packages:
   base: !include
-    file: B16M_components/B16M_base.yaml
+    file: ../platform/B16M_base.yaml
     vars:
       device_name: ${device_name}
       friendly_name: ${friendly_name}
 
   network: !include
-    file: B16M_components/net_wifi.yaml
+    file: ../packages/networking/net_wifi.yaml
     vars:
       wifi_ssid: ${wifi_ssid}
       wifi_password: ${wifi_password}
 
-  # Dallas Bus auf Slot 4 (GPIO47) – Pin nicht aendern
+  # Dallas Bus auf Slot 4 (GPIO47) â€“ Pin nicht aendern
   sensor_slot_4: !include
-    file: B16M_components/ow_dallas_bus.yaml
+    file: ../packages/sensors/ow_dallas_bus.yaml
     vars:
       dallas_bus_id: ow_bus_1
       dallas_pin: "47"
@@ -51,16 +51,16 @@ packages:
   # Adressen aus den ESPHome Logs kopieren (nach erstem Flash ohne Adressen)
 
   dallas_1: !include
-    file: B16M_components/ow_dallas_sensor.yaml
+    file: ../packages/sensors/ow_dallas_sensor.yaml
     vars:
       one_wire_id: ow_bus_1
       dallas_address: 0x0000000000000000   # ERSETZEN: Adresse aus Logs
-      dallas_sensor_name: "Sensor 1"       # Aendern: z.B. "Vorlauf", "Rücklauf"
+      dallas_sensor_name: "Sensor 1"       # Aendern: z.B. "Vorlauf", "RÃ¼cklauf"
       dallas_sensor_id: dallas_s1
       dallas_update_interval: 10s
 
   dallas_2: !include
-    file: B16M_components/ow_dallas_sensor.yaml
+    file: ../packages/sensors/ow_dallas_sensor.yaml
     vars:
       one_wire_id: ow_bus_1
       dallas_address: 0x0000000000000000   # ERSETZEN
@@ -70,7 +70,7 @@ packages:
 
   # Weitere Sensoren bei Bedarf: Abschnitt kopieren (dallas_3, dallas_4, ...  bis dallas_16)
   # dallas_3: !include
-  #   file: B16M_components/ow_dallas_sensor.yaml
+  #   file: ../packages/sensors/ow_dallas_sensor.yaml
   #   vars:
   #     one_wire_id: ow_bus_1
   #     dallas_address: 0x0000000000000000
@@ -78,20 +78,20 @@ packages:
   #     dallas_sensor_id: dallas_s3
   #     dallas_update_interval: 10s
 
-  thermostat_base: !include Peripherie/Thermostate.yaml
+  thermostat_base: !include ../shared/Thermostate.yaml
 
   thermostat1: !include
-    file: B16M_components/thermostat_template.yaml
+    file: ../packages/heating/thermostat_template.yaml
     vars:
       thermostat_id: 1
       thermostat_name: "Thermostat 1"             # Aendern
       thermostat_fallback_sensor: dallas_s1        # Aendern: dallas_sensor_id des gewuenschten Sensors
-      thermostat_fallback_humidity_sensor: dallas_s1  # Dallas hat keine Feuchte – ggf. einen DHT-Slot verwenden
+      thermostat_fallback_humidity_sensor: dallas_s1  # Dallas hat keine Feuchte â€“ ggf. einen DHT-Slot verwenden
       thermostat_valve_switch: DO1                 # Aendern: DO1..DO16
       Thermostat_external_sensor_timeout: "900"
 
 dashboard_import:
-  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/profile_dallas_wifi.yaml@main
+  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_dallas_wifi.yaml@main
   import_full_config: false
 
 api:

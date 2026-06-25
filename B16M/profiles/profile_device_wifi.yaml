@@ -1,14 +1,14 @@
 # ============================================
-# B16M Geraete-Profil – WiFi
+# B16M Geraete-Profil â€“ WiFi
 #
 # Wie profile_device_ethernet.yaml, aber mit WLAN statt Ethernet.
 # Praktisch fuer Tests oder Geraete ohne Ethernet-Anschluss.
 #
 # Enthalten:
 #   - ESP32-S3, PSRAM, Web-Server
-#   - 16x Digital Input  (DI1–DI16)
-#   - 16x Digital Output (DO1–DO16)
-#   - 4x Analog Input    (AI1–AI4 via ADS1115)
+#   - 16x Digital Input  (DI1â€“DI16)
+#   - 16x Digital Output (DO1â€“DO16)
+#   - 4x Analog Input    (AI1â€“AI4 via ADS1115)
 #   - OLED Display (SSD1306, 128x64)
 #   - RTC (DS1307)
 #   - Netzwerk: WiFi + DHCP + Fallback-AP
@@ -19,7 +19,7 @@
 #   - Anwendungsspezifische Packages
 #
 # Import-Link:
-#   github://kwittwer/esphome_kfw_lib/B16M/profile_device_wifi.yaml@main
+#   github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_device_wifi.yaml@main
 # ============================================
 
 substitutions:
@@ -34,20 +34,20 @@ substitutions:
 packages:
   # Hardware-Basis: ESP32-S3, I2C, 16DI, 16DO, 4AI, Display, RTC
   base: !include
-    file: B16M_components/B16M_base.yaml
+    file: ../platform/B16M_base.yaml
     vars:
       device_name: ${device_name}
       friendly_name: ${friendly_name}
 
   # Netzwerk: WiFi
   network: !include
-    file: B16M_components/net_wifi.yaml
+    file: ../packages/networking/net_wifi.yaml
     vars:
       wifi_ssid: ${wifi_ssid}
       wifi_password: ${wifi_password}
 
 dashboard_import:
-  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/profile_device_wifi.yaml@main
+  package_import_url: github://kwittwer/esphome_kfw_lib/B16M/profiles/profile_device_wifi.yaml@main
   import_full_config: false
 
 # ---- Sicherheit (anpassen!) -----------------------------------------
