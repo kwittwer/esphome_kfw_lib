@@ -8,7 +8,7 @@ sensor:
     resolution: 16_BITS
     id: AI_1
     name: "AI 1"
-    internal: true
+    internal: false
     unit_of_measurement: "V"
     update_interval: 5s
     
@@ -18,7 +18,7 @@ sensor:
     resolution: 16_BITS
     id: AI_2
     name: "AI 2"
-    internal: true
+    internal: false
     unit_of_measurement: "V"
     update_interval: 5s
     
@@ -29,7 +29,7 @@ sensor:
     id: AI_3
     unit_of_measurement: "mA"
     accuracy_decimals: 2
-    internal: true  # Versteckt den Spannungswert
+    internal: false  # Versteckt den Spannungswert
     update_interval: 5s
     filters:
       - calibrate_linear:
@@ -44,7 +44,7 @@ sensor:
     id: AI_4
     unit_of_measurement: "mA"
     accuracy_decimals: 2
-    internal: true  # Versteckt den Spannungswert
+    internal: false  # Versteckt den Spannungswert
     update_interval: 5s
     filters:
       - calibrate_linear:
