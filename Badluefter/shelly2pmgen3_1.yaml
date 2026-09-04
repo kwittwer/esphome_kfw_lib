@@ -138,10 +138,12 @@ sensor:
   # Analog Input (0-10V as duty cycle)
   - platform: duty_cycle
     pin: GPIO20
-    name: "Analog IN Duty"
+    name: "Addon Analog IN "
     id: addon_analog_duty
-    unit_of_measurement: "%"
+    unit_of_measurement: V
     update_interval: 1s
+    filters:
+      - multiply: 0.1
 
 
 # 2. Nutze die korrekten Gen4 / ESP32-C6 Pins (GPIO16 & GPIO09)
