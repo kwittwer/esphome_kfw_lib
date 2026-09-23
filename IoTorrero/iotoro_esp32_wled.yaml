@@ -1,0 +1,284 @@
+substitutions:
+  name: "iotorrero-ethernet-controller"
+  max_leds: "400"            # Maximaler Puffer fuer den Strip / Laufzeit-Obergrenze
+  active_leds_default: "96"  # Startwert der aktuell genutzten LEDs
+
+  # Laufzeit-Grenzen zwischen Segmenten
+  boundary_1_2: "18"
+  boundary_2_3: "37"
+  boundary_3_4: "56"
+  boundary_4_5: "75"
+
+esphome:
+  name: ${name}
+  comment: "IoTorero/Athom Ethernet Controller mit nativer CCT-Segmentierung"
+
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [ws2811_cwww]
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+
+# Aktiviert die kabelgebundene Ethernet-Verbindung des Controllers
+# ethernet:
+#   type: LAN8720
+#   mdc_pin: GPIO23
+#   mdio_pin: GPIO18
+#   clk_mode: GPIO0_IN
+#   phy_addr: 0
+#   # Optional: Wenn dein Netzwerk kein DHCP hat, kannst du hier eine "manual_ip:" setzen.
+
+# Fallback-WLAN (falls das Ethernet-Kabel mal abgezogen wird)
+api:
+  encryption:
+    key: !secret api_enc
+
+ota:
+  - platform: esphome
+    password: !secret ota_pwd
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "${name}"
+    password: !secret ap_pwd
+
+ws2811_cwww:
+  id: segment_hub
+  addressable_light_id: led_stripe_hardware
+  num_leds: ${max_leds}
+  active_leds: ${active_leds_default}
+  boundary_transition_length: 900ms
+  active_leds_transition_length: 1200ms
+  min_segment_length: 4
+  boundaries:
+    - ${boundary_1_2}
+    - ${boundary_2_3}
+    - ${boundary_3_4}
+    - ${boundary_4_5}
+
+light:
+  # 1. Das physikalische Hauptband am RMT-Bus (wird in HA versteckt)
+  - platform: esp32_rmt_led_strip
+    chipset: WS2811
+    channel_colors: GRB     # Rot = Warmweiß, Grün = Kaltweiß
+    pin: GPIO33
+    num_leds: ${max_leds}
+    id: led_stripe_hardware
+    internal: true
+
+  # 2. Die segmentierten CWWW-Lichter für Home Assistant
+  - platform: ws2811_cwww
+    name: "Küchenlicht Zone 1"
+    id: seg_1
+    ws2811_cwww_id: segment_hub
+    segment_index: 0
+    restore_mode: RESTORE_DEFAULT_OFF
+    cold_white_color_temperature: 6500 K
+    warm_white_color_temperature: 2700 K
+    center_power_transition: true
+    center_power_transition_overlap: 45%
+    power_on_transition_length: 1200ms
+    power_off_transition_length: 900ms
+    effects:
+      - pulse:
+          name: "Segment 1 Puls"
+          transition_length: 1s
+          update_interval: 1s
+          min_brightness: 15%
+          max_brightness: 100%
+      - strobe:
+          name: "Segment 1 Strobe"
+          colors:
+            - state: true
+              cold_white: 100%
+              warm_white: 25%
+              duration: 400ms
+            - state: false
+              duration: 250ms
+
+  - platform: ws2811_cwww
+    name: "Küchenlicht Zone 2"
+    id: seg_2
+    ws2811_cwww_id: segment_hub
+    segment_index: 1
+    restore_mode: RESTORE_DEFAULT_OFF
+    cold_white_color_temperature: 6500 K
+    warm_white_color_temperature: 2700 K
+    center_power_transition: true
+    center_power_transition_overlap: 35%
+    power_on_transition_length: 900ms
+    power_off_transition_length: 1400ms
+    effects:
+      - pulse:
+          name: "Segment 2 Puls"
+          transition_length:
+            on_length: 750ms
+            off_length: 1250ms
+          update_interval: 1200ms
+          min_brightness: 10%
+          max_brightness: 90%
+      - strobe:
+          name: "Segment 2 Wechsel"
+          colors:
+            - state: true
+              cold_white: 100%
+              warm_white: 0%
+              duration: 500ms
+            - state: true
+              cold_white: 0%
+              warm_white: 100%
+              duration: 500ms
+
+  - platform: ws2811_cwww
+    name: "Küchenlicht Zone 3"
+    id: seg_3
+    ws2811_cwww_id: segment_hub
+    segment_index: 2
+    restore_mode: RESTORE_DEFAULT_OFF
+    cold_white_color_temperature: 6500 K
+    warm_white_color_temperature: 2700 K
+    center_power_transition: true
+    center_power_transition_overlap: 55%
+    power_on_transition_length: 1800ms
+    power_off_transition_length: 1100ms
+    effects:
+      - pulse:
+          name: "Segment 3 Nachtpuls"
+          transition_length: 2s
+          update_interval: 2s
+          min_brightness: 5%
+          max_brightness: 35%
+      - strobe:
+          name: "Segment 3 Blink"
+          colors:
+            - state: true
+              cold_white: 30%
+              warm_white: 100%
+              duration: 300ms
+            - state: false
+              duration: 700ms
+
+  - platform: ws2811_cwww
+    name: "Küchenlicht Zone 4"
+    id: seg_4
+    ws2811_cwww_id: segment_hub
+    segment_index: 3
+    restore_mode: RESTORE_DEFAULT_OFF
+    cold_white_color_temperature: 6500 K
+    warm_white_color_temperature: 2700 K
+    center_power_transition: true
+    center_power_transition_overlap: 50%
+    power_on_transition_length: 1100ms
+    power_off_transition_length: 1000ms
+    effects:
+      - pulse:
+          name: "Segment 4 Puls"
+          transition_length: 1500ms
+          update_interval: 1500ms
+          min_brightness: 20%
+          max_brightness: 80%
+      - strobe:
+          name: "Segment 4 Akzent"
+          colors:
+            - state: true
+              cold_white: 70%
+              warm_white: 70%
+              duration: 350ms
+            - state: false
+              duration: 450ms
+
+  - platform: ws2811_cwww
+    name: "Küchenlicht Zone 5"
+    id: seg_5
+    ws2811_cwww_id: segment_hub
+    segment_index: 4
+    restore_mode: RESTORE_DEFAULT_OFF
+    cold_white_color_temperature: 6500 K
+    warm_white_color_temperature: 2700 K
+    center_power_transition: true
+    center_power_transition_overlap: 60%
+    power_on_transition_length: 1400ms
+    power_off_transition_length: 900ms
+    effects:
+      - pulse:
+          name: "Segment 5 Softpuls"
+          transition_length: 2200ms
+          update_interval: 2200ms
+          min_brightness: 8%
+          max_brightness: 45%
+      - strobe:
+          name: "Segment 5 Warmblitz"
+          colors:
+            - state: true
+              cold_white: 15%
+              warm_white: 100%
+              duration: 280ms
+            - state: false
+              duration: 720ms
+
+number:
+  - platform: ws2811_cwww
+    name: "Streifen aktive LED-Anzahl"
+    id: active_led_count
+    ws2811_cwww_id: segment_hub
+    type: active_leds
+    mode: BOX
+
+  - platform: ws2811_cwww
+    name: "Streifen Segmentgrenze 1-2"
+    id: boundary_seg_1_2
+    ws2811_cwww_id: segment_hub
+    type: boundary
+    boundary_index: 0
+
+  - platform: ws2811_cwww
+    name: "Streifen Segmentgrenze 2-3"
+    id: boundary_seg_2_3
+    ws2811_cwww_id: segment_hub
+    type: boundary
+    boundary_index: 1
+
+  - platform: ws2811_cwww
+    name: "Streifen Segmentgrenze 3-4"
+    id: boundary_seg_3_4
+    ws2811_cwww_id: segment_hub
+    type: boundary
+    boundary_index: 2
+
+  - platform: ws2811_cwww
+    name: "Streifen Segmentgrenze 4-5"
+    id: boundary_seg_4_5
+    ws2811_cwww_id: segment_hub
+    type: boundary
+    boundary_index: 3
+
+switch:
+  - platform: template
+    name: "Küchenlicht Alle Zonen"
+    id: all_segments_switch
+    lambda: |-
+      return id(seg_1).remote_values.is_on() ||
+             id(seg_2).remote_values.is_on() ||
+             id(seg_3).remote_values.is_on() ||
+             id(seg_4).remote_values.is_on() ||
+             id(seg_5).remote_values.is_on();
+    turn_on_action:
+      - light.turn_on: seg_1
+      - light.turn_on: seg_2
+      - light.turn_on: seg_3
+      - light.turn_on: seg_4
+      - light.turn_on: seg_5
+    turn_off_action:
+      - light.turn_off: seg_1
+      - light.turn_off: seg_2
+      - light.turn_off: seg_3
+      - light.turn_off: seg_4
+      - light.turn_off: seg_5
