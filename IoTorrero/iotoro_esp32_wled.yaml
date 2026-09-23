@@ -101,6 +101,62 @@ light:
     power_on_transition_length: 1200ms
     power_off_transition_length: 900ms
     effects:
+      - addressable_lambda:
+          name: "Segment 1 Laufpixel"
+          update_interval: 16ms
+          lambda: |-
+            const uint8_t base_level = 51;
+            if (it.size() <= 0) {
+              return;
+            }
+            const uint32_t step_ms = id(segment_chase_step_ms).state < 10.0f
+                                         ? 10
+                                         : static_cast<uint32_t>(id(segment_chase_step_ms).state);
+            const uint32_t now = millis();
+            static uint32_t start_time = 0;
+            if (initial_run) {
+              start_time = now;
+            }
+            it.all() = current_color * base_level;
+            if (it.size() == 1) {
+              it[0] = current_color;
+              return;
+            }
+            const uint32_t span = static_cast<uint32_t>(it.size() - 1);
+            const uint32_t cycle_steps = span * 2;
+            const uint32_t cycle_time = cycle_steps * step_ms;
+            const uint32_t elapsed = (now - start_time) % cycle_time;
+            const uint32_t hop_index = elapsed / step_ms;
+            const float phase = static_cast<float>(elapsed % step_ms) / static_cast<float>(step_ms);
+            const auto smoothstep = [](float value) -> float {
+              if (value <= 0.0f) {
+                return 0.0f;
+              }
+              if (value >= 1.0f) {
+                return 1.0f;
+              }
+              return value * value * (3.0f - 2.0f * value);
+            };
+            const auto ping_pong_index = [&](uint32_t index) -> int {
+              const uint32_t wrapped = index % cycle_steps;
+              if (wrapped <= span) {
+                return static_cast<int>(wrapped);
+              }
+              return static_cast<int>(cycle_steps - wrapped);
+            };
+            const int current_pixel = ping_pong_index(hop_index);
+            const int next_pixel = ping_pong_index(hop_index + 1);
+            float current_weight = 1.0f;
+            float next_weight = 1.0f;
+            if (phase < 0.5f) {
+              next_weight = smoothstep(phase * 2.0f);
+            } else {
+              current_weight = 1.0f - smoothstep((phase - 0.5f) * 2.0f);
+            }
+            const uint8_t current_level = static_cast<uint8_t>(base_level + (255 - base_level) * current_weight);
+            const uint8_t next_level = static_cast<uint8_t>(base_level + (255 - base_level) * next_weight);
+            it[current_pixel] = current_color * current_level;
+            it[next_pixel] = current_color * next_level;
       - pulse:
           name: "Segment 1 Puls"
           transition_length: 1s
@@ -130,6 +186,62 @@ light:
     power_on_transition_length: 900ms
     power_off_transition_length: 1400ms
     effects:
+      - addressable_lambda:
+          name: "Segment 2 Laufpixel"
+          update_interval: 16ms
+          lambda: |-
+            const uint8_t base_level = 51;
+            if (it.size() <= 0) {
+              return;
+            }
+            const uint32_t step_ms = id(segment_chase_step_ms).state < 10.0f
+                                         ? 10
+                                         : static_cast<uint32_t>(id(segment_chase_step_ms).state);
+            const uint32_t now = millis();
+            static uint32_t start_time = 0;
+            if (initial_run) {
+              start_time = now;
+            }
+            it.all() = current_color * base_level;
+            if (it.size() == 1) {
+              it[0] = current_color;
+              return;
+            }
+            const uint32_t span = static_cast<uint32_t>(it.size() - 1);
+            const uint32_t cycle_steps = span * 2;
+            const uint32_t cycle_time = cycle_steps * step_ms;
+            const uint32_t elapsed = (now - start_time) % cycle_time;
+            const uint32_t hop_index = elapsed / step_ms;
+            const float phase = static_cast<float>(elapsed % step_ms) / static_cast<float>(step_ms);
+            const auto smoothstep = [](float value) -> float {
+              if (value <= 0.0f) {
+                return 0.0f;
+              }
+              if (value >= 1.0f) {
+                return 1.0f;
+              }
+              return value * value * (3.0f - 2.0f * value);
+            };
+            const auto ping_pong_index = [&](uint32_t index) -> int {
+              const uint32_t wrapped = index % cycle_steps;
+              if (wrapped <= span) {
+                return static_cast<int>(wrapped);
+              }
+              return static_cast<int>(cycle_steps - wrapped);
+            };
+            const int current_pixel = ping_pong_index(hop_index);
+            const int next_pixel = ping_pong_index(hop_index + 1);
+            float current_weight = 1.0f;
+            float next_weight = 1.0f;
+            if (phase < 0.5f) {
+              next_weight = smoothstep(phase * 2.0f);
+            } else {
+              current_weight = 1.0f - smoothstep((phase - 0.5f) * 2.0f);
+            }
+            const uint8_t current_level = static_cast<uint8_t>(base_level + (255 - base_level) * current_weight);
+            const uint8_t next_level = static_cast<uint8_t>(base_level + (255 - base_level) * next_weight);
+            it[current_pixel] = current_color * current_level;
+            it[next_pixel] = current_color * next_level;
       - pulse:
           name: "Segment 2 Puls"
           transition_length:
@@ -163,6 +275,62 @@ light:
     power_on_transition_length: 1800ms
     power_off_transition_length: 1100ms
     effects:
+      - addressable_lambda:
+          name: "Segment 3 Laufpixel"
+          update_interval: 16ms
+          lambda: |-
+            const uint8_t base_level = 51;
+            if (it.size() <= 0) {
+              return;
+            }
+            const uint32_t step_ms = id(segment_chase_step_ms).state < 10.0f
+                                         ? 10
+                                         : static_cast<uint32_t>(id(segment_chase_step_ms).state);
+            const uint32_t now = millis();
+            static uint32_t start_time = 0;
+            if (initial_run) {
+              start_time = now;
+            }
+            it.all() = current_color * base_level;
+            if (it.size() == 1) {
+              it[0] = current_color;
+              return;
+            }
+            const uint32_t span = static_cast<uint32_t>(it.size() - 1);
+            const uint32_t cycle_steps = span * 2;
+            const uint32_t cycle_time = cycle_steps * step_ms;
+            const uint32_t elapsed = (now - start_time) % cycle_time;
+            const uint32_t hop_index = elapsed / step_ms;
+            const float phase = static_cast<float>(elapsed % step_ms) / static_cast<float>(step_ms);
+            const auto smoothstep = [](float value) -> float {
+              if (value <= 0.0f) {
+                return 0.0f;
+              }
+              if (value >= 1.0f) {
+                return 1.0f;
+              }
+              return value * value * (3.0f - 2.0f * value);
+            };
+            const auto ping_pong_index = [&](uint32_t index) -> int {
+              const uint32_t wrapped = index % cycle_steps;
+              if (wrapped <= span) {
+                return static_cast<int>(wrapped);
+              }
+              return static_cast<int>(cycle_steps - wrapped);
+            };
+            const int current_pixel = ping_pong_index(hop_index);
+            const int next_pixel = ping_pong_index(hop_index + 1);
+            float current_weight = 1.0f;
+            float next_weight = 1.0f;
+            if (phase < 0.5f) {
+              next_weight = smoothstep(phase * 2.0f);
+            } else {
+              current_weight = 1.0f - smoothstep((phase - 0.5f) * 2.0f);
+            }
+            const uint8_t current_level = static_cast<uint8_t>(base_level + (255 - base_level) * current_weight);
+            const uint8_t next_level = static_cast<uint8_t>(base_level + (255 - base_level) * next_weight);
+            it[current_pixel] = current_color * current_level;
+            it[next_pixel] = current_color * next_level;
       - pulse:
           name: "Segment 3 Nachtpuls"
           transition_length: 2s
@@ -192,6 +360,62 @@ light:
     power_on_transition_length: 1100ms
     power_off_transition_length: 1000ms
     effects:
+      - addressable_lambda:
+          name: "Segment 4 Laufpixel"
+          update_interval: 16ms
+          lambda: |-
+            const uint8_t base_level = 51;
+            if (it.size() <= 0) {
+              return;
+            }
+            const uint32_t step_ms = id(segment_chase_step_ms).state < 10.0f
+                                         ? 10
+                                         : static_cast<uint32_t>(id(segment_chase_step_ms).state);
+            const uint32_t now = millis();
+            static uint32_t start_time = 0;
+            if (initial_run) {
+              start_time = now;
+            }
+            it.all() = current_color * base_level;
+            if (it.size() == 1) {
+              it[0] = current_color;
+              return;
+            }
+            const uint32_t span = static_cast<uint32_t>(it.size() - 1);
+            const uint32_t cycle_steps = span * 2;
+            const uint32_t cycle_time = cycle_steps * step_ms;
+            const uint32_t elapsed = (now - start_time) % cycle_time;
+            const uint32_t hop_index = elapsed / step_ms;
+            const float phase = static_cast<float>(elapsed % step_ms) / static_cast<float>(step_ms);
+            const auto smoothstep = [](float value) -> float {
+              if (value <= 0.0f) {
+                return 0.0f;
+              }
+              if (value >= 1.0f) {
+                return 1.0f;
+              }
+              return value * value * (3.0f - 2.0f * value);
+            };
+            const auto ping_pong_index = [&](uint32_t index) -> int {
+              const uint32_t wrapped = index % cycle_steps;
+              if (wrapped <= span) {
+                return static_cast<int>(wrapped);
+              }
+              return static_cast<int>(cycle_steps - wrapped);
+            };
+            const int current_pixel = ping_pong_index(hop_index);
+            const int next_pixel = ping_pong_index(hop_index + 1);
+            float current_weight = 1.0f;
+            float next_weight = 1.0f;
+            if (phase < 0.5f) {
+              next_weight = smoothstep(phase * 2.0f);
+            } else {
+              current_weight = 1.0f - smoothstep((phase - 0.5f) * 2.0f);
+            }
+            const uint8_t current_level = static_cast<uint8_t>(base_level + (255 - base_level) * current_weight);
+            const uint8_t next_level = static_cast<uint8_t>(base_level + (255 - base_level) * next_weight);
+            it[current_pixel] = current_color * current_level;
+            it[next_pixel] = current_color * next_level;
       - pulse:
           name: "Segment 4 Puls"
           transition_length: 1500ms
@@ -221,6 +445,62 @@ light:
     power_on_transition_length: 1400ms
     power_off_transition_length: 900ms
     effects:
+      - addressable_lambda:
+          name: "Segment 5 Laufpixel"
+          update_interval: 16ms
+          lambda: |-
+            const uint8_t base_level = 51;
+            if (it.size() <= 0) {
+              return;
+            }
+            const uint32_t step_ms = id(segment_chase_step_ms).state < 10.0f
+                                         ? 10
+                                         : static_cast<uint32_t>(id(segment_chase_step_ms).state);
+            const uint32_t now = millis();
+            static uint32_t start_time = 0;
+            if (initial_run) {
+              start_time = now;
+            }
+            it.all() = current_color * base_level;
+            if (it.size() == 1) {
+              it[0] = current_color;
+              return;
+            }
+            const uint32_t span = static_cast<uint32_t>(it.size() - 1);
+            const uint32_t cycle_steps = span * 2;
+            const uint32_t cycle_time = cycle_steps * step_ms;
+            const uint32_t elapsed = (now - start_time) % cycle_time;
+            const uint32_t hop_index = elapsed / step_ms;
+            const float phase = static_cast<float>(elapsed % step_ms) / static_cast<float>(step_ms);
+            const auto smoothstep = [](float value) -> float {
+              if (value <= 0.0f) {
+                return 0.0f;
+              }
+              if (value >= 1.0f) {
+                return 1.0f;
+              }
+              return value * value * (3.0f - 2.0f * value);
+            };
+            const auto ping_pong_index = [&](uint32_t index) -> int {
+              const uint32_t wrapped = index % cycle_steps;
+              if (wrapped <= span) {
+                return static_cast<int>(wrapped);
+              }
+              return static_cast<int>(cycle_steps - wrapped);
+            };
+            const int current_pixel = ping_pong_index(hop_index);
+            const int next_pixel = ping_pong_index(hop_index + 1);
+            float current_weight = 1.0f;
+            float next_weight = 1.0f;
+            if (phase < 0.5f) {
+              next_weight = smoothstep(phase * 2.0f);
+            } else {
+              current_weight = 1.0f - smoothstep((phase - 0.5f) * 2.0f);
+            }
+            const uint8_t current_level = static_cast<uint8_t>(base_level + (255 - base_level) * current_weight);
+            const uint8_t next_level = static_cast<uint8_t>(base_level + (255 - base_level) * next_weight);
+            it[current_pixel] = current_color * current_level;
+            it[next_pixel] = current_color * next_level;
       - pulse:
           name: "Segment 5 Softpuls"
           transition_length: 2200ms
@@ -238,6 +518,19 @@ light:
               duration: 720ms
 
 number:
+  - platform: template
+    name: "Laufpixel Schrittzeit"
+    id: segment_chase_step_ms
+    unit_of_measurement: "ms"
+    min_value: 10
+    max_value: 1000
+    step: 10
+    mode: box
+    optimistic: true
+    restore_value: true
+    initial_value: 120
+    entity_category: config
+
   - platform: ws2811_cwww
     name: "Streifen aktive LED-Anzahl"
     id: active_led_count
