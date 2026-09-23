@@ -15,9 +15,17 @@ esphome:
 
 external_components:
   - source:
-      type: local
-      path: components
+      type: git
+      url: https://github.com/kwittwer/esphome_kfw_lib.git
+      ref: main
+      path: IoTorrero/components
     components: [ws2811_cwww]
+
+# external_components:
+#   - source:
+#       type: local
+#       path: components
+#     components: [ws2811_cwww]
 
 esp32:
   board: esp32dev
@@ -49,6 +57,11 @@ wifi:
   ap:
     ssid: "${name}"
     password: !secret ap_pwd
+
+logger:
+
+web_server:
+  port: 80
 
 ws2811_cwww:
   id: segment_hub
