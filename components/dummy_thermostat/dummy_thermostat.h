@@ -4,15 +4,9 @@
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/sensor/sensor.h"
 
-#ifdef USE_BINARY_SENSOR
-#include "esphome/components/binary_sensor/binary_sensor.h"
-#endif
-
 #ifdef USE_TEXT_SENSOR
 #include "esphome/components/text_sensor/text_sensor.h"
 #endif
-
-#include <string>
 
 #ifdef USE_OUTPUT
 #include "esphome/components/output/binary_output.h"
@@ -22,18 +16,10 @@
 #include "esphome/components/switch/switch.h"
 #endif
 
-#ifdef USE_API
-#include "esphome/components/api/custom_api_device.h"
-#endif
-
 namespace esphome {
 namespace dummy_thermostat {
 
-class DummyThermostat : public climate::Climate, public Component
-#ifdef USE_API
-                       , public api::CustomAPIDevice
-#endif
-{
+class DummyThermostat : public climate::Climate, public Component {
  public:
   void setup() override;
   void loop() override;
@@ -83,24 +69,6 @@ class DummyThermostat : public climate::Climate, public Component
   void set_current_temperature(float value);
   void set_current_humidity(float value); 
 
-#ifdef USE_TEXT_SENSOR
-  void set_source_status_text_sensor(text_sensor::TextSensor *text_sensor) {
-    this->source_status_text_sensor_ = text_sensor;
-  }
-#endif
-
-#ifdef USE_BINARY_SENSOR
-  void set_fallback_temperature_binary_sensor(binary_sensor::BinarySensor *binary_sensor) {
-    this->fallback_temperature_binary_sensor_ = binary_sensor;
-  }
-  void set_fallback_humidity_binary_sensor(binary_sensor::BinarySensor *binary_sensor) {
-    this->fallback_humidity_binary_sensor_ = binary_sensor;
-  }
-  void set_local_controller_binary_sensor(binary_sensor::BinarySensor *binary_sensor) {
-    this->local_controller_binary_sensor_ = binary_sensor;
-  }
-#endif
-
  protected:
   void update_temp_sensor_();
   void update_humidity_sensor_();
@@ -108,24 +76,8 @@ class DummyThermostat : public climate::Climate, public Component
   void update_valve_output_();
   void calculate_local_valve_state_();
   
-#ifdef USE_TEXT_SENSOR
-  const char *get_diagnostic_source_status_() const;
-  void publish_diagnostic_source_status_();
-#endif
-
-#ifdef USE_BINARY_SENSOR
-  void publish_diagnostic_binary_states_();
-#endif
-  
   bool get_valve_control_enabled_();
   bool get_use_local_valve_control_();
-
-#ifdef USE_API
-  void register_api_services_();
-  void api_set_current_temperature_(float wert);
-  void api_set_current_humidity_(float wert);
-  void api_set_valve_state_(bool valve);
-#endif
   
   sensor::Sensor *fallback_sensor_{nullptr};
   uint32_t temp_sensor_timeout_{600};
@@ -143,24 +95,7 @@ class DummyThermostat : public climate::Climate, public Component
   
   uint32_t valve_update_timeout_{0};
   uint32_t last_valve_state_update_{0};
-  bool valve_timeout_active_{false};
-
-#ifdef USE_TEXT_SENSOR
-  text_sensor::TextSensor *source_status_text_sensor_{nullptr};
-  std::string last_source_status_{};
-#endif
-
-#ifdef USE_BINARY_SENSOR
-  binary_sensor::BinarySensor *fallback_temperature_binary_sensor_{nullptr};
-  binary_sensor::BinarySensor *fallback_humidity_binary_sensor_{nullptr};
-  binary_sensor::BinarySensor *local_controller_binary_sensor_{nullptr};
-  bool fallback_temperature_binary_sensor_last_{false};
-  bool fallback_humidity_binary_sensor_last_{false};
-  bool local_controller_binary_sensor_last_{false};
-  bool fallback_temperature_binary_sensor_initialized_{false};
-  bool fallback_humidity_binary_sensor_initialized_{false};
-  bool local_controller_binary_sensor_initialized_{false};
-#endif
+  bool valve_timeout_active_{true};
   
 #ifdef USE_OUTPUT
   output::BinaryOutput *valve_output_{nullptr};

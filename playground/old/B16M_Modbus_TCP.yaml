@@ -24,7 +24,7 @@ defaults:
 external_components:
   - source:
       type: local
-      path: B16M_components/components
+      path: ../../components
     components:
       - modbustcp
       - modbustcp_controller

@@ -1,4 +1,4 @@
-﻿# ESPHome Dummy Thermostat Component   d
+﻿# ESPHome Dummy Thermostat Component
 
 Virtueller ESPHome-Thermostat, der Istwert und Ventilstellung von externen Systemen (Home Assistant, Wärmepumpe) empfängt und bei Verbindungsabbruch automatisch auf lokale Regelung umschaltet.
 
@@ -83,48 +83,35 @@ climate:
       temperature_step:
         target_temperature: 0.5
         current_temperature: 0.1
-
-    # Optional: Diagnose-Textsensor fuer aktive Datenquelle
-    diagnostic_source_status:
-      name: "Wohnzimmer Quellenstatus"
 ```
 
 ## Alle YAML-Optionen
 
-| Option                       | Typ         | Default | Beschreibung                                                                                                      |
-| ---------------------------- | ----------- | ------- | ----------------------------------------------------------------------------------------------------------------- |
-| `fallback_sensor`          | Sensor-ID   | —      | Lokaler Temperatursensor als Fallback                                                                             |
-| `sensor_timeout`           | int (s)     | 600     | Sekunden ohne externen Update → Fallback-Sensor aktiv                                                            |
-| `fallback_sensor_timeout`  | int (s)     | 600     | Sekunden ohne Fallback-Sensor-Update → Temperatur = NAN                                                          |
-| `fallback_humidity_sensor` | Sensor-ID   | —      | Lokaler Feuchtigkeitssensor als Fallback                                                                          |
-| `humidity_sensor_timeout`  | int (s)     | 0       | Sekunden bis Feuchte-Fallback (0 = deaktiviert)                                                                   |
-| `valve_switch`             | Switch-ID   | —      | ESPHome-Switch für physisches Ventil                                                                             |
-| `valve_output`             | Output-ID   | —      | Binary Output für physisches Ventil                                                                              |
-| `valve_control_enabled`    | bool/lambda | false   | Master-Freigabe: nur wenn true wird das Ventil geschaltet                                                         |
-| `use_local_valve_control`  | bool/lambda | false   | true = immer lokale Hysterese, false = extern + Timeout-Fallback                                                  |
-| `valve_update_timeout`     | int (s)     | 0       | Sekunden ohne`set_valve_state()` → lokale Übernahme (0 = deaktiviert)                                         |
-| `heating_deadband`         | float (°C) | 0.5     | Heizen EIN wenn`T < Soll - deadband`                                                                            |
-| `heating_overrun`          | float (°C) | 0.5     | Heizen AUS wenn`T >= Soll + overrun`                                                                            |
-| `cooling_deadband`         | float (°C) | 0.5     | (für externe Kühlsteuerung, nicht lokal genutzt)                                                                |
-| `cooling_overrun`          | float (°C) | 0.5     | (für externe Kühlsteuerung, nicht lokal genutzt)                                                                |
-| `diagnostic_source_status` | Textsensor  | —      | Optionaler Diagnose-Textsensor mit Quelle:`normal`, `fallback_temp`, `fallback_humidity`, `fallback_both` |
+| Option                       | Typ         | Default | Beschreibung                                                              |
+| ---------------------------- | ----------- | ------- | ------------------------------------------------------------------------- |
+| `fallback_sensor`          | Sensor-ID   | —      | Lokaler Temperatursensor als Fallback                                     |
+| `sensor_timeout`           | int (s)     | 600     | Sekunden ohne externen Update → Fallback-Sensor aktiv                    |
+| `fallback_sensor_timeout`  | int (s)     | 600     | Sekunden ohne Fallback-Sensor-Update → Temperatur = NAN                  |
+| `fallback_humidity_sensor` | Sensor-ID   | —      | Lokaler Feuchtigkeitssensor als Fallback                                  |
+| `humidity_sensor_timeout`  | int (s)     | 0       | Sekunden bis Feuchte-Fallback (0 = deaktiviert)                           |
+| `valve_switch`             | Switch-ID   | —      | ESPHome-Switch für physisches Ventil                                     |
+| `valve_output`             | Output-ID   | —      | Binary Output für physisches Ventil                                      |
+| `valve_control_enabled`    | bool/lambda | false   | Master-Freigabe: nur wenn true wird das Ventil geschaltet                 |
+| `use_local_valve_control`  | bool/lambda | false   | true = immer lokale Hysterese, false = extern + Timeout-Fallback          |
+| `valve_update_timeout`     | int (s)     | 0       | Sekunden ohne`set_valve_state()` → lokale Übernahme (0 = deaktiviert) |
+| `heating_deadband`         | float (°C) | 0.5     | Heizen EIN wenn`T < Soll - deadband`                                    |
+| `heating_overrun`          | float (°C) | 0.5     | Heizen AUS wenn`T >= Soll + overrun`                                    |
+| `cooling_deadband`         | float (°C) | 0.5     | (für externe Kühlsteuerung, nicht lokal genutzt)                        |
+| `cooling_overrun`          | float (°C) | 0.5     | (für externe Kühlsteuerung, nicht lokal genutzt)                        |
 
 ## Services (aus HA aufrufbar)
 
-Die Services werden beim Start automatisch vom Component registriert.
-Der Suffix entspricht der `object_id` der Climate-Instanz.
-
-| Service                                 | Parameter       | Beschreibung                                         |
-| --------------------------------------- | --------------- | ---------------------------------------------------- |
-| `set_valve_state_<object_id>`         | `valve: bool` | Externe Ventilstellung setzen (von Waermepumpe etc.) |
-| `set_current_temperature_<object_id>` | `wert: float` | Istwert von externem Knoten setzen                   |
-| `set_current_humidity_<object_id>`    | `wert: float` | Istwert Feuchte von externem Knoten setzen           |
-
-Beispiel: Bei `id: thermostat1` entstehen diese Service-Namen:
-
-- `set_valve_state_thermostat1`
-- `set_current_temperature_thermostat1`
-- `set_current_humidity_thermostat1`
+| Service                                 | Parameter        | Beschreibung                                         |
+| --------------------------------------- | ---------------- | ---------------------------------------------------- |
+| `set_valve_state_thermostatN`         | `valve: bool`  | Externe Ventilstellung setzen (von Wärmepumpe etc.) |
+| `set_current_temperature_thermostatN` | `wert: float`  | Istwert von externem Knoten setzen                   |
+| `set_current_humidity_thermostatN`    | `wert: float`  | Istwert Feuchte von externem Knoten setzen           |
+| `set_display_name_thermostatN`        | `name: string` | Anzeigename ändern                                  |
 
 Jeder Service-Aufruf aktualisiert den internen Timestamp — das verhindert das Auslösen des jeweiligen Timeouts.
 

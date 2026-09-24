@@ -15,16 +15,14 @@ esphome:
 
 external_components:
   - source:
-      type: git
-      url: https://github.com/kwittwer/esphome_kfw_lib.git
-      ref: main
-      path: IoTorrero/components
+      type: local
+      path: ../components
     components: [ws2811_cwww]
 
 # external_components:
 #   - source:
 #       type: local
-#       path: components
+#       path: ../components
 #     components: [ws2811_cwww]
 
 esp32:

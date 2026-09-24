@@ -1,6 +1,6 @@
 ﻿esphome:
-  name: b16m-template
-  friendly_name: B16M_Template
+  name: b16m-pidtemplate
+  friendly_name: B16M_pidTemplate
   project:
     name: "Konrad.Heizungsregler"
     version: V2026.06.29
@@ -50,7 +50,7 @@ external_components:
   - source:
       type: local
       path: ../components
-    components: [dummy_thermostat]
+    components: [pid_thermostat]
 
 # ============================================
 # TIME (DS1307 RTC + Home Assistant)
@@ -733,10 +733,6 @@ interval:
           then:
             - script.execute: display_next_page
 
-
-# ============================================
-# DISPLAY (SSD1306 OLED 128x64) + FONTS
-# ============================================
 font:
   - file:
       type: gfonts
@@ -872,6 +868,7 @@ display:
           }
 
           it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+          it.printf(60, 24, id(tiny), "Out: %.0f%%", tstat->get_control_output());
 
           const char *mode_text = "UNKNOWN";
           switch (tstat->mode) {
@@ -919,6 +916,7 @@ display:
           }
 
           it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+          it.printf(60, 24, id(tiny), "Out: %.0f%%", tstat->get_control_output());
 
           const char *mode_text = "UNKNOWN";
           switch (tstat->mode) {
@@ -966,6 +964,7 @@ display:
           }
 
           it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+          it.printf(60, 24, id(tiny), "Out: %.0f%%", tstat->get_control_output());
 
           const char *mode_text = "UNKNOWN";
           switch (tstat->mode) {
@@ -1013,6 +1012,7 @@ display:
           }
 
           it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+          it.printf(60, 24, id(tiny), "Out: %.0f%%", tstat->get_control_output());
 
           const char *mode_text = "UNKNOWN";
           switch (tstat->mode) {
@@ -1060,6 +1060,7 @@ display:
           }
 
           it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+          it.printf(60, 24, id(tiny), "Out: %.0f%%", tstat->get_control_output());
 
           const char *mode_text = "UNKNOWN";
           switch (tstat->mode) {
@@ -1107,6 +1108,7 @@ display:
           }
 
           it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+          it.printf(60, 24, id(tiny), "Out: %.0f%%", tstat->get_control_output());
 
           const char *mode_text = "UNKNOWN";
           switch (tstat->mode) {
@@ -1154,6 +1156,7 @@ display:
           }
 
           it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+          it.printf(60, 24, id(tiny), "Out: %.0f%%", tstat->get_control_output());
 
           const char *mode_text = "UNKNOWN";
           switch (tstat->mode) {
@@ -1201,6 +1204,7 @@ display:
           }
 
           it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+          it.printf(60, 24, id(tiny), "Out: %.0f%%", tstat->get_control_output());
 
           const char *mode_text = "UNKNOWN";
           switch (tstat->mode) {
@@ -1248,6 +1252,7 @@ display:
           }
 
           it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+          it.printf(60, 24, id(tiny), "Out: %.0f%%", tstat->get_control_output());
 
           const char *mode_text = "UNKNOWN";
           switch (tstat->mode) {
@@ -1300,190 +1305,304 @@ select:
           format: "Steuerungsmodus gesetzt: %s"
           args: [ 'x.c_str()' ]
 
+  # ============================================
+  # PID-THERMOSTAT BEISPIELKONFIGURATION
+  #
+  # Hinweis:
+  # - Die Climate-Instanz erzeugt ihre Parameter- und Diagnose-Entities selbst.
+  # - Kp/Ki/Kd, PWM Periode, PWM Min/Max, Taupunkt-Abstand, Reglerausgang,
+  #   Modusstatus sowie die aktive Temperatur-/Feuchtequelle erscheinen automatisch.
+  # - Die hier gezeigten auskommentierten Optionen koennen bei Bedarf pro Raum
+  #   aktiviert oder angepasst werden.
+  # ============================================
+  # climate:
+  #   - platform: pid_thermostat
+  #     name: "Beispielraum"  # Typ: String. Anzeigename der Climate-Entity.
+  #     id: beispiel_thermostat  # Typ: ESPHome-ID. Interner Name fuer Lambdas, Display und Automationen.
+  #
+  #     temperature_sensor: sensor_dht_1_temperature  # Typ: Sensor-ID. Hauptsensor fuer die Temperaturregelung.
+  #     humidity_sensor: sensor_dht_1_humidity  # Typ: Sensor-ID. Hauptsensor fuer Feuchte und Taupunktberechnung.
+  #
+  #     # fallback_temperature_sensor: sensor_dht_2_temperature  # Typ: Sensor-ID. Optionaler Ersatzsensor, wenn temperature_sensor ausfaellt.
+  #     # fallback_humidity_sensor: sensor_dht_2_humidity  # Typ: Sensor-ID. Optionaler Ersatzsensor, wenn humidity_sensor ausfaellt.
+  #
+  #     temperature_sensor_timeout: 10min  # Typ: Zeitwert. Nach dieser Zeit ohne Update wird auf fallback_temperature_sensor gewechselt.
+  #     # fallback_temperature_sensor_timeout: 10min  # Typ: Zeitwert. Nach dieser Zeit ohne Update gilt auch der Temperatur-Fallback als ungueltig.
+  #     humidity_sensor_timeout: 10min  # Typ: Zeitwert. Nach dieser Zeit ohne Update wird auf fallback_humidity_sensor gewechselt.
+  #     # fallback_humidity_sensor_timeout: 10min  # Typ: Zeitwert. Nach dieser Zeit ohne Update gilt auch der Feuchte-Fallback als ungueltig.
+  #
+  #     valve_switch: DO1  # Typ: Switch-ID. Physischer Ausgang fuer das Ventil bzw. die PWM-Schaltung.
+  #     valve_control_enabled: !lambda |-  # Typ: bool oder Lambda<bool>. Freigabe fuer die reale Ausgangsansteuerung.
+  #       return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+  #
+  #     kp: 5.0  # Typ: float. Proportionalanteil des PID-Reglers.
+  #     ki: 0.01  # Typ: float. Integralanteil des PID-Reglers.
+  #     kd: 500.0  # Typ: float. Differentialanteil des PID-Reglers.
+  #
+  #     pwm: 15min  # Typ: Zeitwert. Dauer eines PWM-Zyklus fuer die Ventilansteuerung.
+  #     pwm_min: 0.0  # Typ: float 0..100. Untere Grenze des Reglerausgangs in Prozent.
+  #     pwm_max: 100.0  # Typ: float 0..100. Obere Grenze des Reglerausgangs in Prozent.
+  #
+  #     sampling_period: 0s  # Typ: Zeitwert. 0s = Rechenlauf bei jedem Sensorupdate, sonst feste PID-Abtastung.
+  #     keep_alive: 60s  # Typ: Zeitwert. Intervall fuer erneutes Anwenden des berechneten Ausgangszustands.
+  #     min_cycle_duration: 0s  # Typ: Zeitwert. Mindestdauer, die das Ventil nach dem Einschalten an bleiben soll.
+  #     min_off_cycle_duration: 0s  # Typ: Zeitwert. Mindestdauer, die das Ventil nach dem Ausschalten aus bleiben soll.
+  #
+  #     cold_tolerance: 0.3  # Typ: Temperaturwert in °C/K. Abschalt-/Ruhebereich im Kuehlmodus nahe Sollwert.
+  #     hot_tolerance: 0.3  # Typ: Temperaturwert in °C/K. Abschalt-/Ruhebereich im Heizmodus nahe Sollwert.
+  #     dew_point_offset: 1.0  # Typ: float in K. Sicherheitsabstand ueber dem Taupunkt im Kuehlmodus.
+  #     output_safety: 5.0  # Typ: float 0..100 %. Sicherheitsausgang, falls keine gueltige Temperaturquelle verfuegbar ist.
+  #     debug: false  # Typ: bool. Aktiviert zusaetzliche Regler-Debugausgaben im Log.
+  #
+  #     visual:  # Anzeigeparameter fuer die HA-UI, nicht fuer die eigentliche Reglerlogik.
+  #       min_temperature: 15.0  # Typ: float. Kleinster einstellbarer Sollwert in der UI.
+  #       max_temperature: 30.0  # Typ: float. Groesster einstellbarer Sollwert in der UI.
+  #       temperature_step:
+  #         target_temperature: 0.5  # Typ: float. Schrittweite fuer die Solltemperatur in der UI.
+  #         current_temperature: 0.1  # Typ: float. Anzeigeauflosung fuer die Isttemperatur in der UI.
+
 climate:
-  - platform: dummy_thermostat
+
+  - platform: pid_thermostat
     name: "Raum1"
     id: thermostat1
-    fallback_sensor: sensor_dht_1_temperature
+    temperature_sensor: sensor_dht_1_temperature
+    humidity_sensor: sensor_dht_1_humidity
+    fallback_temperature_sensor: sensor_dht_1_temperature
     fallback_humidity_sensor: sensor_dht_1_humidity
-    sensor_timeout: 10min
-    humidity_sensor_timeout: 0s
+    temperature_sensor_timeout: 10min
+    humidity_sensor_timeout: 10min
     valve_switch: DO1
-    valve_update_timeout: 10min
     valve_control_enabled: !lambda |-
       return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
-    use_local_valve_control: !lambda |-
-      return id(manual_control_enabled);
-    heating_deadband: 0.5
-    heating_overrun: 0.1
+    kp: 5.0
+    ki: 0.01
+    kd: 500.0
+    pwm: 15min
+    pwm_min: 0.0
+    pwm_max: 100.0
+    sampling_period: 0s
+    keep_alive: 60s
+    min_cycle_duration: 0s
+    min_off_cycle_duration: 0s
+    output_safety: 5.0
     visual:
       min_temperature: 15.0
       max_temperature: 30.0
       temperature_step:
         target_temperature: 0.5
         current_temperature: 0.1
-  - platform: dummy_thermostat
+  - platform: pid_thermostat
     name: "Raum2"
     id: thermostat2
-    fallback_sensor: sensor_dht_1_temperature
-    fallback_humidity_sensor: sensor_dht_1_humidity
-    sensor_timeout: 10min
+    temperature_sensor: sensor_dht_1_temperature
+    humidity_sensor: sensor_dht_1_humidity
+    temperature_sensor_timeout: 10min
     humidity_sensor_timeout: 0s
     valve_switch: DO2
-    valve_update_timeout: 10min
     valve_control_enabled: !lambda |-
       return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
-    use_local_valve_control: !lambda |-
-      return id(manual_control_enabled);
-    heating_deadband: 0.5
-    heating_overrun: 0.1
+    kp: 5.0
+    ki: 0.01
+    kd: 500.0
+    pwm: 15min
+    pwm_min: 0.0
+    pwm_max: 100.0
+    sampling_period: 0s
+    keep_alive: 60s
+    min_cycle_duration: 0s
+    min_off_cycle_duration: 0s
+    output_safety: 5.0
     visual:
       min_temperature: 15.0
       max_temperature: 30.0
       temperature_step:
         target_temperature: 0.5
         current_temperature: 0.1
-  - platform: dummy_thermostat
+  - platform: pid_thermostat
     name: "Raum3"
     id: thermostat3
-    fallback_sensor: sensor_dht_1_temperature
-    fallback_humidity_sensor: sensor_dht_1_humidity
-    sensor_timeout: 10min
+    temperature_sensor: sensor_dht_1_temperature
+    humidity_sensor: sensor_dht_1_humidity
+    temperature_sensor_timeout: 10min
     humidity_sensor_timeout: 0s
     valve_switch: DO3
-    valve_update_timeout: 10min
     valve_control_enabled: !lambda |-
       return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
-    use_local_valve_control: !lambda |-
-      return id(manual_control_enabled);
-    heating_deadband: 0.5
-    heating_overrun: 0.1
+    kp: 5.0
+    ki: 0.01
+    kd: 500.0
+    pwm: 15min
+    pwm_min: 0.0
+    pwm_max: 100.0
+    sampling_period: 0s
+    keep_alive: 60s
+    min_cycle_duration: 0s
+    min_off_cycle_duration: 0s
+    output_safety: 5.0
     visual:
       min_temperature: 15.0
       max_temperature: 30.0
       temperature_step:
         target_temperature: 0.5
         current_temperature: 0.1
-  - platform: dummy_thermostat
+  - platform: pid_thermostat
     name: "Raum4"
     id: thermostat4
-    fallback_sensor: sensor_dht_1_temperature
-    fallback_humidity_sensor: sensor_dht_1_humidity
-    sensor_timeout: 10min
-    humidity_sensor_timeout: 0s
+    temperature_sensor: sensor_dht_1_temperature
+    humidity_sensor: sensor_dht_1_humidity
+    temperature_sensor_timeout: 10min
+    humidity_sensor_timeout: 10min
+
     valve_switch: DO4
-    valve_update_timeout: 10min
     valve_control_enabled: !lambda |-
       return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
-    use_local_valve_control: !lambda |-
-      return id(manual_control_enabled);
-    heating_deadband: 0.5
-    heating_overrun: 0.1
+    kp: 5.0
+    ki: 0.01
+    kd: 500.0
+    pwm: 15min
+    pwm_min: 0.0
+    pwm_max: 100.0
+    sampling_period: 0s
+    keep_alive: 60s
+    min_cycle_duration: 0s
+    min_off_cycle_duration: 0s
+    output_safety: 5.0
     visual:
       min_temperature: 15.0
       max_temperature: 30.0
       temperature_step:
         target_temperature: 0.5
         current_temperature: 0.1
-  - platform: dummy_thermostat
+  - platform: pid_thermostat
     name: "Raum5"
     id: thermostat5
-    fallback_sensor: sensor_dht_1_temperature
-    fallback_humidity_sensor: sensor_dht_1_humidity
-    sensor_timeout: 10min
+    temperature_sensor: sensor_dht_1_temperature
+    humidity_sensor: sensor_dht_1_humidity
+    temperature_sensor_timeout: 10min
     humidity_sensor_timeout: 0s
     valve_switch: DO5
-    valve_update_timeout: 10min
     valve_control_enabled: !lambda |-
       return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
-    use_local_valve_control: !lambda |-
-      return id(manual_control_enabled);
-    heating_deadband: 0.5
-    heating_overrun: 0.1
+    kp: 5.0
+    ki: 0.01
+    kd: 500.0
+    pwm: 15min
+    pwm_min: 0.0
+    pwm_max: 100.0
+    sampling_period: 0s
+    keep_alive: 60s
+    min_cycle_duration: 0s
+    min_off_cycle_duration: 0s
+    output_safety: 5.0
     visual:
       min_temperature: 15.0
       max_temperature: 30.0
       temperature_step:
         target_temperature: 0.5
         current_temperature: 0.1
-  - platform: dummy_thermostat
+  - platform: pid_thermostat
     name: "Raum6"
     id: thermostat6
-    fallback_sensor: sensor_dht_1_temperature
-    fallback_humidity_sensor: sensor_dht_1_humidity
-    sensor_timeout: 10min
+    temperature_sensor: sensor_dht_1_temperature
+    humidity_sensor: sensor_dht_1_humidity
+    temperature_sensor_timeout: 10min
     humidity_sensor_timeout: 0s
     valve_switch: DO6
-    valve_update_timeout: 10min
     valve_control_enabled: !lambda |-
       return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
-    use_local_valve_control: !lambda |-
-      return id(manual_control_enabled);
-    heating_deadband: 0.5
-    heating_overrun: 0.1
+    kp: 5.0
+    ki: 0.01
+    kd: 500.0
+    pwm: 15min
+    pwm_min: 0.0
+    pwm_max: 100.0
+    sampling_period: 0s
+    keep_alive: 60s
+    min_cycle_duration: 0s
+    min_off_cycle_duration: 0s
+    output_safety: 5.0
     visual:
       min_temperature: 15.0
       max_temperature: 30.0
       temperature_step:
         target_temperature: 0.5
         current_temperature: 0.1
-  - platform: dummy_thermostat
+  - platform: pid_thermostat
     name: "Raum7"
     id: thermostat7
-    fallback_sensor: sensor_dht_1_temperature
-    fallback_humidity_sensor: sensor_dht_1_humidity
-    sensor_timeout: 10min
+    temperature_sensor: sensor_dht_1_temperature
+    humidity_sensor: sensor_dht_1_humidity
+    temperature_sensor_timeout: 10min
     humidity_sensor_timeout: 0s
     valve_switch: DO7
-    valve_update_timeout: 10min
     valve_control_enabled: !lambda |-
       return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
-    use_local_valve_control: !lambda |-
-      return id(manual_control_enabled);
-    heating_deadband: 0.5
-    heating_overrun: 0.1
+    kp: 5.0
+    ki: 0.01
+    kd: 500.0
+    pwm: 15min
+    pwm_min: 0.0
+    pwm_max: 100.0
+    sampling_period: 0s
+    keep_alive: 60s
+    min_cycle_duration: 0s
+    min_off_cycle_duration: 0s
+    output_safety: 5.0
     visual:
       min_temperature: 15.0
       max_temperature: 30.0
       temperature_step:
         target_temperature: 0.5
         current_temperature: 0.1
-  - platform: dummy_thermostat
+  - platform: pid_thermostat
     name: "Raum8"
     id: thermostat8
-    fallback_sensor: sensor_dht_1_temperature
-    fallback_humidity_sensor: sensor_dht_1_humidity
-    sensor_timeout: 10min
+    temperature_sensor: sensor_dht_1_temperature
+    humidity_sensor: sensor_dht_1_humidity
+    temperature_sensor_timeout: 10min
     humidity_sensor_timeout: 0s
     valve_switch: DO8
-    valve_update_timeout: 10min
     valve_control_enabled: !lambda |-
       return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
-    use_local_valve_control: !lambda |-
-      return id(manual_control_enabled);
-    heating_deadband: 0.5
-    heating_overrun: 0.1
+    kp: 5.0
+    ki: 0.01
+    kd: 500.0
+    pwm: 15min
+    pwm_min: 0.0
+    pwm_max: 100.0
+    sampling_period: 0s
+    keep_alive: 60s
+    min_cycle_duration: 0s
+    min_off_cycle_duration: 0s
+    output_safety: 5.0
     visual:
       min_temperature: 15.0
       max_temperature: 30.0
       temperature_step:
         target_temperature: 0.5
         current_temperature: 0.1
-  - platform: dummy_thermostat
+  - platform: pid_thermostat
     name: "Raum9"
     id: thermostat9
-    fallback_sensor: sensor_dht_1_temperature
-    fallback_humidity_sensor: sensor_dht_1_humidity
-    sensor_timeout: 10min
+    temperature_sensor: sensor_dht_1_temperature
+    humidity_sensor: sensor_dht_1_humidity
+    temperature_sensor_timeout: 10min
     humidity_sensor_timeout: 0s
     valve_switch: DO9
-    valve_update_timeout: 10min
     valve_control_enabled: !lambda |-
       return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
-    use_local_valve_control: !lambda |-
-      return id(manual_control_enabled);
-    heating_deadband: 0.5
-    heating_overrun: 0.1
+    kp: 5.0
+    ki: 0.01
+    kd: 500.0
+    pwm: 15min
+    pwm_min: 0.0
+    pwm_max: 100.0
+    sampling_period: 0s
+    keep_alive: 60s
+    min_cycle_duration: 0s
+    min_off_cycle_duration: 0s
+    output_safety: 5.0
     visual:
       min_temperature: 15.0
       max_temperature: 30.0
