@@ -1,0 +1,112 @@
+id: dummy_thermostat
+name: Dummy Thermostat
+description: A virtual climate component with fallback sensors, valve control and local heating fallback.
+docs_url: https://github.com/kwittwer/esphome_dummy_climate
+icon: thermometer
+
+platforms:
+  - id: default
+    name: Default
+    description: Dummy thermostat climate component.
+    yaml_template: |
+      climate:
+        - platform: dummy_thermostat
+          name: {name}
+          id: {id}
+          fallback_sensor: {fallback_sensor}
+          fallback_humidity_sensor: {fallback_humidity_sensor}
+          sensor_timeout: {sensor_timeout}
+          humidity_sensor_timeout: {humidity_sensor_timeout}
+          valve_switch: {valve_switch}
+          valve_update_timeout: {valve_update_timeout}
+          valve_control_enabled: {valve_control_enabled}
+          use_local_valve_control: {use_local_valve_control}
+          heating_deadband: {heating_deadband}
+          heating_overrun: {heating_overrun}
+          visual:
+            min_temperature: {visual_min_temperature}
+            max_temperature: {visual_max_temperature}
+            temperature_step:
+              target_temperature: {visual_temperature_step_target}
+              current_temperature: {visual_temperature_step_current}
+    fields:
+      - key: name
+        label: Name
+        type: string
+        required: true
+        default: Wohnzimmer
+      - key: id
+        label: ID
+        type: string
+        required: true
+        default: thermostat1
+      - key: fallback_sensor
+        label: Fallback Temperature Sensor
+        type: string
+        required: true
+        default: sensor_dht_1_temperature
+      - key: fallback_humidity_sensor
+        label: Fallback Humidity Sensor
+        type: string
+        required: true
+        default: sensor_dht_1_humidity
+      - key: sensor_timeout
+        label: Sensor Timeout (s)
+        type: number
+        required: true
+        default: 900
+      - key: humidity_sensor_timeout
+        label: Humidity Sensor Timeout (s)
+        type: number
+        required: true
+        default: 900
+      - key: valve_switch
+        label: Valve Switch
+        type: string
+        required: true
+        default: DO1
+      - key: valve_update_timeout
+        label: Valve Update Timeout (s)
+        type: number
+        required: true
+        default: 300
+      - key: valve_control_enabled
+        label: Valve Control Enabled
+        type: boolean
+        required: true
+        default: true
+      - key: use_local_valve_control
+        label: Use Local Valve Control
+        type: boolean
+        required: true
+        default: true
+      - key: heating_deadband
+        label: Heating Deadband
+        type: number
+        required: true
+        default: 0.5
+      - key: heating_overrun
+        label: Heating Overrun
+        type: number
+        required: true
+        default: 0.1
+      - key: visual_min_temperature
+        label: Visual Min Temperature
+        type: number
+        required: true
+        default: 15.0
+      - key: visual_max_temperature
+        label: Visual Max Temperature
+        type: number
+        required: true
+        default: 30.0
+      - key: visual_temperature_step_target
+        label: Target Temperature Step
+        type: number
+        required: true
+        default: 0.5
+      - key: visual_temperature_step_current
+        label: Current Temperature Step
+        type: number
+        required: true
+        default: 0.1
