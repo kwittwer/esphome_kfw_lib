@@ -1,0 +1,1608 @@
+﻿esphome:
+  name: b16m-template
+  friendly_name: B16M_Template
+  project:
+    name: "Konrad.Heizungsregler"
+    version: V2026.06.29
+
+# Replace this with your actual platform if you aren't using ESP32.
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: ESP32S3
+  cpu_frequency: 240MHZ
+  framework:
+    type: esp-idf
+    advanced:
+      execute_from_psram: true
+    sdkconfig_options:
+      CONFIG_FATFS_LFN_STACK: "y"
+  flash_size: 16MB
+
+psram:
+  mode: octal
+  speed: 80MHz
+
+ethernet:
+  type: W5500
+  clk_pin: GPIO42
+  mosi_pin: GPIO43
+  miso_pin: GPIO44
+  cs_pin: GPIO41
+  interrupt_pin: GPIO2
+  reset_pin: GPIO1
+  manual_ip:
+    static_ip: "192.168.178.59"
+    gateway: "192.168.178.1"
+    subnet: "255.255.255.0"
+    dns1: "192.168.178.1"
+
+
+web_server:
+  port: 80
+  version: 3
+  
+logger:
+
+debug:
+  update_interval: 10s
+
+external_components:
+  - source:
+      type: local
+      path: C:/Users/z004s49s/Documents/KFW/esphome_dummy_climate/components
+    components: [dummy_thermostat]
+  
+# ============================================
+# TIME (DS1307 RTC + Home Assistant)
+# ============================================
+time:
+  - platform: ds1307
+    id: rtc_time
+    timezone: "Europe/Berlin"
+    update_interval: 1h
+  - platform: homeassistant
+    timezone: "Europe/Berlin"
+    on_time_sync:
+      then:
+        ds1307.write_time:
+
+
+api:
+  reboot_timeout: 6h
+  custom_services: true
+
+ota:
+  - platform: esphome
+# ============================================
+# I2C BUS
+# ============================================
+i2c:
+  - id: bus_a
+    sda: 38
+    scl: 39
+    scan: false
+    frequency: 400kHz
+
+
+# ============================================
+# I/O EXPANDER (PCF8575)
+# ============================================
+pcf8574:
+  - id: 'pcf8574_hub_in_1'
+    i2c_id: bus_a
+    address: "0x24"
+    pcf8575: true
+
+  - id: 'pcf8574_hub_out_1'
+    i2c_id: bus_a
+    address: "0x25"
+    pcf8575: true
+
+
+# ============================================
+# DIGITAL INPUTS (DI1â€“DI16 via PCF8575)
+# ============================================
+binary_sensor:
+  - platform: gpio
+    name: "Hauptschalter"
+    id: DI1_Hauptschalter
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 0
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI2"
+    id: DI2
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 1
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI3"
+    id: DI3
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 2
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI4"
+    id: DI4
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 3
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI5"
+    id: DI5
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 4
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI6"
+    id: DI6
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 5
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI7"
+    id: DI7
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 6
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI8"
+    id: DI8
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 7
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI9"
+    id: DI9
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 8
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI10"
+    id: DI10
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 9
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI11"
+    id: DI11
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 10
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI12"
+    id: DI12
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 11
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI13"
+    id: DI13
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 12
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI14"
+    id: DI14
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 13
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI15"
+    id: DI15
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 14
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DI16"
+    id: DI16
+    use_interrupt: false
+    pin:
+      pcf8574: pcf8574_hub_in_1
+      number: 15
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DW"
+    id: button_dw
+    internal: true
+    pin:
+      number: GPIO0
+      ignore_strapping_warning: true
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 20ms
+      - delayed_off: 20ms
+    on_press:
+      then:
+        - script.execute: manual_next_page
+
+
+
+# ============================================
+# DIGITAL OUTPUTS (DO1-DO16 via PCF8575)
+# ============================================
+switch:
+  - platform: gpio
+    name: "DO Ventil Heizkreis 1"
+    id: DO1
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 0
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO Ventil Heizkreis 2"
+    id: DO2
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 1
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO Ventil Heizkreis 3"
+    id: DO3
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 2
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO Ventil Heizkreis 4"
+    id: DO4
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 3
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO Ventil Heizkreis 5"
+    id: DO5
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 4
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO Ventil Heizkreis 6"
+    id: DO6
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 5
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO Ventil Heizkreis 7"
+    id: DO7
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 6
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO Ventil Heizkreis 8"
+    id: DO8
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 7
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO Ventil Heizkreis 9"
+    id: DO9
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 8
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO10"
+    id: DO10
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 9
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO11"
+    id: DO11
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 10
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO12"
+    id: DO12
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 11
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO13"
+    id: DO13
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 12
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO14"
+    id: DO14
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 13
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO15 Handtuchheizkörper1"
+    id: DO15
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 14
+      mode: OUTPUT
+      inverted: true
+
+  - platform: gpio
+    name: "DO16 Handtuchheizkörper2"
+    id: DO16
+    pin:
+      pcf8574: pcf8574_hub_out_1
+      number: 15
+      mode: OUTPUT
+      inverted: true
+
+
+# ============================================
+# ANALOG INPUTS (AI1-AI4 via ADS1115)
+# ============================================
+ads1115:
+  - address: 0x48
+    i2c_id: bus_a
+    id: ads1115_1
+
+
+sensor:
+  - platform: ads1115
+    multiplexer: 'A0_GND'
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_1
+    name: "AI 1"
+    internal: false
+    unit_of_measurement: "V"
+    update_interval: 5s
+    entity_category: diagnostic
+    ads1115_id: ads1115_1
+
+  - platform: ads1115
+    multiplexer: 'A1_GND'
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_2
+    name: "AI 2"
+    internal: false
+    unit_of_measurement: "V"
+    update_interval: 5s
+    entity_category: diagnostic
+    ads1115_id: ads1115_1
+
+  - platform: ads1115
+    multiplexer: 'A2_GND'
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_3
+    unit_of_measurement: "mA"
+    accuracy_decimals: 2
+    internal: false
+    update_interval: 5s
+    filters:
+      - calibrate_linear:
+          - 0.0 -> 0.0
+          - 0.59 -> 3.95
+
+    device_class: current
+    entity_category: diagnostic
+    ads1115_id: ads1115_1
+  - platform: ads1115
+    multiplexer: 'A3_GND'
+    name: "Strom AI_4"
+    gain: 6.144
+    resolution: 16_BITS
+    id: AI_4
+    unit_of_measurement: "mA"
+    accuracy_decimals: 2
+    internal: false
+    update_interval: 5s
+    filters:
+      - calibrate_linear:
+          - 0.0 -> 0.0
+          - 0.59 -> 3.95
+    device_class: current
+    entity_category: diagnostic
+    ads1115_id: ads1115_1
+  - platform: template
+    name: Windgeschwindigkeit
+    id: wind_speed
+    lambda: |-
+      return id(AI_4).state;
+    update_interval: 5s
+    unit_of_measurement: m/s
+    device_class: "wind_speed"
+    filters:
+      - calibrate_linear:
+          - 3.95 ->  0.0
+          - 20 -> 30.0
+# ============================================
+# UPTIME / VERSION SENSOREN
+# ============================================
+    icon: "mdi:weather-windy"
+# ============================================
+# UPTIME / VERSION SENSOREN
+# ============================================
+  - platform: uptime
+    type: seconds
+    id: uptime_seconds
+    name: Uptime Seconds
+    entity_category: "diagnostic"
+    update_interval: 1s
+
+  - platform: debug
+    loop_time:
+      name: "Loop Time"
+    psram:
+      name: "Free PSRAM"
+    cpu_frequency:
+      name: "CPU Frequency"
+  - platform: dht
+    pin: GPIO47
+    humidity:
+      id: sensor_dht_1_humidity
+      name: DHT1 Humidity
+    temperature:
+      id: sensor_dht_1_temperature
+      name: DHT1 Temperature
+    id: sensor_dht_1
+  - platform: dht
+    pin: GPIO48
+    humidity:
+      id: sensor_dht_2_humidity
+      name: DHT2 Humidity
+    temperature:
+      id: sensor_dht_2_temperature
+      name: Temperature
+    id: sensor_dht_2
+  - platform: dht
+    pin: GPIO15
+    humidity:
+      id: sensor_dht_3_humidity
+      name: DHT3 Humidity
+    temperature:
+      id: sensor_dht_3_temperature
+      name: DHT3 Temperature
+    id: sensor_dht_3
+  - platform: dht
+    pin: GPIO40
+    humidity:
+      id: sensor_dht_4_humidity
+      name: DHT4 Humidity
+    temperature:
+      id: sensor_dht_4_temperature
+      name: DHT4 Temperature
+    id: sensor_dht_4
+  - platform: dallas_temp
+    name: Vorlauf
+    one_wire_id: one_wire_gpio_1
+    address: 0x18082470beaed028
+    id: sensor_dallas_temp_vorlauf
+
+  - platform: dallas_temp
+    name: Rücklauf1
+    one_wire_id: one_wire_gpio_1
+    address: 0x59072463bba3b028
+    id: sensor_dallas_temp_ruecklauf1
+
+  - platform: dallas_temp
+    name: Rücklauf2
+    one_wire_id: one_wire_gpio_1
+    address: 0xa60724637d21a428
+    id: sensor_dallas_temp_ruecklauf2
+
+  - platform: dallas_temp
+    name: Rücklauf3
+    one_wire_id: one_wire_gpio_1
+    address: 0xb6092470e1607228
+    id: sensor_dallas_temp_ruecklauf3
+
+  - platform: dallas_temp
+    name: Rücklauf4
+    one_wire_id: one_wire_gpio_1
+    address: 0xd707246402199628
+    id: sensor_dallas_temp_ruecklauf4
+
+  - platform: dallas_temp
+    name: Rücklauf5
+    one_wire_id: one_wire_gpio_1
+    address: 0x0c07246391979e28
+    id: sensor_dallas_temp_ruecklauf5
+
+  - platform: dallas_temp
+    name: Rücklauf6
+    one_wire_id: one_wire_gpio_1
+    address: 0x6f0924712b4a4928
+    id: sensor_dallas_temp_ruecklauf6
+
+  - platform: dallas_temp
+    name: Rücklauf7
+    one_wire_id: one_wire_gpio_1
+    address: 0x250724637f856528
+    id: sensor_dallas_temp_ruecklauf7
+
+  - platform: dallas_temp
+    name: Rücklauf8
+    one_wire_id: one_wire_gpio_1
+    address: 0x38092470dac95d28
+    id: sensor_dallas_temp_ruecklauf8
+
+  - platform: dallas_temp
+    name: Rücklauf9
+    one_wire_id: one_wire_gpio_1
+    address: 0xb6072463c5b80328
+    id: sensor_dallas_temp_ruecklauf9
+
+      
+text_sensor:
+  - platform: template
+    id: ip_addr
+    name: "IP Address"
+    update_interval: 5s
+    lambda: |-
+      auto ips = network::get_ip_addresses();
+      for (auto &ip : ips) {
+        if (!ip.is_set()) {
+          continue;
+        }
+        char buf[network::IP_ADDRESS_BUFFER_SIZE];
+        ip.str_to(buf);
+        return {buf};
+      }
+      return {"n/a"};
+
+  - platform: version
+    name: "ESPHome Version"
+    id: esphome_version_text
+    hide_timestamp: true
+
+  - platform: uptime
+    name: Uptime
+    id: uptime_text_readable
+    entity_category: "diagnostic"
+    format:
+      separator: " "
+      days: "D"
+
+  - platform: template
+    name: "Project Version:"
+    id: project_version_text
+    entity_category: "diagnostic"
+    lambda: |-
+      return {ESPHOME_PROJECT_VERSION};
+    update_interval: 60s
+
+  - platform: debug
+    device:
+      name: "Device Info"
+    reset_reason:
+      name: "Reset Reason"
+
+globals:
+  - id: heartbeat_blink
+    type: bool
+    restore_value: no
+    initial_value: "false"
+  - id: auto_rotate_display
+    type: bool
+    restore_value: yes
+    initial_value: "true"
+  - id: manual_control_enabled
+    type: bool
+    restore_value: yes
+    initial_value: "false"
+  - id: last_manual_page_press_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: "0"
+
+script:
+  - id: display_next_page
+    mode: restart
+    then:
+      - display.page.show_next: oled_display
+      - component.update: oled_display
+
+  - id: manual_next_page
+    mode: restart
+    then:
+      - lambda: |-
+          id(auto_rotate_display) = false;
+          id(last_manual_page_press_ms) = millis();
+      - script.execute: display_next_page
+
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          id(heartbeat_blink) = !id(heartbeat_blink);
+      - component.update: oled_display
+      - if:
+          condition:
+            lambda: |-
+              if (id(auto_rotate_display)) {
+                return false;
+              }
+              return (millis() - id(last_manual_page_press_ms)) >= 180000UL;
+          then:
+            - lambda: |-
+                id(auto_rotate_display) = true;
+
+  - interval: 30s
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return id(auto_rotate_display);
+          then:
+            - script.execute: display_next_page
+
+
+# ============================================
+# DISPLAY (SSD1306 OLED 128x64) + FONTS
+# ============================================
+font:
+  - file:
+      type: gfonts
+      family: "Open+Sans"
+      weight: 400
+    id: tiny
+    size: 9
+
+  - file:
+      type: gfonts
+      family: "Open+Sans"
+      weight: 400
+    id: small
+    size: 12
+
+  - file:
+      type: gfonts
+      family: "Open+Sans"
+      weight: 400
+    id: large
+    size: 20
+
+  - file:
+      type: gfonts
+      family: "Open+Sans"
+      weight: 700
+    id: bold
+    size: 10
+
+  - file: "../Documents/KFW/esphome_kfw_lib/materialdesignicons-webfont.ttf"
+    id: icon
+    size: 16
+    glyphs: [
+        "\U000F02D1",  # mdi-heart
+        "\U000F05D4",  # mdi-airplane-landing
+        "\U000F0159",  # mdi-alert
+        "\U000F0130",  # mdi-checkbox-blank-circle
+        "\U000F0133",  # mdi-checkbox-marked-circle
+        "\U000F012E",  # mdi-checkbox-blank
+        "\U000F0132",  # mdi-checkbox-marked
+        "\U000F0319",  # mdi-lan-disconnect
+        "\U000F0318",  # mdi-lan-connect
+        "\U000F050F",  # mdi-thermometer
+        "\U000F058E",  # mdi-water-percent
+        "\U000F1B17",  # mdi-thermostat
+        "\U000F0026",   # mdi-Alert
+      ]
+
+display:
+  - platform: ssd1306_i2c
+    model: SSD1306_128X64
+    id: oled_display
+    i2c_id: bus_a
+    address: 0x3c
+    update_interval: 500ms
+    pages:
+      - id: page_home
+        lambda: |-
+          it.strftime(0, 0, id(large), "%H:%M", id(rtc_time).now());
+          if (id(heartbeat_blink)) {
+            it.print(110, 0, id(icon), "\U000F02D1");
+          }
+          it.printf(0, 28, id(small), "B16M");
+          if (api::global_api_server->is_connected()) {
+            it.print(48, 28, id(icon), "\U000F0318");
+            it.print(66, 32, id(tiny), "HA OK");
+          } else {
+            it.print(48, 28, id(icon), "\U000F0319");
+            it.print(66, 32, id(tiny), "HA OFF");
+          }
+          if (id(uptime_seconds).has_state()) {
+            it.printf(0, 48, id(tiny), "Uptime: %.0fs", id(uptime_seconds).state);
+          }
+
+      - id: page_inputs
+        lambda: |-
+          it.print(0, 0, id(small), "Inputs");
+          it.print(0, 16, id(icon), id(DI1_Hauptschalter).state ? "\U000F0133" : "\U000F0130");
+          it.print(16, 16, id(icon), id(DI2).state ? "\U000F0133" : "\U000F0130");
+          it.print(32, 16, id(icon), id(DI3).state ? "\U000F0133" : "\U000F0130");
+          it.print(48, 16, id(icon), id(DI4).state ? "\U000F0133" : "\U000F0130");
+          it.print(64, 16, id(icon), id(DI5).state ? "\U000F0133" : "\U000F0130");
+          it.print(80, 16, id(icon), id(DI6).state ? "\U000F0133" : "\U000F0130");
+          it.print(96, 16, id(icon), id(DI7).state ? "\U000F0133" : "\U000F0130");
+          it.print(112, 16, id(icon), id(DI8).state ? "\U000F0133" : "\U000F0130");
+          it.print(0, 34, id(icon), id(DI9).state ? "\U000F0133" : "\U000F0130");
+          it.print(16, 34, id(icon), id(DI10).state ? "\U000F0133" : "\U000F0130");
+          it.print(32, 34, id(icon), id(DI11).state ? "\U000F0133" : "\U000F0130");
+          it.print(48, 34, id(icon), id(DI12).state ? "\U000F0133" : "\U000F0130");
+          it.print(64, 34, id(icon), id(DI13).state ? "\U000F0133" : "\U000F0130");
+          it.print(80, 34, id(icon), id(DI14).state ? "\U000F0133" : "\U000F0130");
+          it.print(96, 34, id(icon), id(DI15).state ? "\U000F0133" : "\U000F0130");
+          it.print(112, 34, id(icon), id(DI16).state ? "\U000F0133" : "\U000F0130");
+          it.print(0, 50, id(tiny), "DI1-8 oben, DI9-16 unten");
+
+      - id: page_outputs
+        lambda: |-
+          it.print(0, 0, id(small), "Outputs");
+          it.print(0, 16, id(icon), id(DO1).state ? "\U000F0133" : "\U000F0130");
+          it.print(16, 16, id(icon), id(DO2).state ? "\U000F0133" : "\U000F0130");
+          it.print(32, 16, id(icon), id(DO3).state ? "\U000F0133" : "\U000F0130");
+          it.print(48, 16, id(icon), id(DO4).state ? "\U000F0133" : "\U000F0130");
+          it.print(64, 16, id(icon), id(DO5).state ? "\U000F0133" : "\U000F0130");
+          it.print(80, 16, id(icon), id(DO6).state ? "\U000F0133" : "\U000F0130");
+          it.print(96, 16, id(icon), id(DO7).state ? "\U000F0133" : "\U000F0130");
+          it.print(112, 16, id(icon), id(DO8).state ? "\U000F0133" : "\U000F0130");
+          it.print(0, 34, id(icon), id(DO9).state ? "\U000F0133" : "\U000F0130");
+          it.print(16, 34, id(icon), id(DO10).state ? "\U000F0133" : "\U000F0130");
+          it.print(32, 34, id(icon), id(DO11).state ? "\U000F0133" : "\U000F0130");
+          it.print(48, 34, id(icon), id(DO12).state ? "\U000F0133" : "\U000F0130");
+          it.print(64, 34, id(icon), id(DO13).state ? "\U000F0133" : "\U000F0130");
+          it.print(80, 34, id(icon), id(DO14).state ? "\U000F0133" : "\U000F0130");
+          it.print(96, 34, id(icon), id(DO15).state ? "\U000F0133" : "\U000F0130");
+          it.print(112, 34, id(icon), id(DO16).state ? "\U000F0133" : "\U000F0130");
+          it.print(0, 50, id(tiny), "DO1-8 oben, DO9-16 unten");
+
+      - id: page_thermostat1
+        lambda: |-
+          auto *tstat = id(thermostat1);
+          it.print(0, 0, id(small), tstat->get_name().c_str());
+          it.print(110, 0, id(icon), "\U000F1B17");
+
+          if (isnan(tstat->current_temperature)) {
+            it.print(0, 14, id(tiny), "Ist: n/a");
+          } else {
+            it.printf(0, 14, id(tiny), "Ist: %.1f C", tstat->current_temperature);
+          }
+
+          if (isnan(tstat->target_temperature)) {
+            it.print(45, 14, id(tiny), "Soll: n/a");
+          } else {
+            it.printf(45, 14, id(tiny), "Soll: %.1f C", tstat->target_temperature);
+          }
+
+          it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+
+          const char *mode_text = "UNKNOWN";
+          switch (tstat->mode) {
+            case climate::CLIMATE_MODE_OFF:
+              mode_text = "AUS";
+              break;
+            case climate::CLIMATE_MODE_HEAT:
+              mode_text = "HEIZEN";
+              break;
+            case climate::CLIMATE_MODE_COOL:
+              mode_text = "KUEHLEN";
+              break;
+            case climate::CLIMATE_MODE_HEAT_COOL:
+              mode_text = "AUTO";
+              break;
+            default:
+              mode_text = "UNKNOWN";
+              break;
+          }
+          it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
+
+          const bool fallback_temp = tstat->is_using_fallback_temperature();
+          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          it.print(0, 44, id(tiny), "Fallback");
+          it.print(52, 44, id(tiny), "T:");
+          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(82, 44, id(tiny), "H:");
+          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+      - id: page_thermostat2
+        lambda: |-
+          auto *tstat = id(thermostat2);
+          it.print(0, 0, id(small), tstat->get_name().c_str());
+          it.print(110, 0, id(icon), "\U000F1B17");
+
+          if (isnan(tstat->current_temperature)) {
+            it.print(0, 14, id(tiny), "Ist: n/a");
+          } else {
+            it.printf(0, 14, id(tiny), "Ist: %.1f C", tstat->current_temperature);
+          }
+
+          if (isnan(tstat->target_temperature)) {
+            it.print(45, 14, id(tiny), "Soll: n/a");
+          } else {
+            it.printf(45, 14, id(tiny), "Soll: %.1f C", tstat->target_temperature);
+          }
+
+          it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+
+          const char *mode_text = "UNKNOWN";
+          switch (tstat->mode) {
+            case climate::CLIMATE_MODE_OFF:
+              mode_text = "AUS";
+              break;
+            case climate::CLIMATE_MODE_HEAT:
+              mode_text = "HEIZEN";
+              break;
+            case climate::CLIMATE_MODE_COOL:
+              mode_text = "KUEHLEN";
+              break;
+            case climate::CLIMATE_MODE_HEAT_COOL:
+              mode_text = "AUTO";
+              break;
+            default:
+              mode_text = "UNKNOWN";
+              break;
+          }
+          it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
+
+          const bool fallback_temp = tstat->is_using_fallback_temperature();
+          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          it.print(0, 44, id(tiny), "Fallback");
+          it.print(52, 44, id(tiny), "T:");
+          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(82, 44, id(tiny), "H:");
+          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+      - id: page_thermostat3
+        lambda: |-
+          auto *tstat = id(thermostat3);
+          it.print(0, 0, id(small), tstat->get_name().c_str());
+          it.print(110, 0, id(icon), "\U000F1B17");
+
+          if (isnan(tstat->current_temperature)) {
+            it.print(0, 14, id(tiny), "Ist: n/a");
+          } else {
+            it.printf(0, 14, id(tiny), "Ist: %.1f C", tstat->current_temperature);
+          }
+
+          if (isnan(tstat->target_temperature)) {
+            it.print(45, 14, id(tiny), "Soll: n/a");
+          } else {
+            it.printf(45, 14, id(tiny), "Soll: %.1f C", tstat->target_temperature);
+          }
+
+          it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+
+          const char *mode_text = "UNKNOWN";
+          switch (tstat->mode) {
+            case climate::CLIMATE_MODE_OFF:
+              mode_text = "AUS";
+              break;
+            case climate::CLIMATE_MODE_HEAT:
+              mode_text = "HEIZEN";
+              break;
+            case climate::CLIMATE_MODE_COOL:
+              mode_text = "KUEHLEN";
+              break;
+            case climate::CLIMATE_MODE_HEAT_COOL:
+              mode_text = "AUTO";
+              break;
+            default:
+              mode_text = "UNKNOWN";
+              break;
+          }
+          it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
+
+          const bool fallback_temp = tstat->is_using_fallback_temperature();
+          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          it.print(0, 44, id(tiny), "Fallback");
+          it.print(52, 44, id(tiny), "T:");
+          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(82, 44, id(tiny), "H:");
+          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+      - id: page_thermostat4
+        lambda: |-
+          auto *tstat = id(thermostat4);
+          it.print(0, 0, id(small), tstat->get_name().c_str());
+          it.print(110, 0, id(icon), "\U000F1B17");
+
+          if (isnan(tstat->current_temperature)) {
+            it.print(0, 14, id(tiny), "Ist: n/a");
+          } else {
+            it.printf(0, 14, id(tiny), "Ist: %.1f C", tstat->current_temperature);
+          }
+
+          if (isnan(tstat->target_temperature)) {
+            it.print(45, 14, id(tiny), "Soll: n/a");
+          } else {
+            it.printf(45, 14, id(tiny), "Soll: %.1f C", tstat->target_temperature);
+          }
+
+          it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+
+          const char *mode_text = "UNKNOWN";
+          switch (tstat->mode) {
+            case climate::CLIMATE_MODE_OFF:
+              mode_text = "AUS";
+              break;
+            case climate::CLIMATE_MODE_HEAT:
+              mode_text = "HEIZEN";
+              break;
+            case climate::CLIMATE_MODE_COOL:
+              mode_text = "KUEHLEN";
+              break;
+            case climate::CLIMATE_MODE_HEAT_COOL:
+              mode_text = "AUTO";
+              break;
+            default:
+              mode_text = "UNKNOWN";
+              break;
+          }
+          it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
+
+          const bool fallback_temp = tstat->is_using_fallback_temperature();
+          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          it.print(0, 44, id(tiny), "Fallback");
+          it.print(52, 44, id(tiny), "T:");
+          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(82, 44, id(tiny), "H:");
+          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+      - id: page_thermostat5
+        lambda: |-
+          auto *tstat = id(thermostat5);
+          it.print(0, 0, id(small), tstat->get_name().c_str());
+          it.print(110, 0, id(icon), "\U000F1B17");
+
+          if (isnan(tstat->current_temperature)) {
+            it.print(0, 14, id(tiny), "Ist: n/a");
+          } else {
+            it.printf(0, 14, id(tiny), "Ist: %.1f C", tstat->current_temperature);
+          }
+
+          if (isnan(tstat->target_temperature)) {
+            it.print(45, 14, id(tiny), "Soll: n/a");
+          } else {
+            it.printf(45, 14, id(tiny), "Soll: %.1f C", tstat->target_temperature);
+          }
+
+          it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+
+          const char *mode_text = "UNKNOWN";
+          switch (tstat->mode) {
+            case climate::CLIMATE_MODE_OFF:
+              mode_text = "AUS";
+              break;
+            case climate::CLIMATE_MODE_HEAT:
+              mode_text = "HEIZEN";
+              break;
+            case climate::CLIMATE_MODE_COOL:
+              mode_text = "KUEHLEN";
+              break;
+            case climate::CLIMATE_MODE_HEAT_COOL:
+              mode_text = "AUTO";
+              break;
+            default:
+              mode_text = "UNKNOWN";
+              break;
+          }
+          it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
+
+          const bool fallback_temp = tstat->is_using_fallback_temperature();
+          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          it.print(0, 44, id(tiny), "Fallback");
+          it.print(52, 44, id(tiny), "T:");
+          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(82, 44, id(tiny), "H:");
+          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+      - id: page_thermostat6
+        lambda: |-
+          auto *tstat = id(thermostat6);
+          it.print(0, 0, id(small), tstat->get_name().c_str());
+          it.print(110, 0, id(icon), "\U000F1B17");
+
+          if (isnan(tstat->current_temperature)) {
+            it.print(0, 14, id(tiny), "Ist: n/a");
+          } else {
+            it.printf(0, 14, id(tiny), "Ist: %.1f C", tstat->current_temperature);
+          }
+
+          if (isnan(tstat->target_temperature)) {
+            it.print(45, 14, id(tiny), "Soll: n/a");
+          } else {
+            it.printf(45, 14, id(tiny), "Soll: %.1f C", tstat->target_temperature);
+          }
+
+          it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+
+          const char *mode_text = "UNKNOWN";
+          switch (tstat->mode) {
+            case climate::CLIMATE_MODE_OFF:
+              mode_text = "AUS";
+              break;
+            case climate::CLIMATE_MODE_HEAT:
+              mode_text = "HEIZEN";
+              break;
+            case climate::CLIMATE_MODE_COOL:
+              mode_text = "KUEHLEN";
+              break;
+            case climate::CLIMATE_MODE_HEAT_COOL:
+              mode_text = "AUTO";
+              break;
+            default:
+              mode_text = "UNKNOWN";
+              break;
+          }
+          it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
+
+          const bool fallback_temp = tstat->is_using_fallback_temperature();
+          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          it.print(0, 44, id(tiny), "Fallback");
+          it.print(52, 44, id(tiny), "T:");
+          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(82, 44, id(tiny), "H:");
+          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+      - id: page_thermostat7
+        lambda: |-
+          auto *tstat = id(thermostat7);
+          it.print(0, 0, id(small), tstat->get_name().c_str());
+          it.print(110, 0, id(icon), "\U000F1B17");
+
+          if (isnan(tstat->current_temperature)) {
+            it.print(0, 14, id(tiny), "Ist: n/a");
+          } else {
+            it.printf(0, 14, id(tiny), "Ist: %.1f C", tstat->current_temperature);
+          }
+
+          if (isnan(tstat->target_temperature)) {
+            it.print(45, 14, id(tiny), "Soll: n/a");
+          } else {
+            it.printf(45, 14, id(tiny), "Soll: %.1f C", tstat->target_temperature);
+          }
+
+          it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+
+          const char *mode_text = "UNKNOWN";
+          switch (tstat->mode) {
+            case climate::CLIMATE_MODE_OFF:
+              mode_text = "AUS";
+              break;
+            case climate::CLIMATE_MODE_HEAT:
+              mode_text = "HEIZEN";
+              break;
+            case climate::CLIMATE_MODE_COOL:
+              mode_text = "KUEHLEN";
+              break;
+            case climate::CLIMATE_MODE_HEAT_COOL:
+              mode_text = "AUTO";
+              break;
+            default:
+              mode_text = "UNKNOWN";
+              break;
+          }
+          it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
+
+          const bool fallback_temp = tstat->is_using_fallback_temperature();
+          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          it.print(0, 44, id(tiny), "Fallback");
+          it.print(52, 44, id(tiny), "T:");
+          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(82, 44, id(tiny), "H:");
+          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+      - id: page_thermostat8
+        lambda: |-
+          auto *tstat = id(thermostat8);
+          it.print(0, 0, id(small), tstat->get_name().c_str());
+          it.print(110, 0, id(icon), "\U000F1B17");
+
+          if (isnan(tstat->current_temperature)) {
+            it.print(0, 14, id(tiny), "Ist: n/a");
+          } else {
+            it.printf(0, 14, id(tiny), "Ist: %.1f C", tstat->current_temperature);
+          }
+
+          if (isnan(tstat->target_temperature)) {
+            it.print(45, 14, id(tiny), "Soll: n/a");
+          } else {
+            it.printf(45, 14, id(tiny), "Soll: %.1f C", tstat->target_temperature);
+          }
+
+          it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+
+          const char *mode_text = "UNKNOWN";
+          switch (tstat->mode) {
+            case climate::CLIMATE_MODE_OFF:
+              mode_text = "AUS";
+              break;
+            case climate::CLIMATE_MODE_HEAT:
+              mode_text = "HEIZEN";
+              break;
+            case climate::CLIMATE_MODE_COOL:
+              mode_text = "KUEHLEN";
+              break;
+            case climate::CLIMATE_MODE_HEAT_COOL:
+              mode_text = "AUTO";
+              break;
+            default:
+              mode_text = "UNKNOWN";
+              break;
+          }
+          it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
+
+          const bool fallback_temp = tstat->is_using_fallback_temperature();
+          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          it.print(0, 44, id(tiny), "Fallback");
+          it.print(52, 44, id(tiny), "T:");
+          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(82, 44, id(tiny), "H:");
+          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+      - id: page_thermostat9
+        lambda: |-
+          auto *tstat = id(thermostat9);
+          it.print(0, 0, id(small), tstat->get_name().c_str());
+          it.print(110, 0, id(icon), "\U000F1B17");
+
+          if (isnan(tstat->current_temperature)) {
+            it.print(0, 14, id(tiny), "Ist: n/a");
+          } else {
+            it.printf(0, 14, id(tiny), "Ist: %.1f C", tstat->current_temperature);
+          }
+
+          if (isnan(tstat->target_temperature)) {
+            it.print(45, 14, id(tiny), "Soll: n/a");
+          } else {
+            it.printf(45, 14, id(tiny), "Soll: %.1f C", tstat->target_temperature);
+          }
+
+          it.printf(0, 24, id(tiny), "Ventil: %s", tstat->get_valve_state() ? "AN" : "AUS");
+
+          const char *mode_text = "UNKNOWN";
+          switch (tstat->mode) {
+            case climate::CLIMATE_MODE_OFF:
+              mode_text = "AUS";
+              break;
+            case climate::CLIMATE_MODE_HEAT:
+              mode_text = "HEIZEN";
+              break;
+            case climate::CLIMATE_MODE_COOL:
+              mode_text = "KUEHLEN";
+              break;
+            case climate::CLIMATE_MODE_HEAT_COOL:
+              mode_text = "AUTO";
+              break;
+            default:
+              mode_text = "UNKNOWN";
+              break;
+          }
+          it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
+
+          const bool fallback_temp = tstat->is_using_fallback_temperature();
+          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          it.print(0, 44, id(tiny), "Fallback");
+          it.print(52, 44, id(tiny), "T:");
+          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(82, 44, id(tiny), "H:");
+          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+
+    auto_clear_enabled: true
+
+select:
+  - platform: template
+    name: "Steuerungsmodus"
+    id: control_mode_select
+    icon: "mdi:toggle-switch-outline"
+    entity_category: "config"
+    options:
+      - "Automatik"
+      - "Manuell"
+    lambda: |-
+      if (id(manual_control_enabled)) {
+        return std::string("Manuell");
+      }
+      return std::string("Automatik");
+    set_action:
+      - lambda: |-
+          id(manual_control_enabled) = (x == "Manuell");
+      - logger.log:
+          format: "Steuerungsmodus gesetzt: %s"
+          args: [ 'x.c_str()' ]
+
+climate:
+  - platform: dummy_thermostat
+    name: "Raum1"
+    id: thermostat1
+    fallback_sensor: sensor_dht_1_temperature
+    fallback_humidity_sensor: sensor_dht_1_humidity
+    sensor_timeout: 10min
+    humidity_sensor_timeout: 0s
+    valve_switch: DO1
+    valve_update_timeout: 10min
+    valve_control_enabled: !lambda |-
+      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+    use_local_valve_control: !lambda |-
+      return id(manual_control_enabled);
+    heating_deadband: 0.5
+    heating_overrun: 0.1
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+  - platform: dummy_thermostat
+    name: "Raum2"
+    id: thermostat2
+    fallback_sensor: sensor_dht_1_temperature
+    fallback_humidity_sensor: sensor_dht_1_humidity
+    sensor_timeout: 10min
+    humidity_sensor_timeout: 0s
+    valve_switch: DO2
+    valve_update_timeout: 10min
+    valve_control_enabled: !lambda |-
+      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+    use_local_valve_control: !lambda |-
+      return id(manual_control_enabled);
+    heating_deadband: 0.5
+    heating_overrun: 0.1
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+  - platform: dummy_thermostat
+    name: "Raum3"
+    id: thermostat3
+    fallback_sensor: sensor_dht_1_temperature
+    fallback_humidity_sensor: sensor_dht_1_humidity
+    sensor_timeout: 10min
+    humidity_sensor_timeout: 0s
+    valve_switch: DO3
+    valve_update_timeout: 10min
+    valve_control_enabled: !lambda |-
+      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+    use_local_valve_control: !lambda |-
+      return id(manual_control_enabled);
+    heating_deadband: 0.5
+    heating_overrun: 0.1
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+  - platform: dummy_thermostat
+    name: "Raum4"
+    id: thermostat4
+    fallback_sensor: sensor_dht_1_temperature
+    fallback_humidity_sensor: sensor_dht_1_humidity
+    sensor_timeout: 10min
+    humidity_sensor_timeout: 0s
+    valve_switch: DO4
+    valve_update_timeout: 10min
+    valve_control_enabled: !lambda |-
+      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+    use_local_valve_control: !lambda |-
+      return id(manual_control_enabled);
+    heating_deadband: 0.5
+    heating_overrun: 0.1
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+  - platform: dummy_thermostat
+    name: "Raum5"
+    id: thermostat5
+    fallback_sensor: sensor_dht_1_temperature
+    fallback_humidity_sensor: sensor_dht_1_humidity
+    sensor_timeout: 10min
+    humidity_sensor_timeout: 0s
+    valve_switch: DO5
+    valve_update_timeout: 10min
+    valve_control_enabled: !lambda |-
+      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+    use_local_valve_control: !lambda |-
+      return id(manual_control_enabled);
+    heating_deadband: 0.5
+    heating_overrun: 0.1
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+  - platform: dummy_thermostat
+    name: "Raum6"
+    id: thermostat6
+    fallback_sensor: sensor_dht_1_temperature
+    fallback_humidity_sensor: sensor_dht_1_humidity
+    sensor_timeout: 10min
+    humidity_sensor_timeout: 0s
+    valve_switch: DO6
+    valve_update_timeout: 10min
+    valve_control_enabled: !lambda |-
+      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+    use_local_valve_control: !lambda |-
+      return id(manual_control_enabled);
+    heating_deadband: 0.5
+    heating_overrun: 0.1
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+  - platform: dummy_thermostat
+    name: "Raum7"
+    id: thermostat7
+    fallback_sensor: sensor_dht_1_temperature
+    fallback_humidity_sensor: sensor_dht_1_humidity
+    sensor_timeout: 10min
+    humidity_sensor_timeout: 0s
+    valve_switch: DO7
+    valve_update_timeout: 10min
+    valve_control_enabled: !lambda |-
+      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+    use_local_valve_control: !lambda |-
+      return id(manual_control_enabled);
+    heating_deadband: 0.5
+    heating_overrun: 0.1
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+  - platform: dummy_thermostat
+    name: "Raum8"
+    id: thermostat8
+    fallback_sensor: sensor_dht_1_temperature
+    fallback_humidity_sensor: sensor_dht_1_humidity
+    sensor_timeout: 10min
+    humidity_sensor_timeout: 0s
+    valve_switch: DO8
+    valve_update_timeout: 10min
+    valve_control_enabled: !lambda |-
+      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+    use_local_valve_control: !lambda |-
+      return id(manual_control_enabled);
+    heating_deadband: 0.5
+    heating_overrun: 0.1
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+  - platform: dummy_thermostat
+    name: "Raum9"
+    id: thermostat9
+    fallback_sensor: sensor_dht_1_temperature
+    fallback_humidity_sensor: sensor_dht_1_humidity
+    sensor_timeout: 10min
+    humidity_sensor_timeout: 0s
+    valve_switch: DO9
+    valve_update_timeout: 10min
+    valve_control_enabled: !lambda |-
+      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+    use_local_valve_control: !lambda |-
+      return id(manual_control_enabled);
+    heating_deadband: 0.5
+    heating_overrun: 0.1
+    visual:
+      min_temperature: 15.0
+      max_temperature: 30.0
+      temperature_step:
+        target_temperature: 0.5
+        current_temperature: 0.1
+
+
+one_wire:
+  - platform: gpio
+    pin: GPIO21
+    id: one_wire_gpio_1
+
+packages:
+  heatingpower:
+    url: https://github.com/kwittwer/esphome_kfw_lib
+    ref: main
+    refresh: 0s
+    files:
+      - path: heatingpower\heating_power_template.yaml
+        vars:
+          heating_power_index: 1
+          heating_power_name: "Heizkreis 1"
+          heating_power_supply_sensor_id: sensor_dallas_temp_vorlauf
+          heating_power_return_sensor_id: sensor_dallas_temp_ruecklauf1
+          heating_power_update_interval: 5s
+          heating_power_flow_initial_l_min: 5.0
+          heating_power_flow_min_l_min: 0.0
+          heating_power_flow_max_l_min: 40.0
+          heating_power_flow_step_l_min: 0.1
+      - path: heatingpower\heating_power_template.yaml
+        vars:
+          heating_power_index: 2
+          heating_power_name: "Heizkreis 2"
+          heating_power_supply_sensor_id: sensor_dallas_temp_vorlauf
+          heating_power_return_sensor_id: sensor_dallas_temp_ruecklauf2
+          heating_power_update_interval: 5s
+          heating_power_flow_initial_l_min: 5.0
+          heating_power_flow_min_l_min: 0.0
+          heating_power_flow_max_l_min: 40.0
+          heating_power_flow_step_l_min: 0.1
+      - path: heatingpower\heating_power_template.yaml
+        vars:
+          heating_power_index: 3
+          heating_power_name: "Heizkreis 3"
+          heating_power_supply_sensor_id: sensor_dallas_temp_vorlauf
+          heating_power_return_sensor_id: sensor_dallas_temp_ruecklauf3
+          heating_power_update_interval: 5s
+          heating_power_flow_initial_l_min: 5.0
+          heating_power_flow_min_l_min: 0.0
+          heating_power_flow_max_l_min: 40.0
+          heating_power_flow_step_l_min: 0.1
+      - path: heatingpower\heating_power_template.yaml
+        vars:
+          heating_power_index: 4
+          heating_power_name: "Heizkreis 4"
+          heating_power_supply_sensor_id: sensor_dallas_temp_vorlauf
+          heating_power_return_sensor_id: sensor_dallas_temp_ruecklauf4
+          heating_power_update_interval: 5s
+          heating_power_flow_initial_l_min: 5.0
+          heating_power_flow_min_l_min: 0.0
+          heating_power_flow_max_l_min: 40.0
+          heating_power_flow_step_l_min: 0.1
+      - path: heatingpower\heating_power_template.yaml
+        vars:
+          heating_power_index: 5
+          heating_power_name: "Heizkreis 5"
+          heating_power_supply_sensor_id: sensor_dallas_temp_vorlauf
+          heating_power_return_sensor_id: sensor_dallas_temp_ruecklauf5
+          heating_power_update_interval: 5s
+          heating_power_flow_initial_l_min: 5.0
+          heating_power_flow_min_l_min: 0.0
+          heating_power_flow_max_l_min: 40.0
+          heating_power_flow_step_l_min: 0.1
+      - path: heatingpower\heating_power_template.yaml
+        vars:
+          heating_power_index: 6
+          heating_power_name: "Heizkreis 6"
+          heating_power_supply_sensor_id: sensor_dallas_temp_vorlauf
+          heating_power_return_sensor_id: sensor_dallas_temp_ruecklauf6
+          heating_power_update_interval: 5s
+          heating_power_flow_initial_l_min: 5.0
+          heating_power_flow_min_l_min: 0.0
+          heating_power_flow_max_l_min: 40.0
+          heating_power_flow_step_l_min: 0.1
+      - path: heatingpower\heating_power_template.yaml
+        vars:
+          heating_power_index: 7
+          heating_power_name: "Heizkreis 7"
+          heating_power_supply_sensor_id: sensor_dallas_temp_vorlauf
+          heating_power_return_sensor_id: sensor_dallas_temp_ruecklauf7
+          heating_power_update_interval: 5s
+          heating_power_flow_initial_l_min: 5.0
+          heating_power_flow_min_l_min: 0.0
+          heating_power_flow_max_l_min: 40.0
+          heating_power_flow_step_l_min: 0.1
+      - path: heatingpower\heating_power_template.yaml
+        vars:
+          heating_power_index: 8
+          heating_power_name: "Heizkreis 8"
+          heating_power_supply_sensor_id: sensor_dallas_temp_vorlauf
+          heating_power_return_sensor_id: sensor_dallas_temp_ruecklauf8
+          heating_power_update_interval: 5s
+          heating_power_flow_initial_l_min: 5.0
+          heating_power_flow_min_l_min: 0.0
+          heating_power_flow_max_l_min: 40.0
+          heating_power_flow_step_l_min: 0.1
+      - path: heatingpower\heating_power_template.yaml
+        vars:
+          heating_power_index: 9
+          heating_power_name: "Heizkreis 9"
+          heating_power_supply_sensor_id: sensor_dallas_temp_vorlauf
+          heating_power_return_sensor_id: sensor_dallas_temp_ruecklauf9
+          heating_power_update_interval: 5s
+          heating_power_flow_initial_l_min: 5.0
+          heating_power_flow_min_l_min: 0.0
+          heating_power_flow_max_l_min: 40.0
+          heating_power_flow_step_l_min: 0.1
+
+
+
+
