@@ -22,19 +22,25 @@ psram:
   mode: octal
   speed: 80MHz
 
-ethernet:
-  type: W5500
-  clk_pin: GPIO42
-  mosi_pin: GPIO43
-  miso_pin: GPIO44
-  cs_pin: GPIO41
-  interrupt_pin: GPIO2
-  reset_pin: GPIO1
-  manual_ip:
-    static_ip: "192.168.178.59"
-    gateway: "192.168.178.1"
-    subnet: "255.255.255.0"
-    dns1: "192.168.178.1"
+# ethernet:
+#   type: W5500
+#   clk_pin: GPIO42
+#   mosi_pin: GPIO43
+#   miso_pin: GPIO44
+#   cs_pin: GPIO41
+#   interrupt_pin: GPIO2
+#   reset_pin: GPIO1
+#   manual_ip:
+#     static_ip: "192.168.178.59"
+#     gateway: "192.168.178.1"
+#     subnet: "255.255.255.0"
+#     dns1: "192.168.178.1"
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "${name}"
+    password: !secret ap_pwd
 
 
 web_server:
@@ -42,6 +48,7 @@ web_server:
   version: 3
   
 logger:
+  level: WARN
 
 debug:
   update_interval: 10s
@@ -111,7 +118,11 @@ binary_sensor:
       pcf8574: pcf8574_hub_in_1
       number: 0
       mode: INPUT
-      inverted: true
+      inverted: false
+    on_state:
+      then:
+        - lambda: |-
+            id(heating_circuit_enable).publish_state(id(DI1_Hauptschalter).state && !id(manual_control_enabled));
 
   - platform: gpio
     name: "DI2"
@@ -281,6 +292,13 @@ binary_sensor:
       then:
         - script.execute: manual_next_page
 
+  - platform: template
+    name: "Heizkreis Freigabe"
+    id: heating_circuit_enable
+    entity_category: diagnostic
+    lambda: |-
+      return id(DI1_Hauptschalter).state && !id(manual_control_enabled);
+
 
 
 # ============================================
@@ -442,6 +460,16 @@ ads1115:
 
 
 sensor:
+  - platform: homeassistant
+    id: sensor_kuche_raum1_temperature
+    entity_id: sensor.kuche_raum1_sensor_temperature
+    name: "Kueche Raum1 Temperatur"
+
+  - platform: homeassistant
+    id: sensor_kuche_raum1_humidity
+    entity_id: sensor.kuche_raum1_sensor_humidity
+    name: "Kueche Raum1 Luftfeuchte"
+
   - platform: ads1115
     multiplexer: 'A0_GND'
     gain: 6.144
@@ -1291,16 +1319,17 @@ select:
     icon: "mdi:toggle-switch-outline"
     entity_category: "config"
     options:
-      - "Automatik"
-      - "Manuell"
+      - "Reglergesteuerte Ventilsteuerung"
+      - "Manuelle Ventilsteuerung"
     lambda: |-
       if (id(manual_control_enabled)) {
-        return std::string("Manuell");
+        return std::string("Manuelle Ventilsteuerung");
       }
-      return std::string("Automatik");
+      return std::string("Reglergesteuerte Ventilsteuerung");
     set_action:
       - lambda: |-
-          id(manual_control_enabled) = (x == "Manuell");
+          id(manual_control_enabled) = (x == "Manuelle Ventilsteuerung");
+          id(heating_circuit_enable).publish_state(id(DI1_Hauptschalter).state && !id(manual_control_enabled));
       - logger.log:
           format: "Steuerungsmodus gesetzt: %s"
           args: [ 'x.c_str()' ]
@@ -1333,7 +1362,7 @@ select:
   #
   #     valve_switch: DO1  # Typ: Switch-ID. Physischer Ausgang fuer das Ventil bzw. die PWM-Schaltung.
   #     valve_control_enabled: !lambda |-  # Typ: bool oder Lambda<bool>. Freigabe fuer die reale Ausgangsansteuerung.
-  #       return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+  #       return id(heating_circuit_enable).state;
   #
   #     kp: 5.0  # Typ: float. Proportionalanteil des PID-Reglers.
   #     ki: 0.01  # Typ: float. Integralanteil des PID-Reglers.
@@ -1366,22 +1395,21 @@ climate:
   - platform: pid_thermostat
     name: "Raum1"
     id: thermostat1
-    temperature_sensor: sensor_dht_1_temperature
-    humidity_sensor: sensor_dht_1_humidity
+    temperature_sensor: sensor_kuche_raum1_temperature
+    humidity_sensor: sensor_kuche_raum1_humidity
     fallback_temperature_sensor: sensor_dht_1_temperature
     fallback_humidity_sensor: sensor_dht_1_humidity
     temperature_sensor_timeout: 10min
     humidity_sensor_timeout: 10min
     valve_switch: DO1
     valve_control_enabled: !lambda |-
-      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+       return id(heating_circuit_enable).state;
     kp: 5.0
     ki: 0.01
     kd: 500.0
     pwm: 15min
     pwm_min: 0.0
     pwm_max: 100.0
-    sampling_period: 0s
     keep_alive: 60s
     min_cycle_duration: 0s
     min_off_cycle_duration: 0s
@@ -1401,14 +1429,13 @@ climate:
     humidity_sensor_timeout: 0s
     valve_switch: DO2
     valve_control_enabled: !lambda |-
-      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+      return id(heating_circuit_enable).state;
     kp: 5.0
     ki: 0.01
     kd: 500.0
     pwm: 15min
     pwm_min: 0.0
     pwm_max: 100.0
-    sampling_period: 0s
     keep_alive: 60s
     min_cycle_duration: 0s
     min_off_cycle_duration: 0s
@@ -1428,14 +1455,13 @@ climate:
     humidity_sensor_timeout: 0s
     valve_switch: DO3
     valve_control_enabled: !lambda |-
-      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+      return id(heating_circuit_enable).state;
     kp: 5.0
     ki: 0.01
     kd: 500.0
     pwm: 15min
     pwm_min: 0.0
     pwm_max: 100.0
-    sampling_period: 0s
     keep_alive: 60s
     min_cycle_duration: 0s
     min_off_cycle_duration: 0s
@@ -1456,14 +1482,13 @@ climate:
 
     valve_switch: DO4
     valve_control_enabled: !lambda |-
-      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+      return id(heating_circuit_enable).state;
     kp: 5.0
     ki: 0.01
     kd: 500.0
     pwm: 15min
     pwm_min: 0.0
     pwm_max: 100.0
-    sampling_period: 0s
     keep_alive: 60s
     min_cycle_duration: 0s
     min_off_cycle_duration: 0s
@@ -1483,14 +1508,13 @@ climate:
     humidity_sensor_timeout: 0s
     valve_switch: DO5
     valve_control_enabled: !lambda |-
-      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+      return id(heating_circuit_enable).state;
     kp: 5.0
     ki: 0.01
     kd: 500.0
     pwm: 15min
     pwm_min: 0.0
     pwm_max: 100.0
-    sampling_period: 0s
     keep_alive: 60s
     min_cycle_duration: 0s
     min_off_cycle_duration: 0s
@@ -1510,14 +1534,13 @@ climate:
     humidity_sensor_timeout: 0s
     valve_switch: DO6
     valve_control_enabled: !lambda |-
-      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+      return id(heating_circuit_enable).state;
     kp: 5.0
     ki: 0.01
     kd: 500.0
     pwm: 15min
     pwm_min: 0.0
     pwm_max: 100.0
-    sampling_period: 0s
     keep_alive: 60s
     min_cycle_duration: 0s
     min_off_cycle_duration: 0s
@@ -1537,14 +1560,13 @@ climate:
     humidity_sensor_timeout: 0s
     valve_switch: DO7
     valve_control_enabled: !lambda |-
-      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+      return id(heating_circuit_enable).state;
     kp: 5.0
     ki: 0.01
     kd: 500.0
     pwm: 15min
     pwm_min: 0.0
     pwm_max: 100.0
-    sampling_period: 0s
     keep_alive: 60s
     min_cycle_duration: 0s
     min_off_cycle_duration: 0s
@@ -1564,14 +1586,13 @@ climate:
     humidity_sensor_timeout: 0s
     valve_switch: DO8
     valve_control_enabled: !lambda |-
-      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+      return id(heating_circuit_enable).state;
     kp: 5.0
     ki: 0.01
     kd: 500.0
     pwm: 15min
     pwm_min: 0.0
     pwm_max: 100.0
-    sampling_period: 0s
     keep_alive: 60s
     min_cycle_duration: 0s
     min_off_cycle_duration: 0s
@@ -1591,14 +1612,13 @@ climate:
     humidity_sensor_timeout: 0s
     valve_switch: DO9
     valve_control_enabled: !lambda |-
-      return (id(DI1_Hauptschalter).state && !id(manual_control_enabled));
+      return id(heating_circuit_enable).state;
     kp: 5.0
     ki: 0.01
     kd: 500.0
     pwm: 15min
     pwm_min: 0.0
     pwm_max: 100.0
-    sampling_period: 0s
     keep_alive: 60s
     min_cycle_duration: 0s
     min_off_cycle_duration: 0s

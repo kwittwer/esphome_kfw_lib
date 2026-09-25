@@ -1,9 +1,10 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import climate, number, sensor, switch, text_sensor
+from esphome.components import button, climate, number, sensor, switch, text_sensor
 from esphome.const import (
     CONF_ACCURACY_DECIMALS,
     CONF_DISABLED_BY_DEFAULT,
+    CONF_DEVICE_CLASS,
     CONF_ENTITY_CATEGORY,
     CONF_FORCE_UPDATE,
     CONF_ICON,
@@ -16,18 +17,22 @@ from esphome.const import (
     CONF_ON_RAW_VALUE,
     CONF_ON_VALUE,
     CONF_ON_VALUE_RANGE,
+    CONF_RESTORE_MODE,
     CONF_UNIT_OF_MEASUREMENT,
     CONF_WEB_SERVER,
+    DEVICE_CLASS_TEMPERATURE,
 )
 from esphome.core import ID
 
 from . import pid_thermostat_ns
 
-AUTO_LOAD = ["climate"]
+AUTO_LOAD = ["button", "climate", "switch"]
 
 PidThermostat = pid_thermostat_ns.class_("PidThermostat", climate.Climate, cg.Component)
 PidThermostatNumber = pid_thermostat_ns.class_("PidThermostatNumber", number.Number, cg.Component)
 PidThermostatSensor = pid_thermostat_ns.class_("PidThermostatSensor", sensor.Sensor, cg.Component)
+PidThermostatSwitch = pid_thermostat_ns.class_("PidThermostatSwitch", switch.Switch, cg.Component)
+PidThermostatButton = pid_thermostat_ns.class_("PidThermostatButton", button.Button)
 PidThermostatTextSensor = pid_thermostat_ns.class_("PidThermostatTextSensor", text_sensor.TextSensor, cg.Component)
 NumberKind = pid_thermostat_ns.enum("NumberKind")
 
@@ -66,8 +71,10 @@ NUMBER_KIND_PWM_PERIOD = NumberKind.NUMBER_KIND_PWM_PERIOD
 NUMBER_KIND_PWM_MIN = NumberKind.NUMBER_KIND_PWM_MIN
 NUMBER_KIND_PWM_MAX = NumberKind.NUMBER_KIND_PWM_MAX
 NUMBER_KIND_DEW_POINT_OFFSET = NumberKind.NUMBER_KIND_DEW_POINT_OFFSET
+NUMBER_KIND_TEST_OUTPUT = NumberKind.NUMBER_KIND_TEST_OUTPUT
 
 SENSOR_KIND_OUTPUT = "output"
+SENSOR_KIND_DEW_POINT = "dew_point"
 TEXT_SENSOR_KIND_MODE = "mode"
 TEXT_SENSOR_KIND_TEMPERATURE_SOURCE = "temperature_source"
 TEXT_SENSOR_KIND_HUMIDITY_SOURCE = "humidity_source"
@@ -97,6 +104,35 @@ def _number_config(parent_name, parent_id, suffix, id_suffix, kind, unit, initia
     }
 
 
+def _switch_config(parent_name, parent_id):
+    return {
+        CONF_ID: ID(f"{parent_id.id}_commissioning_switch", is_declaration=True, type=PidThermostatSwitch),
+        CONF_NAME: f"{parent_name} Stellgliedtest",
+        CONF_DISABLED_BY_DEFAULT: False,
+        CONF_INTERNAL: False,
+        CONF_MQTT_ID: None,
+        CONF_ON_PRESS: [],
+        CONF_WEB_SERVER: None,
+        CONF_ENTITY_CATEGORY: "config",
+        CONF_ICON: "mdi:tools",
+        CONF_RESTORE_MODE: switch.SwitchRestoreMode.SWITCH_RESTORE_DISABLED,
+    }
+
+
+def _reset_button_config(parent_name, parent_id):
+    return {
+        CONF_ID: ID(f"{parent_id.id}_reset_button", is_declaration=True, type=PidThermostatButton),
+        CONF_NAME: f"{parent_name} Regler Reset",
+        CONF_DISABLED_BY_DEFAULT: False,
+        CONF_INTERNAL: False,
+        CONF_MQTT_ID: None,
+        CONF_ON_PRESS: [],
+        CONF_WEB_SERVER: None,
+        CONF_ENTITY_CATEGORY: "config",
+        CONF_ICON: "mdi:restart",
+    }
+
+
 def _sensor_config(parent_name, parent_id):
     return {
         CONF_ID: ID(f"{parent_id.id}_output_pct", is_declaration=True, type=PidThermostatSensor),
@@ -110,7 +146,69 @@ def _sensor_config(parent_name, parent_id):
         CONF_FORCE_UPDATE: False,
         CONF_ACCURACY_DECIMALS: 1,
         CONF_UNIT_OF_MEASUREMENT: "%",
+        CONF_ENTITY_CATEGORY: "diagnostic",
         CONF_KIND: SENSOR_KIND_OUTPUT,
+    }
+
+
+def _dew_point_sensor_config(parent_name, parent_id):
+    return {
+        CONF_ID: ID(f"{parent_id.id}_dew_point", is_declaration=True, type=PidThermostatSensor),
+        CONF_NAME: f"{parent_name} Taupunkt",
+        CONF_DISABLED_BY_DEFAULT: False,
+        CONF_INTERNAL: False,
+        CONF_MQTT_ID: None,
+        CONF_ON_VALUE: [],
+        CONF_ON_VALUE_RANGE: [],
+        CONF_WEB_SERVER: None,
+        CONF_FORCE_UPDATE: False,
+        CONF_ACCURACY_DECIMALS: 1,
+        CONF_UNIT_OF_MEASUREMENT: "°C",
+        CONF_DEVICE_CLASS: DEVICE_CLASS_TEMPERATURE,
+        CONF_ENTITY_CATEGORY: "diagnostic",
+        CONF_KIND: SENSOR_KIND_DEW_POINT,
+    }
+
+
+def _diagnostic_sensor_config(parent_name, parent_id, suffix, id_suffix, unit, icon, accuracy_decimals):
+    return {
+        CONF_ID: ID(f"{parent_id.id}_{id_suffix}", is_declaration=True, type=PidThermostatSensor),
+        CONF_NAME: f"{parent_name} {suffix}",
+        CONF_DISABLED_BY_DEFAULT: False,
+        CONF_INTERNAL: False,
+        CONF_MQTT_ID: None,
+        CONF_ON_VALUE: [],
+        CONF_ON_VALUE_RANGE: [],
+        CONF_WEB_SERVER: None,
+        CONF_FORCE_UPDATE: False,
+        CONF_ACCURACY_DECIMALS: accuracy_decimals,
+        CONF_UNIT_OF_MEASUREMENT: unit,
+        CONF_ICON: icon,
+        CONF_ENTITY_CATEGORY: "diagnostic",
+    }
+
+
+def _commissioning_output_number_config(parent_name, parent_id):
+    return {
+        CONF_ID: ID(f"{parent_id.id}_commissioning_output", is_declaration=True, type=PidThermostatNumber),
+        CONF_NAME: f"{parent_name} Stellgliedtest Ausgang",
+        CONF_DISABLED_BY_DEFAULT: False,
+        CONF_INTERNAL: False,
+        CONF_MQTT_ID: None,
+        CONF_ON_VALUE: [],
+        CONF_ON_VALUE_RANGE: [],
+        CONF_WEB_SERVER: None,
+        CONF_ENTITY_CATEGORY: "config",
+        CONF_ICON: "mdi:percent",
+        CONF_UNIT_OF_MEASUREMENT: "%",
+        CONF_KIND: NUMBER_KIND_TEST_OUTPUT,
+        CONF_MODE: number.NUMBER_MODES["SLIDER"],
+        "optimistic": True,
+        "restore_value": False,
+        "initial_value": 0.0,
+        "min_value": 0.0,
+        "max_value": 100.0,
+        "step": 1.0,
     }
 
 
@@ -124,7 +222,7 @@ def _text_sensor_config(parent_name, parent_id, name_suffix, id_suffix, kind):
         CONF_ON_VALUE: [],
         CONF_ON_RAW_VALUE: [],
         CONF_WEB_SERVER: None,
-        CONF_KIND: TEXT_SENSOR_KIND_MODE,
+        CONF_KIND: kind,
         CONF_ICON: "mdi:hvac",
         CONF_ENTITY_CATEGORY: "diagnostic",
     }
@@ -213,6 +311,67 @@ async def to_code(config):
     output_sensor_config = _sensor_config(parent_name, parent_id)
     output_sensor = await sensor.new_sensor(output_sensor_config)
     cg.add(var.set_output_sensor(output_sensor))
+
+    dew_point_sensor_config = _dew_point_sensor_config(parent_name, parent_id)
+    dew_point_sensor = await sensor.new_sensor(dew_point_sensor_config)
+    cg.add(var.set_dew_point_sensor(dew_point_sensor))
+
+    error_sensor_config = _diagnostic_sensor_config(parent_name, parent_id, "PID Fehler", "pid_error", "K", "mdi:delta", 3)
+    error_sensor = await sensor.new_sensor(error_sensor_config)
+    cg.add(var.set_error_sensor(error_sensor))
+
+    pid_p_sensor_config = _diagnostic_sensor_config(parent_name, parent_id, "PID Anteil P", "pid_p", "%", "mdi:alpha-p-box", 3)
+    pid_p_sensor = await sensor.new_sensor(pid_p_sensor_config)
+    cg.add(var.set_pid_p_sensor(pid_p_sensor))
+
+    pid_i_sensor_config = _diagnostic_sensor_config(parent_name, parent_id, "PID Anteil I", "pid_i", "%", "mdi:alpha-i-box", 3)
+    pid_i_sensor = await sensor.new_sensor(pid_i_sensor_config)
+    cg.add(var.set_pid_i_sensor(pid_i_sensor))
+
+    pid_d_sensor_config = _diagnostic_sensor_config(parent_name, parent_id, "PID Anteil D", "pid_d", "%", "mdi:alpha-d-box", 3)
+    pid_d_sensor = await sensor.new_sensor(pid_d_sensor_config)
+    cg.add(var.set_pid_d_sensor(pid_d_sensor))
+
+    pid_dt_sensor_config = _diagnostic_sensor_config(parent_name, parent_id, "PID dt", "pid_dt", "s", "mdi:timer-outline", 3)
+    pid_dt_sensor = await sensor.new_sensor(pid_dt_sensor_config)
+    cg.add(var.set_pid_dt_sensor(pid_dt_sensor))
+
+    setpoint_sensor_config = _diagnostic_sensor_config(parent_name, parent_id, "Sollwert", "setpoint", "°C", "mdi:target", 2)
+    setpoint_sensor = await sensor.new_sensor(setpoint_sensor_config)
+    cg.add(var.set_setpoint_sensor(setpoint_sensor))
+
+    effective_setpoint_sensor_config = _diagnostic_sensor_config(
+        parent_name, parent_id, "Effektiver Sollwert", "effective_setpoint", "°C", "mdi:target-account", 2
+    )
+    effective_setpoint_sensor = await sensor.new_sensor(effective_setpoint_sensor_config)
+    cg.add(var.set_effective_setpoint_sensor(effective_setpoint_sensor))
+
+    unclamped_output_sensor_config = _diagnostic_sensor_config(
+        parent_name, parent_id, "Reglerausgang vor Begrenzung", "unclamped_output", "%", "mdi:chart-line-variant", 3
+    )
+    unclamped_output_sensor = await sensor.new_sensor(unclamped_output_sensor_config)
+    cg.add(var.set_unclamped_output_sensor(unclamped_output_sensor))
+
+    commissioning_switch_config = _switch_config(parent_name, parent_id)
+    commissioning_switch = cg.new_Pvariable(commissioning_switch_config[CONF_ID])
+    await switch.register_switch(commissioning_switch, commissioning_switch_config)
+    cg.add(commissioning_switch.set_parent(var))
+    cg.add(var.set_commissioning_switch(commissioning_switch))
+
+    reset_button_config = _reset_button_config(parent_name, parent_id)
+    reset_button = await button.new_button(reset_button_config)
+    cg.add(reset_button.set_parent(var))
+
+    commissioning_output_config = _commissioning_output_number_config(parent_name, parent_id)
+    commissioning_output = await number.new_number(
+        commissioning_output_config,
+        var,
+        commissioning_output_config[CONF_KIND],
+        min_value=commissioning_output_config["min_value"],
+        max_value=commissioning_output_config["max_value"],
+        step=commissioning_output_config["step"],
+    )
+    cg.add(var.register_number_entity(commissioning_output))
 
     mode_sensor_config = _text_sensor_config(parent_name, parent_id, "Modusstatus", "mode_state", TEXT_SENSOR_KIND_MODE)
     mode_sensor = await text_sensor.new_text_sensor(mode_sensor_config)

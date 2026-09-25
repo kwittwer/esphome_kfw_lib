@@ -1,7 +1,7 @@
 #pragma once
 
 #include <functional>
-
+#include "esphome/components/button/button.h"
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/number/number.h"
 #include "esphome/components/sensor/sensor.h"
@@ -20,6 +20,7 @@ enum NumberKind {
   NUMBER_KIND_PWM_MIN,
   NUMBER_KIND_PWM_MAX,
   NUMBER_KIND_DEW_POINT_OFFSET,
+  NUMBER_KIND_TEST_OUTPUT,
 };
 
 class PidThermostat;
@@ -48,6 +49,26 @@ class PidThermostatTextSensor : public text_sensor::TextSensor, public Component
  public:
   void setup() override { this->publish_state("off"); }
   void dump_config() override;
+};
+
+class PidThermostatSwitch : public switch_::Switch, public Component {
+ public:
+  void setup() override { this->publish_state(false); }
+  void write_state(bool state) override;
+  void dump_config() override;
+  void set_parent(PidThermostat *parent) { this->parent_ = parent; }
+
+ protected:
+  PidThermostat *parent_{nullptr};
+};
+
+class PidThermostatButton : public button::Button {
+ public:
+  void press_action() override;
+  void set_parent(PidThermostat *parent) { this->parent_ = parent; }
+
+ protected:
+  PidThermostat *parent_{nullptr};
 };
 
 class PidThermostat : public climate::Climate, public Component {
@@ -84,9 +105,20 @@ class PidThermostat : public climate::Climate, public Component {
   void set_pwm_min(float value);
   void set_pwm_max(float value);
   void set_output_sensor(PidThermostatSensor *sensor) { this->output_sensor_ = sensor; }
+  void set_dew_point_sensor(PidThermostatSensor *sensor) { this->dew_point_sensor_ = sensor; }
+  void set_error_sensor(PidThermostatSensor *sensor) { this->error_sensor_ = sensor; }
+  void set_pid_p_sensor(PidThermostatSensor *sensor) { this->pid_p_sensor_ = sensor; }
+  void set_pid_i_sensor(PidThermostatSensor *sensor) { this->pid_i_sensor_ = sensor; }
+  void set_pid_d_sensor(PidThermostatSensor *sensor) { this->pid_d_sensor_ = sensor; }
+  void set_pid_dt_sensor(PidThermostatSensor *sensor) { this->pid_dt_sensor_ = sensor; }
+  void set_setpoint_sensor(PidThermostatSensor *sensor) { this->setpoint_sensor_ = sensor; }
+  void set_effective_setpoint_sensor(PidThermostatSensor *sensor) { this->effective_setpoint_sensor_ = sensor; }
+  void set_unclamped_output_sensor(PidThermostatSensor *sensor) { this->unclamped_output_sensor_ = sensor; }
+  void set_commissioning_switch(PidThermostatSwitch *sw) { this->commissioning_switch_ = sw; }
   void set_mode_text_sensor(PidThermostatTextSensor *sensor) { this->mode_text_sensor_ = sensor; }
   void set_temperature_source_text_sensor(PidThermostatTextSensor *sensor) { this->temperature_source_text_sensor_ = sensor; }
   void set_humidity_source_text_sensor(PidThermostatTextSensor *sensor) { this->humidity_source_text_sensor_ = sensor; }
+  void reset_controller();
   void register_number_entity(PidThermostatNumber *number) { this->number_entities_.push_back(number); }
 
   float get_kp() const { return this->kp_; }
@@ -96,18 +128,25 @@ class PidThermostat : public climate::Climate, public Component {
   float get_pwm_min() const { return this->pwm_min_; }
   float get_pwm_max() const { return this->pwm_max_; }
   float get_dew_point_offset() const { return this->dew_point_offset_; }
-  float get_control_output() const { return this->control_output_; }
+  float get_control_output() const { return this->get_effective_control_output_(); }
+  float get_commissioning_output() const { return this->commissioning_output_; }
   float get_pid_p() const { return this->pid_p_; }
   float get_pid_i() const { return this->pid_i_; }
   float get_pid_d() const { return this->pid_d_; }
   float get_pid_error() const { return this->last_error_; }
   float get_pid_dt() const { return this->last_dt_seconds_; }
+  float get_setpoint() const { return this->target_temperature; }
+  float get_effective_setpoint() const { return this->effective_target_temperature_; }
+  float get_unclamped_output() const { return this->unclamped_output_; }
   bool get_valve_state() const { return this->valve_state_; }
   bool is_using_fallback_temperature() const { return this->using_fallback_temperature_; }
   bool is_using_fallback_humidity() const { return this->using_fallback_humidity_; }
+  bool is_commissioning_mode() const { return this->commissioning_mode_; }
 
   void set_current_temperature(float value);
   void set_current_humidity(float value);
+  void set_commissioning_mode(bool enabled);
+  void set_commissioning_output(float value);
 
   climate::ClimateTraits traits() override;
   void control(const climate::ClimateCall &call) override;
@@ -124,6 +163,7 @@ class PidThermostat : public climate::Climate, public Component {
   void request_recompute_() { this->pending_recompute_ = true; }
   void publish_child_states_();
   float calculate_dew_point_() const;
+  float get_effective_control_output_() const;
 
   sensor::Sensor *sensor_{nullptr};
   sensor::Sensor *humidity_sensor_{nullptr};
@@ -131,6 +171,16 @@ class PidThermostat : public climate::Climate, public Component {
   sensor::Sensor *fallback_humidity_sensor_{nullptr};
   switch_::Switch *valve_switch_{nullptr};
   PidThermostatSensor *output_sensor_{nullptr};
+  PidThermostatSensor *dew_point_sensor_{nullptr};
+  PidThermostatSensor *error_sensor_{nullptr};
+  PidThermostatSensor *pid_p_sensor_{nullptr};
+  PidThermostatSensor *pid_i_sensor_{nullptr};
+  PidThermostatSensor *pid_d_sensor_{nullptr};
+  PidThermostatSensor *pid_dt_sensor_{nullptr};
+  PidThermostatSensor *setpoint_sensor_{nullptr};
+  PidThermostatSensor *effective_setpoint_sensor_{nullptr};
+  PidThermostatSensor *unclamped_output_sensor_{nullptr};
+  PidThermostatSwitch *commissioning_switch_{nullptr};
   PidThermostatTextSensor *mode_text_sensor_{nullptr};
   PidThermostatTextSensor *temperature_source_text_sensor_{nullptr};
   PidThermostatTextSensor *humidity_source_text_sensor_{nullptr};
@@ -177,11 +227,15 @@ class PidThermostat : public climate::Climate, public Component {
   float integral_{0.0f};
   float last_error_{0.0f};
   float last_dt_seconds_{0.0f};
+  float effective_target_temperature_{NAN};
+  float unclamped_output_{0.0f};
+  float commissioning_output_{0.0f};
 
   bool pending_recompute_{true};
   bool valve_state_{false};
   bool using_fallback_temperature_{false};
   bool using_fallback_humidity_{false};
+  bool commissioning_mode_{false};
   bool debug_{false};
 };
 
