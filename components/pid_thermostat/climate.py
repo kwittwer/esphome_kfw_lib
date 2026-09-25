@@ -5,6 +5,7 @@ from esphome.const import (
     CONF_ACCURACY_DECIMALS,
     CONF_DISABLED_BY_DEFAULT,
     CONF_DEVICE_CLASS,
+    CONF_DEVICE_ID,
     CONF_ENTITY_CATEGORY,
     CONF_FORCE_UPDATE,
     CONF_ICON,
@@ -78,6 +79,12 @@ SENSOR_KIND_DEW_POINT = "dew_point"
 TEXT_SENSOR_KIND_MODE = "mode"
 TEXT_SENSOR_KIND_TEMPERATURE_SOURCE = "temperature_source"
 TEXT_SENSOR_KIND_HUMIDITY_SOURCE = "humidity_source"
+
+
+def _apply_device_id(config, device_id):
+    if device_id is not None:
+        config[CONF_DEVICE_ID] = device_id
+    return config
 
 
 def _number_config(parent_name, parent_id, suffix, id_suffix, kind, unit, initial, min_value, max_value, step):
@@ -264,6 +271,8 @@ async def to_code(config):
     await cg.register_component(var, config)
     await climate.register_climate(var, config)
 
+    device_id = config.get(CONF_DEVICE_ID)
+
     sens = await cg.get_variable(config[CONF_TEMPERATURE_SENSOR])
     cg.add(var.set_sensor(sens))
 
@@ -308,61 +317,79 @@ async def to_code(config):
     parent_name = config[CONF_NAME]
     parent_id = config[CONF_ID]
 
-    output_sensor_config = _sensor_config(parent_name, parent_id)
+    output_sensor_config = _apply_device_id(_sensor_config(parent_name, parent_id), device_id)
     output_sensor = await sensor.new_sensor(output_sensor_config)
     cg.add(var.set_output_sensor(output_sensor))
 
-    dew_point_sensor_config = _dew_point_sensor_config(parent_name, parent_id)
+    dew_point_sensor_config = _apply_device_id(_dew_point_sensor_config(parent_name, parent_id), device_id)
     dew_point_sensor = await sensor.new_sensor(dew_point_sensor_config)
     cg.add(var.set_dew_point_sensor(dew_point_sensor))
 
-    error_sensor_config = _diagnostic_sensor_config(parent_name, parent_id, "PID Fehler", "pid_error", "K", "mdi:delta", 3)
+    error_sensor_config = _apply_device_id(
+        _diagnostic_sensor_config(parent_name, parent_id, "PID Fehler", "pid_error", "K", "mdi:delta", 3), device_id
+    )
     error_sensor = await sensor.new_sensor(error_sensor_config)
     cg.add(var.set_error_sensor(error_sensor))
 
-    pid_p_sensor_config = _diagnostic_sensor_config(parent_name, parent_id, "PID Anteil P", "pid_p", "%", "mdi:alpha-p-box", 3)
+    pid_p_sensor_config = _apply_device_id(
+        _diagnostic_sensor_config(parent_name, parent_id, "PID Anteil P", "pid_p", "%", "mdi:alpha-p-box", 3), device_id
+    )
     pid_p_sensor = await sensor.new_sensor(pid_p_sensor_config)
     cg.add(var.set_pid_p_sensor(pid_p_sensor))
 
-    pid_i_sensor_config = _diagnostic_sensor_config(parent_name, parent_id, "PID Anteil I", "pid_i", "%", "mdi:alpha-i-box", 3)
+    pid_i_sensor_config = _apply_device_id(
+        _diagnostic_sensor_config(parent_name, parent_id, "PID Anteil I", "pid_i", "%", "mdi:alpha-i-box", 3), device_id
+    )
     pid_i_sensor = await sensor.new_sensor(pid_i_sensor_config)
     cg.add(var.set_pid_i_sensor(pid_i_sensor))
 
-    pid_d_sensor_config = _diagnostic_sensor_config(parent_name, parent_id, "PID Anteil D", "pid_d", "%", "mdi:alpha-d-box", 3)
+    pid_d_sensor_config = _apply_device_id(
+        _diagnostic_sensor_config(parent_name, parent_id, "PID Anteil D", "pid_d", "%", "mdi:alpha-d-box", 3), device_id
+    )
     pid_d_sensor = await sensor.new_sensor(pid_d_sensor_config)
     cg.add(var.set_pid_d_sensor(pid_d_sensor))
 
-    pid_dt_sensor_config = _diagnostic_sensor_config(parent_name, parent_id, "PID dt", "pid_dt", "s", "mdi:timer-outline", 3)
+    pid_dt_sensor_config = _apply_device_id(
+        _diagnostic_sensor_config(parent_name, parent_id, "PID dt", "pid_dt", "s", "mdi:timer-outline", 3), device_id
+    )
     pid_dt_sensor = await sensor.new_sensor(pid_dt_sensor_config)
     cg.add(var.set_pid_dt_sensor(pid_dt_sensor))
 
-    setpoint_sensor_config = _diagnostic_sensor_config(parent_name, parent_id, "Sollwert", "setpoint", "°C", "mdi:target", 2)
+    setpoint_sensor_config = _apply_device_id(
+        _diagnostic_sensor_config(parent_name, parent_id, "Sollwert", "setpoint", "°C", "mdi:target", 2), device_id
+    )
     setpoint_sensor = await sensor.new_sensor(setpoint_sensor_config)
     cg.add(var.set_setpoint_sensor(setpoint_sensor))
 
-    effective_setpoint_sensor_config = _diagnostic_sensor_config(
-        parent_name, parent_id, "Effektiver Sollwert", "effective_setpoint", "°C", "mdi:target-account", 2
+    effective_setpoint_sensor_config = _apply_device_id(
+        _diagnostic_sensor_config(
+            parent_name, parent_id, "Effektiver Sollwert", "effective_setpoint", "°C", "mdi:target-account", 2
+        ),
+        device_id,
     )
     effective_setpoint_sensor = await sensor.new_sensor(effective_setpoint_sensor_config)
     cg.add(var.set_effective_setpoint_sensor(effective_setpoint_sensor))
 
-    unclamped_output_sensor_config = _diagnostic_sensor_config(
-        parent_name, parent_id, "Reglerausgang vor Begrenzung", "unclamped_output", "%", "mdi:chart-line-variant", 3
+    unclamped_output_sensor_config = _apply_device_id(
+        _diagnostic_sensor_config(
+            parent_name, parent_id, "Reglerausgang vor Begrenzung", "unclamped_output", "%", "mdi:chart-line-variant", 3
+        ),
+        device_id,
     )
     unclamped_output_sensor = await sensor.new_sensor(unclamped_output_sensor_config)
     cg.add(var.set_unclamped_output_sensor(unclamped_output_sensor))
 
-    commissioning_switch_config = _switch_config(parent_name, parent_id)
+    commissioning_switch_config = _apply_device_id(_switch_config(parent_name, parent_id), device_id)
     commissioning_switch = cg.new_Pvariable(commissioning_switch_config[CONF_ID])
     await switch.register_switch(commissioning_switch, commissioning_switch_config)
     cg.add(commissioning_switch.set_parent(var))
     cg.add(var.set_commissioning_switch(commissioning_switch))
 
-    reset_button_config = _reset_button_config(parent_name, parent_id)
+    reset_button_config = _apply_device_id(_reset_button_config(parent_name, parent_id), device_id)
     reset_button = await button.new_button(reset_button_config)
     cg.add(reset_button.set_parent(var))
 
-    commissioning_output_config = _commissioning_output_number_config(parent_name, parent_id)
+    commissioning_output_config = _apply_device_id(_commissioning_output_number_config(parent_name, parent_id), device_id)
     commissioning_output = await number.new_number(
         commissioning_output_config,
         var,
@@ -373,30 +400,38 @@ async def to_code(config):
     )
     cg.add(var.register_number_entity(commissioning_output))
 
-    mode_sensor_config = _text_sensor_config(parent_name, parent_id, "Modusstatus", "mode_state", TEXT_SENSOR_KIND_MODE)
+    mode_sensor_config = _apply_device_id(
+        _text_sensor_config(parent_name, parent_id, "Modusstatus", "mode_state", TEXT_SENSOR_KIND_MODE), device_id
+    )
     mode_sensor = await text_sensor.new_text_sensor(mode_sensor_config)
     cg.add(var.set_mode_text_sensor(mode_sensor))
 
-    temp_source_sensor_config = _text_sensor_config(
-        parent_name, parent_id, "Temperaturquelle", "temperature_source", TEXT_SENSOR_KIND_TEMPERATURE_SOURCE
+    temp_source_sensor_config = _apply_device_id(
+        _text_sensor_config(
+            parent_name, parent_id, "Temperaturquelle", "temperature_source", TEXT_SENSOR_KIND_TEMPERATURE_SOURCE
+        ),
+        device_id,
     )
     temp_source_sensor = await text_sensor.new_text_sensor(temp_source_sensor_config)
     cg.add(var.set_temperature_source_text_sensor(temp_source_sensor))
 
-    humidity_source_sensor_config = _text_sensor_config(
-        parent_name, parent_id, "Feuchtequelle", "humidity_source", TEXT_SENSOR_KIND_HUMIDITY_SOURCE
+    humidity_source_sensor_config = _apply_device_id(
+        _text_sensor_config(
+            parent_name, parent_id, "Feuchtequelle", "humidity_source", TEXT_SENSOR_KIND_HUMIDITY_SOURCE
+        ),
+        device_id,
     )
     humidity_source_sensor = await text_sensor.new_text_sensor(humidity_source_sensor_config)
     cg.add(var.set_humidity_source_text_sensor(humidity_source_sensor))
 
     number_configs = [
-        _number_config(parent_name, parent_id, "Kp", "kp", NUMBER_KIND_KP, "", config[CONF_KP], 0, 200, 0.1),
-        _number_config(parent_name, parent_id, "Ki", "ki", NUMBER_KIND_KI, "", config[CONF_KI], 0, 1, 0.001),
-        _number_config(parent_name, parent_id, "Kd", "kd", NUMBER_KIND_KD, "", config[CONF_KD], 0, 5000, 1),
-        _number_config(parent_name, parent_id, "PWM Periode", "pwm_period", NUMBER_KIND_PWM_PERIOD, "s", config[CONF_PWM].total_seconds, 60, 3600, 30),
-        _number_config(parent_name, parent_id, "PWM Min", "pwm_min", NUMBER_KIND_PWM_MIN, "%", config[CONF_PWM_MIN], 0, 100, 1),
-        _number_config(parent_name, parent_id, "PWM Max", "pwm_max", NUMBER_KIND_PWM_MAX, "%", config[CONF_PWM_MAX], 0, 100, 1),
-        _number_config(parent_name, parent_id, "Taupunkt Abstand", "dew_point_offset", NUMBER_KIND_DEW_POINT_OFFSET, "K", config[CONF_DEW_POINT_OFFSET], 0, 10, 0.1),
+        _apply_device_id(_number_config(parent_name, parent_id, "Kp", "kp", NUMBER_KIND_KP, "", config[CONF_KP], 0, 200, 0.1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "Ki", "ki", NUMBER_KIND_KI, "", config[CONF_KI], 0, 1, 0.001), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "Kd", "kd", NUMBER_KIND_KD, "", config[CONF_KD], 0, 5000, 1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "PWM Periode", "pwm_period", NUMBER_KIND_PWM_PERIOD, "s", config[CONF_PWM].total_seconds, 10, 3600, 30), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "PWM Min", "pwm_min", NUMBER_KIND_PWM_MIN, "%", config[CONF_PWM_MIN], 0, 100, 1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "PWM Max", "pwm_max", NUMBER_KIND_PWM_MAX, "%", config[CONF_PWM_MAX], 0, 100, 1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "Taupunkt Abstand", "dew_point_offset", NUMBER_KIND_DEW_POINT_OFFSET, "K", config[CONF_DEW_POINT_OFFSET], 0, 10, 0.1), device_id),
     ]
 
     for number_config in number_configs:

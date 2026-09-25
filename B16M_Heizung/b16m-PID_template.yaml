@@ -4,6 +4,25 @@
   project:
     name: "Konrad.Heizungsregler"
     version: V2026.06.29
+  devices:
+    - id: thermostat1_device
+      name: "Raum1"
+    - id: thermostat2_device
+      name: "Raum2"
+    - id: thermostat3_device
+      name: "Raum3"
+    - id: thermostat4_device
+      name: "Raum4"
+    - id: thermostat5_device
+      name: "Raum5"
+    - id: thermostat6_device
+      name: "Raum6"
+    - id: thermostat7_device
+      name: "Raum7"
+    - id: thermostat8_device
+      name: "Raum8"
+    - id: thermostat9_device
+      name: "Raum9"
 
 # Replace this with your actual platform if you aren't using ESP32.
 esp32:
@@ -1395,6 +1414,7 @@ climate:
   - platform: pid_thermostat
     name: "Raum1"
     id: thermostat1
+    device_id: thermostat1_device
     temperature_sensor: sensor_kuche_raum1_temperature
     humidity_sensor: sensor_kuche_raum1_humidity
     fallback_temperature_sensor: sensor_dht_1_temperature
@@ -1423,6 +1443,7 @@ climate:
   - platform: pid_thermostat
     name: "Raum2"
     id: thermostat2
+    device_id: thermostat2_device
     temperature_sensor: sensor_dht_1_temperature
     humidity_sensor: sensor_dht_1_humidity
     temperature_sensor_timeout: 10min
@@ -1449,6 +1470,7 @@ climate:
   - platform: pid_thermostat
     name: "Raum3"
     id: thermostat3
+    device_id: thermostat3_device
     temperature_sensor: sensor_dht_1_temperature
     humidity_sensor: sensor_dht_1_humidity
     temperature_sensor_timeout: 10min
@@ -1475,6 +1497,7 @@ climate:
   - platform: pid_thermostat
     name: "Raum4"
     id: thermostat4
+    device_id: thermostat4_device
     temperature_sensor: sensor_dht_1_temperature
     humidity_sensor: sensor_dht_1_humidity
     temperature_sensor_timeout: 10min
@@ -1502,6 +1525,7 @@ climate:
   - platform: pid_thermostat
     name: "Raum5"
     id: thermostat5
+    device_id: thermostat5_device
     temperature_sensor: sensor_dht_1_temperature
     humidity_sensor: sensor_dht_1_humidity
     temperature_sensor_timeout: 10min
@@ -1528,6 +1552,7 @@ climate:
   - platform: pid_thermostat
     name: "Raum6"
     id: thermostat6
+    device_id: thermostat6_device
     temperature_sensor: sensor_dht_1_temperature
     humidity_sensor: sensor_dht_1_humidity
     temperature_sensor_timeout: 10min
@@ -1554,6 +1579,7 @@ climate:
   - platform: pid_thermostat
     name: "Raum7"
     id: thermostat7
+    device_id: thermostat7_device
     temperature_sensor: sensor_dht_1_temperature
     humidity_sensor: sensor_dht_1_humidity
     temperature_sensor_timeout: 10min
@@ -1580,6 +1606,7 @@ climate:
   - platform: pid_thermostat
     name: "Raum8"
     id: thermostat8
+    device_id: thermostat8_device
     temperature_sensor: sensor_dht_1_temperature
     humidity_sensor: sensor_dht_1_humidity
     temperature_sensor_timeout: 10min
@@ -1606,6 +1633,7 @@ climate:
   - platform: pid_thermostat
     name: "Raum9"
     id: thermostat9
+    device_id: thermostat9_device
     temperature_sensor: sensor_dht_1_temperature
     humidity_sensor: sensor_dht_1_humidity
     temperature_sensor_timeout: 10min

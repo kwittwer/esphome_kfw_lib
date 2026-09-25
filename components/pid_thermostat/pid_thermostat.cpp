@@ -161,6 +161,7 @@ void PidThermostat::loop() {
 
   const bool pwm_period_due = this->pwm_period_ms_ > 0 && now - this->pwm_cycle_start_ms_ >= this->pwm_period_ms_;
   if (pwm_period_due) {
+    this->pwm_cycle_start_ms_ = now;
     this->request_recompute_();
     this->calculate_control_(true);
     this->update_action_();
@@ -318,7 +319,7 @@ void PidThermostat::set_kd(float value) {
 }
 
 void PidThermostat::set_pwm_period(uint32_t period_ms) {
-  this->pwm_period_ms_ = period_ms == 0 ? 1000 : period_ms;
+  this->pwm_period_ms_ = std::max<uint32_t>(period_ms, 10000U);
   this->pwm_cycle_start_ms_ = millis();
   this->request_recompute_();
   this->publish_child_states_();
@@ -594,9 +595,6 @@ void PidThermostat::update_valve_output_(bool force) {
     if (this->pwm_period_ms_ == 0 || active_output >= 100.0f) {
       desired_state = true;
     } else {
-      if (now - this->pwm_cycle_start_ms_ >= this->pwm_period_ms_) {
-        this->pwm_cycle_start_ms_ = now;
-      }
       const uint32_t elapsed_in_cycle = now - this->pwm_cycle_start_ms_;
       const uint32_t on_time_ms = static_cast<uint32_t>(this->pwm_period_ms_ * (active_output / 100.0f));
       desired_state = elapsed_in_cycle < on_time_ms;
