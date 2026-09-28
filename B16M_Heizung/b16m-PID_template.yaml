@@ -78,6 +78,16 @@ external_components:
       path: ../components
     components: [pid_thermostat]
 
+# # ============================================
+# # PREFERENCES
+# # Gespeicherte Werte (z. B. Volumenstrom) liegen nach dem Setzen zunaechst nur
+# # im RAM und werden erst beim naechsten Sync ins NVS geschrieben. Der Default
+# # von 60s bedeutet, dass ein Hardware-Reset / Stromausfall innerhalb dieser
+# # Zeit den neuen Wert verwirft. Kuerzeres Intervall = schnelleres Persistieren.
+# # ============================================
+# preferences:
+#   flash_write_interval: 10s
+
 # ============================================
 # TIME (DS1307 RTC + Home Assistant)
 # ============================================
