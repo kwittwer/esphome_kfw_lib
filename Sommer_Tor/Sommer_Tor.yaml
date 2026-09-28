@@ -4,6 +4,9 @@ substitutions:
   device_friendly: "Torsteuerung"
   gate_pulse_time: 300ms
   gate_feedback_debounce: 50ms
+  bp108b_mac: "DC:0D:30:26:C5:F6"
+  bp108b_tx_power_at_0m: "-21.0"
+  bp108b_path_loss_exponent: "2.0"
 
 esphome:
   name: ${device_name}
@@ -61,17 +64,181 @@ wifi:
 
 captive_portal:
 
+esp32_ble_tracker:
+  id: ble_hub
+  scan_parameters:
+    active: false
+    interval: 320ms
+    window: 30ms
+    continuous: true
+  on_ble_advertise:
+    - mac_address:
+        - ${bp108b_mac}
+      then:
+        - lambda: |-
+            char uuidbuf[esphome::ble_device_base::UUID_STR_LEN];
+            std::string adv_name = x.get_name();
+            if (adv_name.empty()) adv_name = "-";
+
+            std::string service_uuids;
+            for (auto uuid : x.get_service_uuids()) {
+              if (!service_uuids.empty()) service_uuids += ",";
+              service_uuids += uuid.to_str(uuidbuf);
+            }
+            if (service_uuids.empty()) service_uuids = "-";
+
+            std::string manufacturer_data;
+            std::string service_data;
+            std::string frame_type = "unknown";
+            float battery_voltage_v = NAN;
+
+            for (auto data : x.get_manufacturer_datas()) {
+              if (!manufacturer_data.empty()) manufacturer_data += " | ";
+              manufacturer_data += data.uuid.to_str(uuidbuf);
+              manufacturer_data += ":";
+              for (auto byte : data.data) {
+                char hexbuf[3];
+                snprintf(hexbuf, sizeof(hexbuf), "%02X", byte);
+                manufacturer_data += hexbuf;
+              }
+              if (data.data.size() >= 2 && data.data[0] == 0x02 && data.data[1] == 0x15) {
+                frame_type = "iBeacon";
+              } else if (data.data.size() >= 2 && data.data[0] == 0xBE && data.data[1] == 0xAC) {
+                frame_type = "AltBeacon";
+              }
+            }
+            if (manufacturer_data.empty()) manufacturer_data = "-";
+
+            for (auto data : x.get_service_datas()) {
+              if (!service_data.empty()) service_data += " | ";
+              std::string service_uuid = data.uuid.to_str(uuidbuf);
+              service_data += service_uuid;
+              service_data += ":";
+              for (auto byte : data.data) {
+                char hexbuf[3];
+                snprintf(hexbuf, sizeof(hexbuf), "%02X", byte);
+                service_data += hexbuf;
+              }
+              if (service_uuid == "FEAA" && !data.data.empty()) {
+                if (data.data[0] == 0x00) {
+                  frame_type = "Eddystone UID";
+                } else if (data.data[0] == 0x10) {
+                  frame_type = "Eddystone URL";
+                } else if (data.data[0] == 0x20) {
+                  frame_type = "Eddystone TLM";
+                  if (data.data.size() >= 4) {
+                    uint16_t battery_mv = (static_cast<uint16_t>(data.data[2]) << 8) | data.data[3];
+                    battery_voltage_v = battery_mv / 1000.0f;
+                  }
+                }
+              }
+            }
+            if (service_data.empty()) service_data = "-";
+
+            std::string fingerprint = frame_type + "|" + service_uuids + "|" + manufacturer_data + "|" + service_data;
+            if (!id(bp108b_last_fingerprint).empty() && fingerprint != id(bp108b_last_fingerprint)) {
+              id(bp108b_payload_changed).publish_state(true);
+              id(bp108b_last_event).publish_state("payload_changed");
+              ESP_LOGI("bp108b", "Payload changed for %s", "${bp108b_mac}");
+            }
+            id(bp108b_last_fingerprint) = fingerprint;
+
+            id(bp108b_name).publish_state(adv_name);
+            id(bp108b_frame_type).publish_state(frame_type);
+            id(bp108b_service_uuids).publish_state(service_uuids);
+            id(bp108b_manufacturer_data).publish_state(manufacturer_data);
+            id(bp108b_service_data).publish_state(service_data);
+            if (!isnan(battery_voltage_v)) {
+              id(bp108b_battery_voltage).publish_state(battery_voltage_v);
+            }
+
+  on_scan_end:
+    - then:
+        - if:
+            condition:
+              binary_sensor.is_on: bp108b_payload_changed
+            then:
+              - binary_sensor.template.publish:
+                  id: bp108b_payload_changed
+                  state: OFF
+
+sensor:
+  - platform: ble_rssi
+    id: bp108b_rssi
+    mac_address: ${bp108b_mac}
+    name: "BP108B RSSI"
+  - platform: template
+    name: "BP108B Battery Voltage"
+    id: bp108b_battery_voltage
+    unit_of_measurement: "V"
+    device_class: voltage
+    state_class: measurement
+    accuracy_decimals: 3
+    entity_category: diagnostic
+    update_interval: never
+  - platform: template
+    name: "BP108B Entfernung"
+    unit_of_measurement: "m"
+    device_class: distance
+    state_class: measurement
+    accuracy_decimals: 2
+    entity_category: diagnostic
+    lambda: |-
+      if (isnan(id(bp108b_rssi).state)) {
+        return NAN;
+      }
+      const float tx_power_at_0m = atof("${bp108b_tx_power_at_0m}");
+      const float path_loss_exponent = atof("${bp108b_path_loss_exponent}");
+      const float rssi = id(bp108b_rssi).state;
+      return powf(10.0f, (tx_power_at_0m - rssi) / (10.0f * path_loss_exponent));
+
+globals:
+  - id: bp108b_last_fingerprint
+    type: std::string
+    restore_value: no
+    initial_value: '""'
+
 text_sensor:
- - platform: wifi_info
-   ip_address:
-     name: "${device_name} - IP Address"
-   ssid:
-     name: "${device_name} - Wi-Fi SSID"
-   bssid:
-     name: "${device_name} - Wi-Fi BSSID"
- - platform: version
-   name: "${device_name} - ESPHome Version"
-   hide_timestamp: true
+  - platform: wifi_info
+    ip_address:
+      name: "${device_name} - IP Address"
+    ssid:
+      name: "${device_name} - Wi-Fi SSID"
+    bssid:
+      name: "${device_name} - Wi-Fi BSSID"
+  - platform: version
+    name: "${device_name} - ESPHome Version"
+    hide_timestamp: true
+  - platform: template
+    name: "BP108B Name"
+    id: bp108b_name
+    entity_category: diagnostic
+    update_interval: never
+  - platform: template
+    name: "BP108B Frame Type"
+    id: bp108b_frame_type
+    entity_category: diagnostic
+    update_interval: never
+  - platform: template
+    name: "BP108B Service UUIDs"
+    id: bp108b_service_uuids
+    entity_category: diagnostic
+    update_interval: never
+  - platform: template
+    name: "BP108B Manufacturer Data"
+    id: bp108b_manufacturer_data
+    entity_category: diagnostic
+    update_interval: never
+  - platform: template
+    name: "BP108B Service Data"
+    id: bp108b_service_data
+    entity_category: diagnostic
+    update_interval: never
+  - platform: template
+    name: "BP108B Last Event"
+    id: bp108b_last_event
+    entity_category: diagnostic
+    update_interval: never
 
 # Ethernet configuration - mutually exclusive with WiFi!
 # ethernet:
@@ -140,6 +307,21 @@ time:
 binary_sensor:
   - platform: status
     name: "Status"
+
+  - platform: ble_presence
+    mac_address: ${bp108b_mac}
+    name: "BP108B Tag anwesend"
+
+  - platform: template
+    name: "BP108B Batterie Schwach"
+    lambda: |-
+      return !isnan(id(bp108b_battery_voltage).state) && id(bp108b_battery_voltage).state < 3.0f;
+    entity_category: diagnostic
+
+  - platform: template
+    name: "BP108B Payload Geaendert"
+    id: bp108b_payload_changed
+    entity_category: diagnostic
 
   - platform: gpio
     name: "Boot Button"
