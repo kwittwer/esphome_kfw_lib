@@ -157,13 +157,13 @@ binary_sensor:
 # Digital Inputs
   - platform: gpio
     id: di1
-    name: "DI1"
+    name: "Tor offen"
     pin:
       number: GPIO4
       mode: INPUT_PULLUP
       inverted: true
     filters:
-      - delayed_on_off: 10ms
+      - delayed_on_off: ${gate_feedback_debounce}
 
   - platform: gpio
     id: di2
@@ -227,13 +227,13 @@ binary_sensor:
 
   - platform: gpio
     id: di8
-    name: "${device_friendly} - Tor offen"
+    name: "DI8"
     pin:
       number: GPIO11
       mode: INPUT_PULLUP
       inverted: true
     filters:
-      - delayed_on_off: ${gate_feedback_debounce}
+      - delayed_on_off: 10ms
 
 # buzzer
 output:
@@ -371,9 +371,8 @@ cover:
     id: gate_cover
     device_class: gate
     assumed_state: true
-    has_position: true
     lambda: |-
-      return id(di8).state ? 1.0f : 0.0f;
+      return id(di1).state ? COVER_OPEN : COVER_CLOSED;
     open_action:
       - script.execute: gate_open_pulse
     close_action:
