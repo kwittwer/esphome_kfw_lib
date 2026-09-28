@@ -20,6 +20,12 @@ defaults:
   heating_power_flow_max_l_min: 40.0
   heating_power_flow_step_l_min: 0.1
 
+globals:
+  - id: hp${heating_power_index}_flow_l_min_value
+    type: float
+    restore_value: true
+    initial_value: ${heating_power_flow_initial_l_min}
+
 number:
   - platform: template
     name: "${heating_power_name} Volumenstrom"
@@ -34,6 +40,11 @@ number:
     restore_value: true
     initial_value: ${heating_power_flow_initial_l_min}
     entity_category: config
+    lambda: |-
+      return id(hp${heating_power_index}_flow_l_min_value);
+    set_action:
+      - lambda: |-
+          id(hp${heating_power_index}_flow_l_min_value) = x;
 
 sensor:
   - platform: template
@@ -60,7 +71,7 @@ sensor:
     accuracy_decimals: 1
     update_interval: ${heating_power_update_interval}
     lambda: |-
-      if (!id(hp${heating_power_index}_delta_t).has_state() || !id(hp${heating_power_index}_flow_l_min).has_state()) {
+      if (!id(hp${heating_power_index}_delta_t).has_state() || !id(hp${heating_power_index}_flow_l_min_value).has_state()) {
         return NAN;
       }
-      return 69.77f * id(hp${heating_power_index}_flow_l_min).state * id(hp${heating_power_index}_delta_t).state;
+      return 69.77f * id(hp${heating_power_index}_flow_l_min_value).state * id(hp${heating_power_index}_delta_t).state;
