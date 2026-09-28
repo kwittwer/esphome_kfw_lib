@@ -2,6 +2,8 @@ substitutions:
   device_name: "sommertor"
   device_comment: "Sommer Tor Controller"
   device_friendly: "Torsteuerung"
+  gate_pulse_time: 300ms
+  gate_feedback_debounce: 50ms
 
 esphome:
   name: ${device_name}
@@ -48,14 +50,14 @@ ota:
   password: !secret ota_pwd
 
 wifi:
- ssid: !secret wifi_ssid
- password: !secret wifi_password
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
 #  domain: !secret wifi_domain
 
- # Enable AP when WiFi connection fails
- ap:
-   ssid: ${device_name} AP
-  password: !secret ap_pwd
+  # Enable AP when WiFi connection fails
+  ap:
+    ssid: ${device_name} AP
+    password: !secret ap_pwd
 
 captive_portal:
 
@@ -225,13 +227,13 @@ binary_sensor:
 
   - platform: gpio
     id: di8
-    name: "DI8"
+    name: "${device_friendly} - Tor offen"
     pin:
       number: GPIO11
       mode: INPUT_PULLUP
       inverted: true
     filters:
-      - delayed_on_off: 10ms
+      - delayed_on_off: ${gate_feedback_debounce}
 
 # buzzer
 output:
@@ -257,10 +259,33 @@ light:
     id: rgb_led
 
 # Relays
+script:
+  - id: gate_open_pulse
+    mode: restart
+    then:
+      - switch.turn_on: relay1
+      - delay: ${gate_pulse_time}
+      - switch.turn_off: relay1
+
+  - id: gate_close_pulse
+    mode: restart
+    then:
+      - switch.turn_on: relay2
+      - delay: ${gate_pulse_time}
+      - switch.turn_off: relay2
+
+  - id: gate_stop_pulse
+    mode: restart
+    then:
+      - switch.turn_on: relay3
+      - delay: ${gate_pulse_time}
+      - switch.turn_off: relay3
+
 switch:
   - platform: gpio
     name: "Relay 1"
     id: relay1
+    internal: true
     pin:
       pca9554: TCA9554_hub
       number: 0
@@ -271,6 +296,7 @@ switch:
   - platform: gpio
     name: "Relay 2"
     id: relay2
+    internal: true
     pin:
       pca9554: TCA9554_hub
       number: 1
@@ -281,6 +307,7 @@ switch:
   - platform: gpio
     name: "Relay 3"
     id: relay3
+    internal: true
     pin:
       pca9554: TCA9554_hub
       number: 2
@@ -337,6 +364,22 @@ switch:
       mode:
         output: true
       inverted: false
+
+cover:
+  - platform: template
+    name: "${device_friendly}"
+    id: gate_cover
+    device_class: gate
+    assumed_state: true
+    has_position: true
+    lambda: |-
+      return id(di8).state ? 1.0f : 0.0f;
+    open_action:
+      - script.execute: gate_open_pulse
+    close_action:
+      - script.execute: gate_close_pulse
+    stop_action:
+      - script.execute: gate_stop_pulse
 
 # Virtual buttons
 button:
