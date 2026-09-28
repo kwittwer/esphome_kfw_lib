@@ -1296,6 +1296,7 @@ select:
     set_action:
       - lambda: |-
           id(manual_control_enabled) = (x == "Manuell");
+          id(control_mode_select).publish_state(x);
       - logger.log:
           format: "Steuerungsmodus gesetzt: %s"
           args: [ 'x.c_str()' ]

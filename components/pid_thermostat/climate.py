@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import button, climate, number, sensor, switch, text_sensor
+from esphome.components import binary_sensor, button, climate, number, sensor, switch, text_sensor
 from esphome.const import (
     CONF_ACCURACY_DECIMALS,
     CONF_DISABLED_BY_DEFAULT,
@@ -27,12 +27,13 @@ from esphome.core import ID
 
 from . import pid_thermostat_ns
 
-AUTO_LOAD = ["button", "climate", "switch"]
+AUTO_LOAD = ["binary_sensor", "button", "climate", "switch"]
 
 PidThermostat = pid_thermostat_ns.class_("PidThermostat", climate.Climate, cg.Component)
 PidThermostatNumber = pid_thermostat_ns.class_("PidThermostatNumber", number.Number, cg.Component)
 PidThermostatSensor = pid_thermostat_ns.class_("PidThermostatSensor", sensor.Sensor, cg.Component)
 PidThermostatSwitch = pid_thermostat_ns.class_("PidThermostatSwitch", switch.Switch, cg.Component)
+PidThermostatBinarySensor = pid_thermostat_ns.class_("PidThermostatBinarySensor", binary_sensor.BinarySensor, cg.Component)
 PidThermostatButton = pid_thermostat_ns.class_("PidThermostatButton", button.Button)
 PidThermostatTextSensor = pid_thermostat_ns.class_("PidThermostatTextSensor", text_sensor.TextSensor, cg.Component)
 NumberKind = pid_thermostat_ns.enum("NumberKind")
@@ -123,6 +124,19 @@ def _switch_config(parent_name, parent_id):
         CONF_ENTITY_CATEGORY: "config",
         CONF_ICON: "mdi:tools",
         CONF_RESTORE_MODE: switch.SwitchRestoreMode.SWITCH_RESTORE_DISABLED,
+    }
+
+
+def _binary_sensor_config(parent_name, parent_id):
+    return {
+        CONF_ID: ID(f"{parent_id.id}_valve_output", is_declaration=True, type=PidThermostatBinarySensor),
+        CONF_NAME: f"{parent_name} Reglerinternes Ventil",
+        CONF_DISABLED_BY_DEFAULT: False,
+        CONF_INTERNAL: False,
+        CONF_MQTT_ID: None,
+        CONF_WEB_SERVER: None,
+        CONF_ENTITY_CATEGORY: "diagnostic",
+        CONF_ICON: "mdi:valve",
     }
 
 
@@ -378,6 +392,11 @@ async def to_code(config):
     )
     unclamped_output_sensor = await sensor.new_sensor(unclamped_output_sensor_config)
     cg.add(var.set_unclamped_output_sensor(unclamped_output_sensor))
+
+    valve_output_sensor_config = _apply_device_id(_binary_sensor_config(parent_name, parent_id), device_id)
+    valve_output_sensor = await binary_sensor.new_binary_sensor(valve_output_sensor_config)
+    cg.add(valve_output_sensor.set_parent(var))
+    cg.add(var.set_valve_output_sensor(valve_output_sensor))
 
     commissioning_switch_config = _apply_device_id(_switch_config(parent_name, parent_id), device_id)
     commissioning_switch = cg.new_Pvariable(commissioning_switch_config[CONF_ID])

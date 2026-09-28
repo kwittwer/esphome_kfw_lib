@@ -11,6 +11,7 @@
 defaults:
   heating_power_index: 1
   heating_power_name: "Heizkreis 1"
+  heating_power_device_id: thermostat1_device
   heating_power_supply_sensor_id: Temp1_temperature
   heating_power_return_sensor_id: Temp2_temperature
   heating_power_update_interval: 5s
@@ -23,6 +24,7 @@ number:
   - platform: template
     name: "${heating_power_name} Volumenstrom"
     id: hp${heating_power_index}_flow_l_min
+    device_id: ${heating_power_device_id}
     unit_of_measurement: "l/min"
     min_value: ${heating_power_flow_min_l_min}
     max_value: ${heating_power_flow_max_l_min}
@@ -37,6 +39,7 @@ sensor:
   - platform: template
     name: "${heating_power_name} Delta T"
     id: hp${heating_power_index}_delta_t
+    device_id: ${heating_power_device_id}
     unit_of_measurement: "K"
     state_class: measurement
     accuracy_decimals: 2
@@ -50,6 +53,7 @@ sensor:
   - platform: template
     name: "${heating_power_name} Heizleistung"
     id: hp${heating_power_index}_power_w
+    device_id: ${heating_power_device_id}
     unit_of_measurement: "W"
     device_class: power
     state_class: measurement

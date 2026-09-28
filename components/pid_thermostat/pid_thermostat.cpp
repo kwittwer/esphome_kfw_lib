@@ -10,8 +10,54 @@ namespace pid_thermostat {
 
 static const char *const TAG = "pid_thermostat";
 
-void PidThermostatNumber::setup() {
-  this->publish_from_parent();
+void PidThermostatNumber::init_and_restore() {
+  if (this->pref_initialized_) {
+    return;
+  }
+  this->pref_initialized_ = true;
+  this->pref_ = this->make_entity_preference<float>();
+
+  float restored_value = NAN;
+  if (this->pref_.load(&restored_value) && !std::isnan(restored_value)) {
+    switch (this->kind_) {
+      case NUMBER_KIND_KP:
+        this->parent_->set_kp(restored_value);
+        break;
+      case NUMBER_KIND_KI:
+        this->parent_->set_ki(restored_value);
+        break;
+      case NUMBER_KIND_KD:
+        this->parent_->set_kd(restored_value);
+        break;
+      case NUMBER_KIND_PWM_PERIOD:
+        this->parent_->set_pwm_period(static_cast<uint32_t>(restored_value * 1000.0f));
+        break;
+      case NUMBER_KIND_PWM_MIN:
+        this->parent_->set_pwm_min(restored_value);
+        break;
+      case NUMBER_KIND_PWM_MAX:
+        this->parent_->set_pwm_max(restored_value);
+        break;
+      case NUMBER_KIND_DEW_POINT_OFFSET:
+        this->parent_->set_dew_point_offset(restored_value);
+        break;
+      case NUMBER_KIND_TEST_OUTPUT:
+        this->parent_->set_commissioning_output(restored_value);
+        break;
+    }
+    ESP_LOGD(TAG, "Restored '%s' = %.3f", this->get_name().c_str(), restored_value);
+  }
+
+  this->publish_from_parent(true);
+}
+
+void PidThermostatNumber::setup() { this->init_and_restore(); }
+
+void PidThermostatNumber::save_value(float value) {
+  if (this->pref_initialized_) {
+    this->pref_.save(&value);
+  }
+  this->publish_state(value);
 }
 
 void PidThermostatNumber::control(float value) {
@@ -41,14 +87,16 @@ void PidThermostatNumber::control(float value) {
       this->parent_->set_commissioning_output(value);
       break;
   }
-  this->publish_from_parent();
+  // The parent setters persist the (possibly clamped) value via
+  // PidThermostat::save_number_value_(), so no extra save is needed here.
+  this->publish_from_parent(true);
 }
 
 void PidThermostatNumber::dump_config() {
   LOG_NUMBER("", "PID Thermostat Number", this);
 }
 
-void PidThermostatNumber::publish_from_parent() {
+void PidThermostatNumber::publish_from_parent(bool force) {
   float value = NAN;
   switch (this->kind_) {
     case NUMBER_KIND_KP:
@@ -77,7 +125,8 @@ void PidThermostatNumber::publish_from_parent() {
       break;
   }
 
-  if ((std::isnan(this->state) && std::isnan(value)) || (!std::isnan(this->state) && !std::isnan(value) && this->state == value)) {
+  if (!force &&
+      ((std::isnan(this->state) && std::isnan(value)) || (!std::isnan(this->state) && !std::isnan(value) && this->state == value))) {
     return;
   }
   this->publish_state(value);
@@ -94,6 +143,8 @@ void PidThermostatSwitch::write_state(bool state) {
 
 void PidThermostatSwitch::dump_config() { LOG_SWITCH("", "PID Thermostat Commissioning Switch", this); }
 
+void PidThermostatBinarySensor::dump_config() { LOG_BINARY_SENSOR("", "PID Thermostat Valve Output Sensor", this); }
+
 void PidThermostatButton::press_action() {
   if (this->parent_ != nullptr) {
     this->parent_->reset_controller();
@@ -109,11 +160,16 @@ void PidThermostat::setup() {
     this->target_temperature = 21.0f;
   }
 
+  // Must run before the first control calculation so the stored tuning values
+  // replace the defaults that were applied from the YAML config at boot.
+  this->restore_number_values_();
+
   this->current_temperature = NAN;
   this->current_humidity = NAN;
   this->action = climate::CLIMATE_ACTION_OFF;
 
   const uint32_t now = millis();
+  this->valve_control_enabled_state_ = this->get_valve_control_enabled_();
   this->last_keep_alive_ms_ = now;
   this->last_valve_state_change_ms_ = now;
   this->pwm_cycle_start_ms_ = now;
@@ -145,6 +201,9 @@ void PidThermostat::setup() {
   this->calculate_control_(true);
   this->update_action_();
   this->update_valve_output_(true);
+  if (this->valve_output_sensor_ != nullptr) {
+    this->valve_output_sensor_->publish_state(this->valve_state_);
+  }
   this->publish_child_states_();
   this->publish_state();
 }
@@ -209,12 +268,20 @@ climate::ClimateTraits PidThermostat::traits() {
 }
 
 void PidThermostat::control(const climate::ClimateCall &call) {
-  if (call.get_mode().has_value()) {
-    this->mode = *call.get_mode();
-  }
+  const bool mode_changed = call.get_mode().has_value() && *call.get_mode() != this->mode;
+
   if (call.get_target_temperature().has_value()) {
     this->target_temperature = *call.get_target_temperature();
   }
+  if (call.get_mode().has_value()) {
+    this->mode = *call.get_mode();
+  }
+
+  if (mode_changed || this->mode == climate::CLIMATE_MODE_OFF) {
+    this->reset_controller();
+    return;
+  }
+
   if (this->mode == climate::CLIMATE_MODE_OFF) {
     this->integral_ = 0.0f;
     this->control_output_ = 0.0f;
@@ -262,6 +329,7 @@ void PidThermostat::set_commissioning_output(float value) {
   const float clamped = std::clamp(value, 0.0f, 100.0f);
   if (this->commissioning_output_ != clamped) {
     this->commissioning_output_ = clamped;
+    this->save_number_value_(NUMBER_KIND_TEST_OUTPUT, this->commissioning_output_);
     if (this->commissioning_mode_) {
       this->update_valve_output_(true);
     }
@@ -300,20 +368,45 @@ void PidThermostat::reset_controller() {
   this->publish_state();
 }
 
+void PidThermostat::restore_number_values_() {
+  this->restoring_ = true;
+  for (auto *number : this->number_entities_) {
+    if (number != nullptr) {
+      number->init_and_restore();
+    }
+  }
+  this->restoring_ = false;
+}
+
+void PidThermostat::save_number_value_(NumberKind kind, float value) {
+  if (this->restoring_) {
+    return;
+  }
+  for (auto *number : this->number_entities_) {
+    if (number != nullptr && number->get_kind() == kind) {
+      number->save_value(value);
+      return;
+    }
+  }
+}
+
 void PidThermostat::set_kp(float value) {
   this->kp_ = value;
+  this->save_number_value_(NUMBER_KIND_KP, this->kp_);
   this->request_recompute_();
   this->publish_child_states_();
 }
 
 void PidThermostat::set_ki(float value) {
   this->ki_ = value;
+  this->save_number_value_(NUMBER_KIND_KI, this->ki_);
   this->request_recompute_();
   this->publish_child_states_();
 }
 
 void PidThermostat::set_kd(float value) {
   this->kd_ = value;
+  this->save_number_value_(NUMBER_KIND_KD, this->kd_);
   this->request_recompute_();
   this->publish_child_states_();
 }
@@ -321,14 +414,17 @@ void PidThermostat::set_kd(float value) {
 void PidThermostat::set_pwm_period(uint32_t period_ms) {
   this->pwm_period_ms_ = std::max<uint32_t>(period_ms, 10000U);
   this->pwm_cycle_start_ms_ = millis();
+  this->save_number_value_(NUMBER_KIND_PWM_PERIOD, this->get_pwm_period_seconds());
   this->request_recompute_();
   this->publish_child_states_();
 }
 
 void PidThermostat::set_pwm_min(float value) {
   this->pwm_min_ = std::clamp(value, 0.0f, 100.0f);
+  this->save_number_value_(NUMBER_KIND_PWM_MIN, this->pwm_min_);
   if (this->pwm_max_ < this->pwm_min_) {
     this->pwm_max_ = this->pwm_min_;
+    this->save_number_value_(NUMBER_KIND_PWM_MAX, this->pwm_max_);
   }
   this->request_recompute_();
   this->publish_child_states_();
@@ -336,8 +432,10 @@ void PidThermostat::set_pwm_min(float value) {
 
 void PidThermostat::set_pwm_max(float value) {
   this->pwm_max_ = std::clamp(value, 0.0f, 100.0f);
+  this->save_number_value_(NUMBER_KIND_PWM_MAX, this->pwm_max_);
   if (this->pwm_min_ > this->pwm_max_) {
     this->pwm_min_ = this->pwm_max_;
+    this->save_number_value_(NUMBER_KIND_PWM_MIN, this->pwm_min_);
   }
   this->request_recompute_();
   this->publish_child_states_();
@@ -580,6 +678,28 @@ void PidThermostat::update_valve_output_(bool force) {
   const bool valve_control_enabled = this->get_valve_control_enabled_();
   const float active_output = this->get_effective_control_output_();
 
+  if (valve_control_enabled != this->valve_control_enabled_state_) {
+    this->valve_control_enabled_state_ = valve_control_enabled;
+    if (valve_control_enabled) {
+      this->reset_controller();
+      return;
+    }
+
+    this->integral_ = 0.0f;
+    this->pid_p_ = 0.0f;
+    this->pid_i_ = 0.0f;
+    this->pid_d_ = 0.0f;
+    this->control_output_ = 0.0f;
+    this->last_error_ = 0.0f;
+    this->last_dt_seconds_ = 0.0f;
+    this->unclamped_output_ = 0.0f;
+    this->pwm_cycle_start_ms_ = now;
+    this->request_recompute_();
+    this->update_action_();
+    this->publish_child_states_();
+    this->publish_state();
+  }
+
   // In manual mode the PID must stop driving the physical output so the user can
   // operate the valve switch directly from Home Assistant.
   if (!valve_control_enabled && !this->commissioning_mode_) {
@@ -649,6 +769,12 @@ void PidThermostat::publish_child_states_() {
       // unchanged
     } else {
       this->output_sensor_->publish_state(output);
+    }
+  }
+  if (this->valve_output_sensor_ != nullptr) {
+    const bool valve_output = this->valve_state_;
+    if (this->valve_output_sensor_->state != valve_output || !this->valve_output_sensor_->has_state()) {
+      this->valve_output_sensor_->publish_state(valve_output);
     }
   }
   if (this->setpoint_sensor_ != nullptr) {

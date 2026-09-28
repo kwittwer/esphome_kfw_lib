@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/button/button.h"
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/number/number.h"
@@ -8,6 +9,7 @@
 #include "esphome/components/switch/switch.h"
 #include "esphome/components/text_sensor/text_sensor.h"
 #include "esphome/core/component.h"
+#include "esphome/core/preferences.h"
 
 namespace esphome {
 namespace pid_thermostat {
@@ -32,11 +34,19 @@ class PidThermostatNumber : public number::Number, public Component {
   void setup() override;
   void control(float value) override;
   void dump_config() override;
-  void publish_from_parent();
+  void publish_from_parent(bool force = false);
+  void save_value(float value);
+  /// Create the preference object and apply the stored value to the parent.
+  /// Driven by PidThermostat::setup(), because these child entities are only
+  /// registered as entities, so the framework never calls their own setup().
+  void init_and_restore();
+  NumberKind get_kind() const { return this->kind_; }
 
  protected:
   PidThermostat *parent_;
   NumberKind kind_;
+  ESPPreferenceObject pref_{};
+  bool pref_initialized_{false};
 };
 
 class PidThermostatSensor : public sensor::Sensor, public Component {
@@ -55,6 +65,16 @@ class PidThermostatSwitch : public switch_::Switch, public Component {
  public:
   void setup() override { this->publish_state(false); }
   void write_state(bool state) override;
+  void dump_config() override;
+  void set_parent(PidThermostat *parent) { this->parent_ = parent; }
+
+ protected:
+  PidThermostat *parent_{nullptr};
+};
+
+class PidThermostatBinarySensor : public binary_sensor::BinarySensor, public Component {
+ public:
+  void setup() override { this->publish_state(false); }
   void dump_config() override;
   void set_parent(PidThermostat *parent) { this->parent_ = parent; }
 
@@ -93,7 +113,10 @@ class PidThermostat : public climate::Climate, public Component {
   void set_output_safety(float output_safety) { this->output_safety_ = output_safety; }
   void set_cold_tolerance(float cold_tolerance) { this->cold_tolerance_ = cold_tolerance; }
   void set_hot_tolerance(float hot_tolerance) { this->hot_tolerance_ = hot_tolerance; }
-  void set_dew_point_offset(float dew_point_offset) { this->dew_point_offset_ = dew_point_offset; }
+  void set_dew_point_offset(float dew_point_offset) {
+    this->dew_point_offset_ = dew_point_offset;
+    this->save_number_value_(NUMBER_KIND_DEW_POINT_OFFSET, this->dew_point_offset_);
+  }
   void set_debug(bool debug) { this->debug_ = debug; }
 
   void set_valve_control_enabled(std::function<bool()> &&f) { this->valve_control_enabled_func_ = f; }
@@ -105,6 +128,7 @@ class PidThermostat : public climate::Climate, public Component {
   void set_pwm_min(float value);
   void set_pwm_max(float value);
   void set_output_sensor(PidThermostatSensor *sensor) { this->output_sensor_ = sensor; }
+  void set_valve_output_sensor(PidThermostatBinarySensor *sensor) { this->valve_output_sensor_ = sensor; }
   void set_dew_point_sensor(PidThermostatSensor *sensor) { this->dew_point_sensor_ = sensor; }
   void set_error_sensor(PidThermostatSensor *sensor) { this->error_sensor_ = sensor; }
   void set_pid_p_sensor(PidThermostatSensor *sensor) { this->pid_p_sensor_ = sensor; }
@@ -162,6 +186,8 @@ class PidThermostat : public climate::Climate, public Component {
   bool should_sample_(uint32_t now) const;
   void request_recompute_() { this->pending_recompute_ = true; }
   void publish_child_states_();
+  void restore_number_values_();
+  void save_number_value_(NumberKind kind, float value);
   float calculate_dew_point_() const;
   float get_effective_control_output_() const;
 
@@ -171,6 +197,7 @@ class PidThermostat : public climate::Climate, public Component {
   sensor::Sensor *fallback_humidity_sensor_{nullptr};
   switch_::Switch *valve_switch_{nullptr};
   PidThermostatSensor *output_sensor_{nullptr};
+  PidThermostatBinarySensor *valve_output_sensor_{nullptr};
   PidThermostatSensor *dew_point_sensor_{nullptr};
   PidThermostatSensor *error_sensor_{nullptr};
   PidThermostatSensor *pid_p_sensor_{nullptr};
@@ -188,6 +215,7 @@ class PidThermostat : public climate::Climate, public Component {
 
   optional<std::function<bool()>> valve_control_enabled_func_{};
   bool valve_control_enabled_value_{true};
+  bool restoring_{false};
 
   uint32_t sensor_timeout_ms_{600000};
   uint32_t fallback_sensor_timeout_ms_{600000};
@@ -233,6 +261,7 @@ class PidThermostat : public climate::Climate, public Component {
 
   bool pending_recompute_{true};
   bool valve_state_{false};
+  bool valve_control_enabled_state_{true};
   bool using_fallback_temperature_{false};
   bool using_fallback_humidity_{false};
   bool commissioning_mode_{false};
