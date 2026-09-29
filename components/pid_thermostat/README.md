@@ -46,7 +46,7 @@ The component publishes the following diagnostic entities:
 - `Reglerausgang vor Begrenzung`
 - `Reglerinternes Ventil`
 - `PID Anteil P`
-- `I Speicher`
+- `PID Anteil I`
 - `PID Anteil D`
 - `PID dt`
 - `PID Fehler`

@@ -304,6 +304,12 @@ void PidThermostat::loop() {
     this->calculate_control_(true);
     this->update_action_();
     this->publish_child_states_();
+  } else if (this->pending_recompute_ || this->should_sample_(now)) {
+    // Sensor updates, parameter changes and the sampling period must also
+    // trigger a recalculation, not only the PWM cycle rollover.
+    this->calculate_control_();
+    this->update_action_();
+    this->publish_child_states_();
   }
 
   this->update_valve_output_(keep_alive_due);
@@ -734,6 +740,8 @@ void PidThermostat::calculate_control_(bool force) {
     this->pid_d_ = 0.0f;
     this->last_error_ = 0.0f;
     this->last_dt_seconds_ = 0.0f;
+    this->effective_target_temperature_ = this->target_temperature;
+    this->unclamped_output_ = 0.0f;
     this->last_compute_ms_ = now;
     return;
   }
@@ -770,20 +778,14 @@ void PidThermostat::calculate_control_(bool force) {
                               : this->current_temperature - effective_target;
 
   this->pid_p_ = this->kp_ * error;
-  this->pid_d_ = this->kd_ * ((error - this->last_error_) / dt);
+  // After a sensor dropout last_error_ is NAN; deriving from it would poison the
+  // whole output with NAN, so the D term restarts at zero instead.
+  this->pid_d_ = std::isnan(this->last_error_) ? 0.0f : this->kd_ * ((error - this->last_error_) / dt);
 
+  // The integral term is only limited by i_min/i_max so it keeps integrating on
+  // every calculation step, even while the output is clamped or blocked.
   const float integral_candidate = this->integral_ + this->ki_ * error * dt;
-  const float integral_min = this->i_min_;
-  const float integral_max = this->i_max_;
-  const float clamped_integral = std::clamp(integral_candidate, integral_min, integral_max);
-  const float unclamped_candidate_output = this->pid_p_ + integral_candidate + this->pid_d_;
-  const bool would_wind_up_high = unclamped_candidate_output > this->pwm_max_ && error > 0.0f;
-  const bool would_wind_up_low = unclamped_candidate_output < 0.0f && error < 0.0f;
-  if (!would_wind_up_high && !would_wind_up_low) {
-    this->integral_ = clamped_integral;
-  } else {
-    this->integral_ = std::clamp(this->integral_, integral_min, integral_max);
-  }
+  this->integral_ = std::clamp(integral_candidate, this->i_min_, this->i_max_);
 
   this->unclamped_output_ = this->pid_p_ + this->integral_ + this->pid_d_;
 
@@ -806,8 +808,8 @@ void PidThermostat::calculate_control_(bool force) {
   }
 
   this->last_error_ = error;
-  this->pid_i_ = this->integral_;
   this->control_output_ = std::clamp(output, 0.0f, 100.0f);
+  this->pid_i_ = this->integral_;
   this->last_compute_ms_ = now;
 
   if (this->debug_) {
