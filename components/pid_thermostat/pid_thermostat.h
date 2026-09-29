@@ -137,6 +137,8 @@ class PidThermostat : public climate::Climate, public Component {
   void set_pid_dt_sensor(PidThermostatSensor *sensor) { this->pid_dt_sensor_ = sensor; }
   void set_setpoint_sensor(PidThermostatSensor *sensor) { this->setpoint_sensor_ = sensor; }
   void set_effective_setpoint_sensor(PidThermostatSensor *sensor) { this->effective_setpoint_sensor_ = sensor; }
+  void set_current_temperature_sensor(PidThermostatSensor *sensor) { this->current_temperature_sensor_ = sensor; }
+  void set_current_humidity_sensor(PidThermostatSensor *sensor) { this->current_humidity_sensor_ = sensor; }
   void set_unclamped_output_sensor(PidThermostatSensor *sensor) { this->unclamped_output_sensor_ = sensor; }
   void set_commissioning_switch(PidThermostatSwitch *sw) { this->commissioning_switch_ = sw; }
   void set_mode_text_sensor(PidThermostatTextSensor *sensor) { this->mode_text_sensor_ = sensor; }
@@ -206,6 +208,8 @@ class PidThermostat : public climate::Climate, public Component {
   PidThermostatSensor *pid_dt_sensor_{nullptr};
   PidThermostatSensor *setpoint_sensor_{nullptr};
   PidThermostatSensor *effective_setpoint_sensor_{nullptr};
+  PidThermostatSensor *current_temperature_sensor_{nullptr};
+  PidThermostatSensor *current_humidity_sensor_{nullptr};
   PidThermostatSensor *unclamped_output_sensor_{nullptr};
   PidThermostatSwitch *commissioning_switch_{nullptr};
   PidThermostatTextSensor *mode_text_sensor_{nullptr};

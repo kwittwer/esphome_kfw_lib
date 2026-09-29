@@ -1,4 +1,4 @@
-﻿esphome:
+esphome:
   name: b16m-template
   friendly_name: B16M_Template
   project:
@@ -893,13 +893,13 @@ display:
           }
           it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
 
-          const bool fallback_temp = tstat->is_using_fallback_temperature();
-          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          const bool temp_warning = isnan(tstat->current_temperature) || tstat->is_using_fallback_temperature();
+          const bool humidity_warning = isnan(tstat->current_humidity) || tstat->is_using_fallback_humidity();
           it.print(0, 44, id(tiny), "Fallback");
           it.print(52, 44, id(tiny), "T:");
-          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(64, 40, id(icon), temp_warning ? "\U000F0026" : "\U000F0133");
           it.print(82, 44, id(tiny), "H:");
-          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+          it.print(94, 40, id(icon), humidity_warning ? "\U000F0026" : "\U000F0133");
       - id: page_thermostat2
         lambda: |-
           auto *tstat = id(thermostat2);
@@ -940,13 +940,13 @@ display:
           }
           it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
 
-          const bool fallback_temp = tstat->is_using_fallback_temperature();
-          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          const bool temp_warning = isnan(tstat->current_temperature) || tstat->is_using_fallback_temperature();
+          const bool humidity_warning = isnan(tstat->current_humidity) || tstat->is_using_fallback_humidity();
           it.print(0, 44, id(tiny), "Fallback");
           it.print(52, 44, id(tiny), "T:");
-          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(64, 40, id(icon), temp_warning ? "\U000F0026" : "\U000F0133");
           it.print(82, 44, id(tiny), "H:");
-          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+          it.print(94, 40, id(icon), humidity_warning ? "\U000F0026" : "\U000F0133");
       - id: page_thermostat3
         lambda: |-
           auto *tstat = id(thermostat3);
@@ -987,13 +987,13 @@ display:
           }
           it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
 
-          const bool fallback_temp = tstat->is_using_fallback_temperature();
-          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          const bool temp_warning = isnan(tstat->current_temperature) || tstat->is_using_fallback_temperature();
+          const bool humidity_warning = isnan(tstat->current_humidity) || tstat->is_using_fallback_humidity();
           it.print(0, 44, id(tiny), "Fallback");
           it.print(52, 44, id(tiny), "T:");
-          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(64, 40, id(icon), temp_warning ? "\U000F0026" : "\U000F0133");
           it.print(82, 44, id(tiny), "H:");
-          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+          it.print(94, 40, id(icon), humidity_warning ? "\U000F0026" : "\U000F0133");
       - id: page_thermostat4
         lambda: |-
           auto *tstat = id(thermostat4);
@@ -1034,13 +1034,13 @@ display:
           }
           it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
 
-          const bool fallback_temp = tstat->is_using_fallback_temperature();
-          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          const bool temp_warning = isnan(tstat->current_temperature) || tstat->is_using_fallback_temperature();
+          const bool humidity_warning = isnan(tstat->current_humidity) || tstat->is_using_fallback_humidity();
           it.print(0, 44, id(tiny), "Fallback");
           it.print(52, 44, id(tiny), "T:");
-          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(64, 40, id(icon), temp_warning ? "\U000F0026" : "\U000F0133");
           it.print(82, 44, id(tiny), "H:");
-          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+          it.print(94, 40, id(icon), humidity_warning ? "\U000F0026" : "\U000F0133");
       - id: page_thermostat5
         lambda: |-
           auto *tstat = id(thermostat5);
@@ -1081,13 +1081,13 @@ display:
           }
           it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
 
-          const bool fallback_temp = tstat->is_using_fallback_temperature();
-          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          const bool temp_warning = isnan(tstat->current_temperature) || tstat->is_using_fallback_temperature();
+          const bool humidity_warning = isnan(tstat->current_humidity) || tstat->is_using_fallback_humidity();
           it.print(0, 44, id(tiny), "Fallback");
           it.print(52, 44, id(tiny), "T:");
-          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(64, 40, id(icon), temp_warning ? "\U000F0026" : "\U000F0133");
           it.print(82, 44, id(tiny), "H:");
-          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+          it.print(94, 40, id(icon), humidity_warning ? "\U000F0026" : "\U000F0133");
       - id: page_thermostat6
         lambda: |-
           auto *tstat = id(thermostat6);
@@ -1128,13 +1128,13 @@ display:
           }
           it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
 
-          const bool fallback_temp = tstat->is_using_fallback_temperature();
-          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          const bool temp_warning = isnan(tstat->current_temperature) || tstat->is_using_fallback_temperature();
+          const bool humidity_warning = isnan(tstat->current_humidity) || tstat->is_using_fallback_humidity();
           it.print(0, 44, id(tiny), "Fallback");
           it.print(52, 44, id(tiny), "T:");
-          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(64, 40, id(icon), temp_warning ? "\U000F0026" : "\U000F0133");
           it.print(82, 44, id(tiny), "H:");
-          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+          it.print(94, 40, id(icon), humidity_warning ? "\U000F0026" : "\U000F0133");
       - id: page_thermostat7
         lambda: |-
           auto *tstat = id(thermostat7);
@@ -1175,13 +1175,13 @@ display:
           }
           it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
 
-          const bool fallback_temp = tstat->is_using_fallback_temperature();
-          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          const bool temp_warning = isnan(tstat->current_temperature) || tstat->is_using_fallback_temperature();
+          const bool humidity_warning = isnan(tstat->current_humidity) || tstat->is_using_fallback_humidity();
           it.print(0, 44, id(tiny), "Fallback");
           it.print(52, 44, id(tiny), "T:");
-          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(64, 40, id(icon), temp_warning ? "\U000F0026" : "\U000F0133");
           it.print(82, 44, id(tiny), "H:");
-          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+          it.print(94, 40, id(icon), humidity_warning ? "\U000F0026" : "\U000F0133");
       - id: page_thermostat8
         lambda: |-
           auto *tstat = id(thermostat8);
@@ -1222,13 +1222,13 @@ display:
           }
           it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
 
-          const bool fallback_temp = tstat->is_using_fallback_temperature();
-          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          const bool temp_warning = isnan(tstat->current_temperature) || tstat->is_using_fallback_temperature();
+          const bool humidity_warning = isnan(tstat->current_humidity) || tstat->is_using_fallback_humidity();
           it.print(0, 44, id(tiny), "Fallback");
           it.print(52, 44, id(tiny), "T:");
-          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(64, 40, id(icon), temp_warning ? "\U000F0026" : "\U000F0133");
           it.print(82, 44, id(tiny), "H:");
-          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+          it.print(94, 40, id(icon), humidity_warning ? "\U000F0026" : "\U000F0133");
       - id: page_thermostat9
         lambda: |-
           auto *tstat = id(thermostat9);
@@ -1269,13 +1269,13 @@ display:
           }
           it.printf(0, 34, id(tiny), "Modus: %s", mode_text);
 
-          const bool fallback_temp = tstat->is_using_fallback_temperature();
-          const bool fallback_humidity = tstat->is_using_fallback_humidity();
+          const bool temp_warning = isnan(tstat->current_temperature) || tstat->is_using_fallback_temperature();
+          const bool humidity_warning = isnan(tstat->current_humidity) || tstat->is_using_fallback_humidity();
           it.print(0, 44, id(tiny), "Fallback");
           it.print(52, 44, id(tiny), "T:");
-          it.print(64, 40, id(icon), fallback_temp ? "\U000F0130" : "\U000F0026");
+          it.print(64, 40, id(icon), temp_warning ? "\U000F0026" : "\U000F0133");
           it.print(82, 44, id(tiny), "H:");
-          it.print(94, 40, id(icon), fallback_humidity ? "\U000F0130" : "\U000F0026");
+          it.print(94, 40, id(icon), humidity_warning ? "\U000F0026" : "\U000F0133");
 
     auto_clear_enabled: true
 

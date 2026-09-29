@@ -393,6 +393,20 @@ async def to_code(config):
     unclamped_output_sensor = await sensor.new_sensor(unclamped_output_sensor_config)
     cg.add(var.set_unclamped_output_sensor(unclamped_output_sensor))
 
+    current_temperature_sensor_config = _apply_device_id(
+        _diagnostic_sensor_config(parent_name, parent_id, "Isttemperatur", "current_temperature", "°C", "mdi:thermometer", 1),
+        device_id,
+    )
+    current_temperature_sensor = await sensor.new_sensor(current_temperature_sensor_config)
+    cg.add(var.set_current_temperature_sensor(current_temperature_sensor))
+
+    current_humidity_sensor_config = _apply_device_id(
+        _diagnostic_sensor_config(parent_name, parent_id, "Istfeuchte", "current_humidity", "%", "mdi:water-percent", 1),
+        device_id,
+    )
+    current_humidity_sensor = await sensor.new_sensor(current_humidity_sensor_config)
+    cg.add(var.set_current_humidity_sensor(current_humidity_sensor))
+
     valve_output_sensor_config = _apply_device_id(_binary_sensor_config(parent_name, parent_id), device_id)
     valve_output_sensor = await binary_sensor.new_binary_sensor(valve_output_sensor_config)
     cg.add(valve_output_sensor.set_parent(var))

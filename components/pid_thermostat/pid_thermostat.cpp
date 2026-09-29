@@ -806,6 +806,26 @@ void PidThermostat::publish_child_states_() {
       this->unclamped_output_sensor_->publish_state(unclamped_output);
     }
   }
+  if (this->current_temperature_sensor_ != nullptr) {
+    const float current_temperature = this->current_temperature;
+    if ((std::isnan(this->current_temperature_sensor_->state) && std::isnan(current_temperature)) ||
+        (!std::isnan(this->current_temperature_sensor_->state) && !std::isnan(current_temperature) &&
+         this->current_temperature_sensor_->state == current_temperature)) {
+      // unchanged
+    } else {
+      this->current_temperature_sensor_->publish_state(current_temperature);
+    }
+  }
+  if (this->current_humidity_sensor_ != nullptr) {
+    const float current_humidity = this->current_humidity;
+    if ((std::isnan(this->current_humidity_sensor_->state) && std::isnan(current_humidity)) ||
+        (!std::isnan(this->current_humidity_sensor_->state) && !std::isnan(current_humidity) &&
+         this->current_humidity_sensor_->state == current_humidity)) {
+      // unchanged
+    } else {
+      this->current_humidity_sensor_->publish_state(current_humidity);
+    }
+  }
   if (this->dew_point_sensor_ != nullptr) {
     const float dew_point = this->calculate_dew_point_();
     if ((std::isnan(this->dew_point_sensor_->state) && std::isnan(dew_point)) ||
