@@ -773,8 +773,8 @@ void PidThermostat::calculate_control_(bool force) {
   this->pid_d_ = this->kd_ * ((error - this->last_error_) / dt);
 
   const float integral_candidate = this->integral_ + this->ki_ * error * dt;
-  const float integral_min = std::max(this->i_min_, -(this->pid_p_ + this->pid_d_));
-  const float integral_max = std::min(this->i_max_, this->pwm_max_ - (this->pid_p_ + this->pid_d_));
+  const float integral_min = this->i_min_;
+  const float integral_max = this->i_max_;
   const float clamped_integral = std::clamp(integral_candidate, integral_min, integral_max);
   const float unclamped_candidate_output = this->pid_p_ + integral_candidate + this->pid_d_;
   const bool would_wind_up_high = unclamped_candidate_output > this->pwm_max_ && error > 0.0f;
