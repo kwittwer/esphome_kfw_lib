@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/button/button.h"
 #include "esphome/components/climate/climate.h"
@@ -18,10 +19,19 @@ enum NumberKind {
   NUMBER_KIND_KP,
   NUMBER_KIND_KI,
   NUMBER_KIND_KD,
+  NUMBER_KIND_I_MIN,
+  NUMBER_KIND_I_MAX,
+  NUMBER_KIND_COLD_TOLERANCE,
+  NUMBER_KIND_HOT_TOLERANCE,
+  NUMBER_KIND_SAMPLING_PERIOD,
+  NUMBER_KIND_KEEP_ALIVE,
+  NUMBER_KIND_MIN_CYCLE_DURATION,
+  NUMBER_KIND_MIN_OFF_CYCLE_DURATION,
   NUMBER_KIND_PWM_PERIOD,
   NUMBER_KIND_PWM_MIN,
   NUMBER_KIND_PWM_MAX,
   NUMBER_KIND_DEW_POINT_OFFSET,
+  NUMBER_KIND_OUTPUT_SAFETY,
   NUMBER_KIND_TEST_OUTPUT,
 };
 
@@ -106,13 +116,13 @@ class PidThermostat : public climate::Climate, public Component {
   void set_fallback_sensor_timeout(uint32_t timeout_ms) { this->fallback_sensor_timeout_ms_ = timeout_ms; }
   void set_humidity_sensor_timeout(uint32_t timeout_ms) { this->humidity_sensor_timeout_ms_ = timeout_ms; }
   void set_fallback_humidity_sensor_timeout(uint32_t timeout_ms) { this->fallback_humidity_sensor_timeout_ms_ = timeout_ms; }
-  void set_sampling_period(uint32_t period_ms) { this->sampling_period_ms_ = period_ms; }
-  void set_keep_alive(uint32_t keep_alive_ms) { this->keep_alive_ms_ = keep_alive_ms; }
-  void set_min_cycle_duration(uint32_t duration_ms) { this->min_cycle_duration_ms_ = duration_ms; }
-  void set_min_off_cycle_duration(uint32_t duration_ms) { this->min_off_cycle_duration_ms_ = duration_ms; }
-  void set_output_safety(float output_safety) { this->output_safety_ = output_safety; }
-  void set_cold_tolerance(float cold_tolerance) { this->cold_tolerance_ = cold_tolerance; }
-  void set_hot_tolerance(float hot_tolerance) { this->hot_tolerance_ = hot_tolerance; }
+  void set_sampling_period(uint32_t period_ms);
+  void set_keep_alive(uint32_t keep_alive_ms);
+  void set_min_cycle_duration(uint32_t duration_ms);
+  void set_min_off_cycle_duration(uint32_t duration_ms);
+  void set_output_safety(float output_safety);
+  void set_cold_tolerance(float cold_tolerance);
+  void set_hot_tolerance(float hot_tolerance);
   void set_dew_point_offset(float dew_point_offset) {
     this->dew_point_offset_ = dew_point_offset;
     this->save_number_value_(NUMBER_KIND_DEW_POINT_OFFSET, this->dew_point_offset_);
@@ -124,6 +134,8 @@ class PidThermostat : public climate::Climate, public Component {
   void set_kp(float value);
   void set_ki(float value);
   void set_kd(float value);
+  void set_i_min(float value);
+  void set_i_max(float value);
   void set_pwm_period(uint32_t period_ms);
   void set_pwm_min(float value);
   void set_pwm_max(float value);
@@ -144,16 +156,26 @@ class PidThermostat : public climate::Climate, public Component {
   void set_mode_text_sensor(PidThermostatTextSensor *sensor) { this->mode_text_sensor_ = sensor; }
   void set_temperature_source_text_sensor(PidThermostatTextSensor *sensor) { this->temperature_source_text_sensor_ = sensor; }
   void set_humidity_source_text_sensor(PidThermostatTextSensor *sensor) { this->humidity_source_text_sensor_ = sensor; }
+  void set_output_reason_text_sensor(PidThermostatTextSensor *sensor) { this->output_reason_text_sensor_ = sensor; }
   void reset_controller();
   void register_number_entity(PidThermostatNumber *number) { this->number_entities_.push_back(number); }
 
   float get_kp() const { return this->kp_; }
   float get_ki() const { return this->ki_; }
   float get_kd() const { return this->kd_; }
+  float get_i_min() const { return this->i_min_; }
+  float get_i_max() const { return this->i_max_; }
+  float get_cold_tolerance() const { return this->cold_tolerance_; }
+  float get_hot_tolerance() const { return this->hot_tolerance_; }
+  float get_sampling_period_seconds() const { return this->sampling_period_ms_ / 1000.0f; }
+  float get_keep_alive_seconds() const { return this->keep_alive_ms_ / 1000.0f; }
+  float get_min_cycle_duration_seconds() const { return this->min_cycle_duration_ms_ / 1000.0f; }
+  float get_min_off_cycle_duration_seconds() const { return this->min_off_cycle_duration_ms_ / 1000.0f; }
   float get_pwm_period_seconds() const { return this->pwm_period_ms_ / 1000.0f; }
   float get_pwm_min() const { return this->pwm_min_; }
   float get_pwm_max() const { return this->pwm_max_; }
   float get_dew_point_offset() const { return this->dew_point_offset_; }
+  float get_output_safety() const { return this->output_safety_; }
   float get_control_output() const { return this->get_effective_control_output_(); }
   float get_commissioning_output() const { return this->commissioning_output_; }
   float get_pid_p() const { return this->pid_p_; }
@@ -185,9 +207,11 @@ class PidThermostat : public climate::Climate, public Component {
   void update_action_();
   void update_valve_output_(bool force = false);
   bool get_valve_control_enabled_();
+  bool get_effective_valve_state_() const;
+  const char *get_output_reason_() const;
   bool should_sample_(uint32_t now) const;
   void request_recompute_() { this->pending_recompute_ = true; }
-    void publish_valve_output_state_();
+  void publish_valve_output_state_();
   void publish_child_states_();
   void restore_number_values_();
   void save_number_value_(NumberKind kind, float value);
@@ -216,6 +240,7 @@ class PidThermostat : public climate::Climate, public Component {
   PidThermostatTextSensor *mode_text_sensor_{nullptr};
   PidThermostatTextSensor *temperature_source_text_sensor_{nullptr};
   PidThermostatTextSensor *humidity_source_text_sensor_{nullptr};
+  PidThermostatTextSensor *output_reason_text_sensor_{nullptr};
   std::vector<PidThermostatNumber *> number_entities_{};
 
   optional<std::function<bool()>> valve_control_enabled_func_{};
@@ -246,6 +271,8 @@ class PidThermostat : public climate::Climate, public Component {
   float kp_{5.0f};
   float ki_{0.01f};
   float kd_{500.0f};
+  float i_min_{-100.0f};
+  float i_max_{100.0f};
   float pwm_min_{0.0f};
   float pwm_max_{100.0f};
   float cold_tolerance_{0.3f};

@@ -29,6 +29,30 @@ void PidThermostatNumber::init_and_restore() {
       case NUMBER_KIND_KD:
         this->parent_->set_kd(restored_value);
         break;
+      case NUMBER_KIND_I_MIN:
+        this->parent_->set_i_min(restored_value);
+        break;
+      case NUMBER_KIND_I_MAX:
+        this->parent_->set_i_max(restored_value);
+        break;
+      case NUMBER_KIND_COLD_TOLERANCE:
+        this->parent_->set_cold_tolerance(restored_value);
+        break;
+      case NUMBER_KIND_HOT_TOLERANCE:
+        this->parent_->set_hot_tolerance(restored_value);
+        break;
+      case NUMBER_KIND_SAMPLING_PERIOD:
+        this->parent_->set_sampling_period(static_cast<uint32_t>(restored_value * 1000.0f));
+        break;
+      case NUMBER_KIND_KEEP_ALIVE:
+        this->parent_->set_keep_alive(static_cast<uint32_t>(restored_value * 1000.0f));
+        break;
+      case NUMBER_KIND_MIN_CYCLE_DURATION:
+        this->parent_->set_min_cycle_duration(static_cast<uint32_t>(restored_value * 1000.0f));
+        break;
+      case NUMBER_KIND_MIN_OFF_CYCLE_DURATION:
+        this->parent_->set_min_off_cycle_duration(static_cast<uint32_t>(restored_value * 1000.0f));
+        break;
       case NUMBER_KIND_PWM_PERIOD:
         this->parent_->set_pwm_period(static_cast<uint32_t>(restored_value * 1000.0f));
         break;
@@ -40,6 +64,9 @@ void PidThermostatNumber::init_and_restore() {
         break;
       case NUMBER_KIND_DEW_POINT_OFFSET:
         this->parent_->set_dew_point_offset(restored_value);
+        break;
+      case NUMBER_KIND_OUTPUT_SAFETY:
+        this->parent_->set_output_safety(restored_value);
         break;
       case NUMBER_KIND_TEST_OUTPUT:
         this->parent_->set_commissioning_output(restored_value);
@@ -71,6 +98,30 @@ void PidThermostatNumber::control(float value) {
     case NUMBER_KIND_KD:
       this->parent_->set_kd(value);
       break;
+    case NUMBER_KIND_I_MIN:
+      this->parent_->set_i_min(value);
+      break;
+    case NUMBER_KIND_I_MAX:
+      this->parent_->set_i_max(value);
+      break;
+    case NUMBER_KIND_COLD_TOLERANCE:
+      this->parent_->set_cold_tolerance(value);
+      break;
+    case NUMBER_KIND_HOT_TOLERANCE:
+      this->parent_->set_hot_tolerance(value);
+      break;
+    case NUMBER_KIND_SAMPLING_PERIOD:
+      this->parent_->set_sampling_period(static_cast<uint32_t>(value * 1000.0f));
+      break;
+    case NUMBER_KIND_KEEP_ALIVE:
+      this->parent_->set_keep_alive(static_cast<uint32_t>(value * 1000.0f));
+      break;
+    case NUMBER_KIND_MIN_CYCLE_DURATION:
+      this->parent_->set_min_cycle_duration(static_cast<uint32_t>(value * 1000.0f));
+      break;
+    case NUMBER_KIND_MIN_OFF_CYCLE_DURATION:
+      this->parent_->set_min_off_cycle_duration(static_cast<uint32_t>(value * 1000.0f));
+      break;
     case NUMBER_KIND_PWM_PERIOD:
       this->parent_->set_pwm_period(static_cast<uint32_t>(value * 1000.0f));
       break;
@@ -82,6 +133,9 @@ void PidThermostatNumber::control(float value) {
       break;
     case NUMBER_KIND_DEW_POINT_OFFSET:
       this->parent_->set_dew_point_offset(value);
+      break;
+    case NUMBER_KIND_OUTPUT_SAFETY:
+      this->parent_->set_output_safety(value);
       break;
     case NUMBER_KIND_TEST_OUTPUT:
       this->parent_->set_commissioning_output(value);
@@ -108,6 +162,30 @@ void PidThermostatNumber::publish_from_parent(bool force) {
     case NUMBER_KIND_KD:
       value = this->parent_->get_kd();
       break;
+    case NUMBER_KIND_I_MIN:
+      value = this->parent_->get_i_min();
+      break;
+    case NUMBER_KIND_I_MAX:
+      value = this->parent_->get_i_max();
+      break;
+    case NUMBER_KIND_COLD_TOLERANCE:
+      value = this->parent_->get_cold_tolerance();
+      break;
+    case NUMBER_KIND_HOT_TOLERANCE:
+      value = this->parent_->get_hot_tolerance();
+      break;
+    case NUMBER_KIND_SAMPLING_PERIOD:
+      value = this->parent_->get_sampling_period_seconds();
+      break;
+    case NUMBER_KIND_KEEP_ALIVE:
+      value = this->parent_->get_keep_alive_seconds();
+      break;
+    case NUMBER_KIND_MIN_CYCLE_DURATION:
+      value = this->parent_->get_min_cycle_duration_seconds();
+      break;
+    case NUMBER_KIND_MIN_OFF_CYCLE_DURATION:
+      value = this->parent_->get_min_off_cycle_duration_seconds();
+      break;
     case NUMBER_KIND_PWM_PERIOD:
       value = this->parent_->get_pwm_period_seconds();
       break;
@@ -119,6 +197,9 @@ void PidThermostatNumber::publish_from_parent(bool force) {
       break;
     case NUMBER_KIND_DEW_POINT_OFFSET:
       value = this->parent_->get_dew_point_offset();
+      break;
+    case NUMBER_KIND_OUTPUT_SAFETY:
+      value = this->parent_->get_output_safety();
       break;
     case NUMBER_KIND_TEST_OUTPUT:
       value = this->parent_->get_commissioning_output();
@@ -233,10 +314,17 @@ void PidThermostat::publish_valve_output_state_() {
     return;
   }
 
-  const bool valve_output = this->valve_switch_ != nullptr ? this->valve_switch_->state : this->valve_state_;
+  const bool valve_output = this->get_effective_valve_state_();
   if (this->valve_output_sensor_->state != valve_output || !this->valve_output_sensor_->has_state()) {
     this->valve_output_sensor_->publish_state(valve_output);
   }
+}
+
+bool PidThermostat::get_effective_valve_state_() const {
+  if (this->valve_switch_ != nullptr) {
+    return this->valve_switch_->state;
+  }
+  return this->valve_state_;
 }
 
 void PidThermostat::dump_config() {
@@ -416,6 +504,77 @@ void PidThermostat::set_ki(float value) {
 void PidThermostat::set_kd(float value) {
   this->kd_ = value;
   this->save_number_value_(NUMBER_KIND_KD, this->kd_);
+  this->request_recompute_();
+  this->publish_child_states_();
+}
+
+void PidThermostat::set_i_min(float value) {
+  this->i_min_ = std::min(value, this->i_max_);
+  this->save_number_value_(NUMBER_KIND_I_MIN, this->i_min_);
+  if (this->i_max_ < this->i_min_) {
+    this->i_max_ = this->i_min_;
+    this->save_number_value_(NUMBER_KIND_I_MAX, this->i_max_);
+  }
+  this->request_recompute_();
+  this->publish_child_states_();
+}
+
+void PidThermostat::set_i_max(float value) {
+  this->i_max_ = std::max(value, this->i_min_);
+  this->save_number_value_(NUMBER_KIND_I_MAX, this->i_max_);
+  if (this->i_min_ > this->i_max_) {
+    this->i_min_ = this->i_max_;
+    this->save_number_value_(NUMBER_KIND_I_MIN, this->i_min_);
+  }
+  this->request_recompute_();
+  this->publish_child_states_();
+}
+
+void PidThermostat::set_cold_tolerance(float value) {
+  this->cold_tolerance_ = std::max(0.0f, value);
+  this->save_number_value_(NUMBER_KIND_COLD_TOLERANCE, this->cold_tolerance_);
+  this->request_recompute_();
+  this->publish_child_states_();
+}
+
+void PidThermostat::set_hot_tolerance(float value) {
+  this->hot_tolerance_ = std::max(0.0f, value);
+  this->save_number_value_(NUMBER_KIND_HOT_TOLERANCE, this->hot_tolerance_);
+  this->request_recompute_();
+  this->publish_child_states_();
+}
+
+void PidThermostat::set_sampling_period(uint32_t period_ms) {
+  this->sampling_period_ms_ = period_ms;
+  this->save_number_value_(NUMBER_KIND_SAMPLING_PERIOD, this->get_sampling_period_seconds());
+  this->request_recompute_();
+  this->publish_child_states_();
+}
+
+void PidThermostat::set_keep_alive(uint32_t keep_alive_ms) {
+  this->keep_alive_ms_ = keep_alive_ms;
+  this->save_number_value_(NUMBER_KIND_KEEP_ALIVE, this->get_keep_alive_seconds());
+  this->request_recompute_();
+  this->publish_child_states_();
+}
+
+void PidThermostat::set_min_cycle_duration(uint32_t duration_ms) {
+  this->min_cycle_duration_ms_ = duration_ms;
+  this->save_number_value_(NUMBER_KIND_MIN_CYCLE_DURATION, this->get_min_cycle_duration_seconds());
+  this->request_recompute_();
+  this->publish_child_states_();
+}
+
+void PidThermostat::set_min_off_cycle_duration(uint32_t duration_ms) {
+  this->min_off_cycle_duration_ms_ = duration_ms;
+  this->save_number_value_(NUMBER_KIND_MIN_OFF_CYCLE_DURATION, this->get_min_off_cycle_duration_seconds());
+  this->request_recompute_();
+  this->publish_child_states_();
+}
+
+void PidThermostat::set_output_safety(float output_safety) {
+  this->output_safety_ = std::clamp(output_safety, 0.0f, 100.0f);
+  this->save_number_value_(NUMBER_KIND_OUTPUT_SAFETY, this->output_safety_);
   this->request_recompute_();
   this->publish_child_states_();
 }
@@ -614,18 +773,19 @@ void PidThermostat::calculate_control_(bool force) {
   this->pid_d_ = this->kd_ * ((error - this->last_error_) / dt);
 
   const float integral_candidate = this->integral_ + this->ki_ * error * dt;
-  const float integral_min = -(this->pid_p_ + this->pid_d_);
-  const float integral_max = this->pwm_max_ - (this->pid_p_ + this->pid_d_);
+  const float integral_min = std::max(this->i_min_, -(this->pid_p_ + this->pid_d_));
+  const float integral_max = std::min(this->i_max_, this->pwm_max_ - (this->pid_p_ + this->pid_d_));
   const float clamped_integral = std::clamp(integral_candidate, integral_min, integral_max);
-  const float unclamped_output = this->pid_p_ + integral_candidate + this->pid_d_;
-  this->unclamped_output_ = unclamped_output;
-  const bool would_wind_up_high = unclamped_output > this->pwm_max_ && error > 0.0f;
-  const bool would_wind_up_low = unclamped_output < 0.0f && error < 0.0f;
+  const float unclamped_candidate_output = this->pid_p_ + integral_candidate + this->pid_d_;
+  const bool would_wind_up_high = unclamped_candidate_output > this->pwm_max_ && error > 0.0f;
+  const bool would_wind_up_low = unclamped_candidate_output < 0.0f && error < 0.0f;
   if (!would_wind_up_high && !would_wind_up_low) {
     this->integral_ = clamped_integral;
   } else {
     this->integral_ = std::clamp(this->integral_, integral_min, integral_max);
   }
+
+  this->unclamped_output_ = this->pid_p_ + this->integral_ + this->pid_d_;
 
   float output = this->pid_p_ + this->integral_ + this->pid_d_;
 
@@ -659,16 +819,17 @@ void PidThermostat::calculate_control_(bool force) {
 }
 
 void PidThermostat::update_action_() {
+  const bool valve_active = this->get_effective_valve_state_();
   climate::ClimateAction new_action = climate::CLIMATE_ACTION_OFF;
   switch (this->mode) {
     case climate::CLIMATE_MODE_OFF:
       new_action = climate::CLIMATE_ACTION_OFF;
       break;
     case climate::CLIMATE_MODE_HEAT:
-      new_action = this->valve_state_ ? climate::CLIMATE_ACTION_HEATING : climate::CLIMATE_ACTION_IDLE;
+      new_action = valve_active ? climate::CLIMATE_ACTION_HEATING : climate::CLIMATE_ACTION_IDLE;
       break;
     case climate::CLIMATE_MODE_COOL:
-      new_action = this->valve_state_ ? climate::CLIMATE_ACTION_COOLING : climate::CLIMATE_ACTION_IDLE;
+      new_action = valve_active ? climate::CLIMATE_ACTION_COOLING : climate::CLIMATE_ACTION_IDLE;
       break;
     default:
       new_action = climate::CLIMATE_ACTION_OFF;
@@ -716,6 +877,7 @@ void PidThermostat::update_valve_output_(bool force) {
       this->valve_state_ = this->valve_switch_->state;
       this->last_valve_state_change_ms_ = now;
       this->publish_valve_output_state_();
+      this->update_action_();
       this->publish_state();
     }
     return;
@@ -742,6 +904,7 @@ void PidThermostat::update_valve_output_(bool force) {
     this->valve_state_ = desired_state;
     this->last_valve_state_change_ms_ = now;
     this->publish_valve_output_state_();
+    this->update_action_();
     this->publish_state();
   }
 
@@ -758,6 +921,7 @@ void PidThermostat::update_valve_output_(bool force) {
   }
 
   this->publish_valve_output_state_();
+  this->update_action_();
 }
 
 bool PidThermostat::get_valve_control_enabled_() {
@@ -772,6 +936,46 @@ float PidThermostat::get_effective_control_output_() const {
     return this->commissioning_output_;
   }
   return this->control_output_;
+}
+
+const char *PidThermostat::get_output_reason_() const {
+  if (this->commissioning_mode_) {
+    return "commissioning";
+  }
+  if (this->mode == climate::CLIMATE_MODE_OFF) {
+    return "mode_off";
+  }
+  if (!this->valve_control_enabled_state_) {
+    return "manual_override";
+  }
+  if (std::isnan(this->current_temperature) || std::isnan(this->target_temperature)) {
+    if (this->mode == climate::CLIMATE_MODE_HEAT && this->control_output_ > 0.0f) {
+      return "sensor_missing_safety_output";
+    }
+    return "sensor_missing";
+  }
+
+  if (this->mode == climate::CLIMATE_MODE_HEAT &&
+      this->current_temperature >= this->effective_target_temperature_ + this->hot_tolerance_) {
+    return "blocked_hot_tolerance";
+  }
+  if (this->mode == climate::CLIMATE_MODE_COOL &&
+      this->current_temperature <= this->effective_target_temperature_ - this->cold_tolerance_) {
+    return "blocked_cold_tolerance";
+  }
+  if (this->unclamped_output_ <= 0.0f) {
+    return "pid_below_zero";
+  }
+  if (this->control_output_ >= this->pwm_max_) {
+    return "clamped_pwm_max";
+  }
+  if (this->control_output_ > 0.0f && this->control_output_ < this->pwm_min_) {
+    return "raised_to_pwm_min";
+  }
+  if (this->control_output_ > 0.0f) {
+    return "active";
+  }
+  return "inactive";
 }
 
 void PidThermostat::publish_child_states_() {
@@ -936,6 +1140,12 @@ void PidThermostat::publish_child_states_() {
     }
     if (this->humidity_source_text_sensor_->state != humidity_state) {
       this->humidity_source_text_sensor_->publish_state(humidity_state);
+    }
+  }
+  if (this->output_reason_text_sensor_ != nullptr) {
+    const char *output_reason = this->get_output_reason_();
+    if (this->output_reason_text_sensor_->state != output_reason) {
+      this->output_reason_text_sensor_->publish_state(output_reason);
     }
   }
   for (auto *number_entity : this->number_entities_) {

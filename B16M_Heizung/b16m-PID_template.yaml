@@ -599,6 +599,7 @@ sensor:
       id: sensor_dht_1_temperature
       name: DHT1 Temperature
     id: sensor_dht_1
+    update_interval: 10s
   - platform: dht
     pin: GPIO48
     humidity:
@@ -1369,8 +1370,14 @@ select:
   #
   # Hinweis:
   # - Die Climate-Instanz erzeugt ihre Parameter- und Diagnose-Entities selbst.
-  # - Kp/Ki/Kd, PWM Periode, PWM Min/Max, Taupunkt-Abstand, Reglerausgang,
-  #   Modusstatus sowie die aktive Temperatur-/Feuchtequelle erscheinen automatisch.
+  # - Zur Laufzeit einstellbar sind aktuell: Kp/Ki/Kd, I Unter-/Obergrenze,
+  #   Cold/Hot Tolerance, Sampling Period, Keep Alive, Min Cycle Duration,
+  #   Min Off Cycle Duration, PWM Periode, PWM Min/Max, Taupunkt-Abstand,
+  #   Output Safety und Stellgliedtest Ausgang.
+  # - Diagnose-Entities wie Reglerausgang, Ausgangsstatus, Modusstatus sowie
+  #   die aktive Temperatur-/Feuchtequelle erscheinen automatisch.
+  # - Sensorzuordnungen, Sensor-Timeouts, valve_switch, valve_control_enabled
+  #   und debug bleiben statische YAML-Konfiguration.
   # - Die hier gezeigten auskommentierten Optionen koennen bei Bedarf pro Raum
   #   aktiviert oder angepasst werden.
   # ============================================
@@ -1397,20 +1404,22 @@ select:
   #     kp: 5.0  # Typ: float. Proportionalanteil des PID-Reglers.
   #     ki: 0.01  # Typ: float. Integralanteil des PID-Reglers.
   #     kd: 500.0  # Typ: float. Differentialanteil des PID-Reglers.
+  #     i_min: -100.0  # Typ: float. Untere Begrenzung des I-Anteils in Prozentpunkten.
+  #     i_max: 100.0  # Typ: float. Obere Begrenzung des I-Anteils in Prozentpunkten.
   #
   #     pwm: 15min  # Typ: Zeitwert. Dauer eines PWM-Zyklus fuer die Ventilansteuerung.
   #     pwm_min: 0.0  # Typ: float 0..100. Untere Grenze des Reglerausgangs in Prozent.
   #     pwm_max: 100.0  # Typ: float 0..100. Obere Grenze des Reglerausgangs in Prozent.
   #
-  #     sampling_period: 0s  # Typ: Zeitwert. 0s = Rechenlauf bei jedem Sensorupdate, sonst feste PID-Abtastung.
-  #     keep_alive: 60s  # Typ: Zeitwert. Intervall fuer erneutes Anwenden des berechneten Ausgangszustands.
-  #     min_cycle_duration: 0s  # Typ: Zeitwert. Mindestdauer, die das Ventil nach dem Einschalten an bleiben soll.
-  #     min_off_cycle_duration: 0s  # Typ: Zeitwert. Mindestdauer, die das Ventil nach dem Ausschalten aus bleiben soll.
+  #     sampling_period: 0s  # Typ: Zeitwert. 0s = Rechenlauf bei jedem Sensorupdate, sonst feste PID-Abtastung. Laufzeitfaehig.
+  #     keep_alive: 60s  # Typ: Zeitwert. Intervall fuer erneutes Anwenden des berechneten Ausgangszustands. Laufzeitfaehig.
+  #     min_cycle_duration: 0s  # Typ: Zeitwert. Mindestdauer, die das Ventil nach dem Einschalten an bleiben soll. Laufzeitfaehig.
+  #     min_off_cycle_duration: 0s  # Typ: Zeitwert. Mindestdauer, die das Ventil nach dem Ausschalten aus bleiben soll. Laufzeitfaehig.
   #
-  #     cold_tolerance: 0.3  # Typ: Temperaturwert in °C/K. Abschalt-/Ruhebereich im Kuehlmodus nahe Sollwert.
-  #     hot_tolerance: 0.3  # Typ: Temperaturwert in °C/K. Abschalt-/Ruhebereich im Heizmodus nahe Sollwert.
-  #     dew_point_offset: 1.0  # Typ: float in K. Sicherheitsabstand ueber dem Taupunkt im Kuehlmodus.
-  #     output_safety: 5.0  # Typ: float 0..100 %. Sicherheitsausgang, falls keine gueltige Temperaturquelle verfuegbar ist.
+  #     cold_tolerance: 0.3  # Typ: Temperaturwert in °C/K. Abschalt-/Ruhebereich im Kuehlmodus nahe Sollwert. Laufzeitfaehig.
+  #     hot_tolerance: 0.3  # Typ: Temperaturwert in °C/K. Abschalt-/Ruhebereich im Heizmodus nahe Sollwert. Laufzeitfaehig.
+  #     dew_point_offset: 1.0  # Typ: float in K. Sicherheitsabstand ueber dem Taupunkt im Kuehlmodus. Laufzeitfaehig.
+  #     output_safety: 5.0  # Typ: float 0..100 %. Sicherheitsausgang, falls keine gueltige Temperaturquelle verfuegbar ist. Laufzeitfaehig.
   #     debug: false  # Typ: bool. Aktiviert zusaetzliche Regler-Debugausgaben im Log.
   #
   #     visual:  # Anzeigeparameter fuer die HA-UI, nicht fuer die eigentliche Reglerlogik.

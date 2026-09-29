@@ -51,6 +51,8 @@ CONF_VALVE_CONTROL_ENABLED = "valve_control_enabled"
 CONF_KP = "kp"
 CONF_KI = "ki"
 CONF_KD = "kd"
+CONF_I_MIN = "i_min"
+CONF_I_MAX = "i_max"
 CONF_PWM = "pwm"
 CONF_PWM_MIN = "pwm_min"
 CONF_PWM_MAX = "pwm_max"
@@ -69,10 +71,19 @@ CONF_KIND = "kind"
 NUMBER_KIND_KP = NumberKind.NUMBER_KIND_KP
 NUMBER_KIND_KI = NumberKind.NUMBER_KIND_KI
 NUMBER_KIND_KD = NumberKind.NUMBER_KIND_KD
+NUMBER_KIND_I_MIN = NumberKind.NUMBER_KIND_I_MIN
+NUMBER_KIND_I_MAX = NumberKind.NUMBER_KIND_I_MAX
+NUMBER_KIND_COLD_TOLERANCE = NumberKind.NUMBER_KIND_COLD_TOLERANCE
+NUMBER_KIND_HOT_TOLERANCE = NumberKind.NUMBER_KIND_HOT_TOLERANCE
+NUMBER_KIND_SAMPLING_PERIOD = NumberKind.NUMBER_KIND_SAMPLING_PERIOD
+NUMBER_KIND_KEEP_ALIVE = NumberKind.NUMBER_KIND_KEEP_ALIVE
+NUMBER_KIND_MIN_CYCLE_DURATION = NumberKind.NUMBER_KIND_MIN_CYCLE_DURATION
+NUMBER_KIND_MIN_OFF_CYCLE_DURATION = NumberKind.NUMBER_KIND_MIN_OFF_CYCLE_DURATION
 NUMBER_KIND_PWM_PERIOD = NumberKind.NUMBER_KIND_PWM_PERIOD
 NUMBER_KIND_PWM_MIN = NumberKind.NUMBER_KIND_PWM_MIN
 NUMBER_KIND_PWM_MAX = NumberKind.NUMBER_KIND_PWM_MAX
 NUMBER_KIND_DEW_POINT_OFFSET = NumberKind.NUMBER_KIND_DEW_POINT_OFFSET
+NUMBER_KIND_OUTPUT_SAFETY = NumberKind.NUMBER_KIND_OUTPUT_SAFETY
 NUMBER_KIND_TEST_OUTPUT = NumberKind.NUMBER_KIND_TEST_OUTPUT
 
 SENSOR_KIND_OUTPUT = "output"
@@ -80,6 +91,7 @@ SENSOR_KIND_DEW_POINT = "dew_point"
 TEXT_SENSOR_KIND_MODE = "mode"
 TEXT_SENSOR_KIND_TEMPERATURE_SOURCE = "temperature_source"
 TEXT_SENSOR_KIND_HUMIDITY_SOURCE = "humidity_source"
+TEXT_SENSOR_KIND_OUTPUT_REASON = "output_reason"
 
 
 def _apply_device_id(config, device_id):
@@ -264,6 +276,8 @@ CONFIG_SCHEMA = climate.climate_schema(PidThermostat).extend(
         cv.Optional(CONF_KP, default=5.0): cv.float_,
         cv.Optional(CONF_KI, default=0.01): cv.float_,
         cv.Optional(CONF_KD, default=500.0): cv.float_,
+        cv.Optional(CONF_I_MIN, default=-100.0): cv.float_,
+        cv.Optional(CONF_I_MAX, default=100.0): cv.float_,
         cv.Optional(CONF_PWM, default="15min"): cv.positive_time_period_milliseconds,
         cv.Optional(CONF_PWM_MIN, default=0.0): cv.float_range(min=0.0, max=100.0),
         cv.Optional(CONF_PWM_MAX, default=100.0): cv.float_range(min=0.0, max=100.0),
@@ -315,6 +329,8 @@ async def to_code(config):
     cg.add(var.set_kp(config[CONF_KP]))
     cg.add(var.set_ki(config[CONF_KI]))
     cg.add(var.set_kd(config[CONF_KD]))
+    cg.add(var.set_i_min(config[CONF_I_MIN]))
+    cg.add(var.set_i_max(config[CONF_I_MAX]))
     cg.add(var.set_pwm_period(config[CONF_PWM].total_milliseconds))
     cg.add(var.set_pwm_min(config[CONF_PWM_MIN]))
     cg.add(var.set_pwm_max(config[CONF_PWM_MAX]))
@@ -457,14 +473,30 @@ async def to_code(config):
     humidity_source_sensor = await text_sensor.new_text_sensor(humidity_source_sensor_config)
     cg.add(var.set_humidity_source_text_sensor(humidity_source_sensor))
 
+    output_reason_sensor_config = _apply_device_id(
+        _text_sensor_config(parent_name, parent_id, "Ausgangsstatus", "output_reason", TEXT_SENSOR_KIND_OUTPUT_REASON),
+        device_id,
+    )
+    output_reason_sensor = await text_sensor.new_text_sensor(output_reason_sensor_config)
+    cg.add(var.set_output_reason_text_sensor(output_reason_sensor))
+
     number_configs = [
-        _apply_device_id(_number_config(parent_name, parent_id, "Kp", "kp", NUMBER_KIND_KP, "", config[CONF_KP], 0, 200, 0.1), device_id),
-        _apply_device_id(_number_config(parent_name, parent_id, "Ki", "ki", NUMBER_KIND_KI, "", config[CONF_KI], 0, 1, 0.001), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "Kp", "kp", NUMBER_KIND_KP, "", config[CONF_KP], 0, 500, 0.1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "Ki", "ki", NUMBER_KIND_KI, "", config[CONF_KI], 0, 10, 0.001), device_id),
         _apply_device_id(_number_config(parent_name, parent_id, "Kd", "kd", NUMBER_KIND_KD, "", config[CONF_KD], 0, 5000, 1), device_id),
-        _apply_device_id(_number_config(parent_name, parent_id, "PWM Periode", "pwm_period", NUMBER_KIND_PWM_PERIOD, "s", config[CONF_PWM].total_seconds, 10, 3600, 30), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "I Untergrenze", "i_min", NUMBER_KIND_I_MIN, "%", config[CONF_I_MIN], -500, 500, 1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "I Obergrenze", "i_max", NUMBER_KIND_I_MAX, "%", config[CONF_I_MAX], -500, 500, 1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "Cold Tolerance", "cold_tolerance", NUMBER_KIND_COLD_TOLERANCE, "K", config[CONF_COLD_TOLERANCE], 0, 10, 0.1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "Hot Tolerance", "hot_tolerance", NUMBER_KIND_HOT_TOLERANCE, "K", config[CONF_HOT_TOLERANCE], 0, 10, 0.1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "Sampling Period", "sampling_period", NUMBER_KIND_SAMPLING_PERIOD, "s", config[CONF_SAMPLING_PERIOD].total_seconds, 0, 3600, 1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "Keep Alive", "keep_alive", NUMBER_KIND_KEEP_ALIVE, "s", config[CONF_KEEP_ALIVE].total_seconds, 0, 3600, 1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "Min Cycle Duration", "min_cycle_duration", NUMBER_KIND_MIN_CYCLE_DURATION, "s", config[CONF_MIN_CYCLE_DURATION].total_seconds, 0, 3600, 1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "Min Off Cycle Duration", "min_off_cycle_duration", NUMBER_KIND_MIN_OFF_CYCLE_DURATION, "s", config[CONF_MIN_OFF_CYCLE_DURATION].total_seconds, 0, 3600, 1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "PWM Periode", "pwm_period", NUMBER_KIND_PWM_PERIOD, "s", config[CONF_PWM].total_seconds, 10, 3600, 1), device_id),
         _apply_device_id(_number_config(parent_name, parent_id, "PWM Min", "pwm_min", NUMBER_KIND_PWM_MIN, "%", config[CONF_PWM_MIN], 0, 100, 1), device_id),
         _apply_device_id(_number_config(parent_name, parent_id, "PWM Max", "pwm_max", NUMBER_KIND_PWM_MAX, "%", config[CONF_PWM_MAX], 0, 100, 1), device_id),
         _apply_device_id(_number_config(parent_name, parent_id, "Taupunkt Abstand", "dew_point_offset", NUMBER_KIND_DEW_POINT_OFFSET, "K", config[CONF_DEW_POINT_OFFSET], 0, 10, 0.1), device_id),
+        _apply_device_id(_number_config(parent_name, parent_id, "Output Safety", "output_safety", NUMBER_KIND_OUTPUT_SAFETY, "%", config[CONF_OUTPUT_SAFETY], 0, 100, 1), device_id),
     ]
 
     for number_config in number_configs:
