@@ -368,7 +368,7 @@ async def to_code(config):
     cg.add(var.set_pid_p_sensor(pid_p_sensor))
 
     pid_i_sensor_config = _apply_device_id(
-        _diagnostic_sensor_config(parent_name, parent_id, "PID Anteil I", "pid_i", "%", "mdi:alpha-i-box", 3), device_id
+        _diagnostic_sensor_config(parent_name, parent_id, "I Speicher", "pid_i", "%", "mdi:alpha-i-box", 3), device_id
     )
     pid_i_sensor = await sensor.new_sensor(pid_i_sensor_config)
     cg.add(var.set_pid_i_sensor(pid_i_sensor))
