@@ -515,6 +515,19 @@ light:
             - state: false
               duration: 720ms
 
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO0
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    id: gpio0_toggle
+    name: "GPIO0 Tastendruck"
+    on_press:
+      - switch.toggle: all_segments_switch
+
 number:
   - platform: template
     name: "Laufpixel Schrittzeit"
