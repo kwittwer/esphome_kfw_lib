@@ -187,6 +187,7 @@ class PidThermostat : public climate::Climate, public Component {
   bool get_valve_control_enabled_();
   bool should_sample_(uint32_t now) const;
   void request_recompute_() { this->pending_recompute_ = true; }
+    void publish_valve_output_state_();
   void publish_child_states_();
   void restore_number_values_();
   void save_number_value_(NumberKind kind, float value);

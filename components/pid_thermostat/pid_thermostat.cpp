@@ -201,9 +201,7 @@ void PidThermostat::setup() {
   this->calculate_control_(true);
   this->update_action_();
   this->update_valve_output_(true);
-  if (this->valve_output_sensor_ != nullptr) {
-    this->valve_output_sensor_->publish_state(this->valve_state_);
-  }
+    this->publish_valve_output_state_();
   this->publish_child_states_();
   this->publish_state();
 }
@@ -228,6 +226,17 @@ void PidThermostat::loop() {
   }
 
   this->update_valve_output_(keep_alive_due);
+}
+
+void PidThermostat::publish_valve_output_state_() {
+  if (this->valve_output_sensor_ == nullptr) {
+    return;
+  }
+
+  const bool valve_output = this->valve_switch_ != nullptr ? this->valve_switch_->state : this->valve_state_;
+  if (this->valve_output_sensor_->state != valve_output || !this->valve_output_sensor_->has_state()) {
+    this->valve_output_sensor_->publish_state(valve_output);
+  }
 }
 
 void PidThermostat::dump_config() {
@@ -706,6 +715,7 @@ void PidThermostat::update_valve_output_(bool force) {
     if (this->valve_switch_ != nullptr && this->valve_state_ != this->valve_switch_->state) {
       this->valve_state_ = this->valve_switch_->state;
       this->last_valve_state_change_ms_ = now;
+      this->publish_valve_output_state_();
       this->publish_state();
     }
     return;
@@ -731,6 +741,7 @@ void PidThermostat::update_valve_output_(bool force) {
   if (desired_state != this->valve_state_) {
     this->valve_state_ = desired_state;
     this->last_valve_state_change_ms_ = now;
+    this->publish_valve_output_state_();
     this->publish_state();
   }
 
@@ -745,6 +756,8 @@ void PidThermostat::update_valve_output_(bool force) {
       }
     }
   }
+
+  this->publish_valve_output_state_();
 }
 
 bool PidThermostat::get_valve_control_enabled_() {
@@ -772,10 +785,7 @@ void PidThermostat::publish_child_states_() {
     }
   }
   if (this->valve_output_sensor_ != nullptr) {
-    const bool valve_output = this->valve_state_;
-    if (this->valve_output_sensor_->state != valve_output || !this->valve_output_sensor_->has_state()) {
-      this->valve_output_sensor_->publish_state(valve_output);
-    }
+    this->publish_valve_output_state_();
   }
   if (this->setpoint_sensor_ != nullptr) {
     const float setpoint = this->get_setpoint();
