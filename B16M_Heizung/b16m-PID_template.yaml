@@ -1411,7 +1411,7 @@ select:
   #     pwm_min: 0.0  # Typ: float 0..100. Untere Grenze des Reglerausgangs in Prozent.
   #     pwm_max: 100.0  # Typ: float 0..100. Obere Grenze des Reglerausgangs in Prozent.
   #
-  #     sampling_period: 0s  # Typ: Zeitwert. 0s = Rechenlauf bei jedem Sensorupdate, sonst feste PID-Abtastung. Laufzeitfaehig.
+  #     sampling_period: 0s  # Typ: Zeitwert. 0s = Rechenlauf nur zum PWM-Zyklusende, sonst zusaetzlich feste PID-Abtastung. Laufzeitfaehig.
   #     keep_alive: 60s  # Typ: Zeitwert. Intervall fuer erneutes Anwenden des berechneten Ausgangszustands. Laufzeitfaehig.
   #     min_cycle_duration: 0s  # Typ: Zeitwert. Mindestdauer, die das Ventil nach dem Einschalten an bleiben soll. Laufzeitfaehig.
   #     min_off_cycle_duration: 0s  # Typ: Zeitwert. Mindestdauer, die das Ventil nach dem Ausschalten aus bleiben soll. Laufzeitfaehig.

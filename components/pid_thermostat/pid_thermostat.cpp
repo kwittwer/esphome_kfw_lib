@@ -304,9 +304,9 @@ void PidThermostat::loop() {
     this->calculate_control_(true);
     this->update_action_();
     this->publish_child_states_();
-  } else if (this->pending_recompute_ || this->should_sample_(now)) {
-    // Sensor updates, parameter changes and the sampling period must also
-    // trigger a recalculation, not only the PWM cycle rollover.
+  } else if (this->should_sample_(now)) {
+    // Only an explicitly configured sampling period adds calculation steps
+    // between two PWM cycles; sensor updates alone do not trigger a recompute.
     this->calculate_control_();
     this->update_action_();
     this->publish_child_states_();
