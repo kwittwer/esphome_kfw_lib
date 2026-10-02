@@ -257,6 +257,7 @@ void PidThermostat::setup() {
   // Must run before the first control calculation so the stored tuning values
   // replace the defaults that were applied from the YAML config at boot.
   this->restore_number_values_();
+  this->restore_integral_state_();
 
   this->current_temperature = NAN;
   this->current_humidity = NAN;
@@ -476,6 +477,8 @@ void PidThermostat::reset_controller() {
     this->last_error_ = 0.0f;
   }
 
+  this->save_integral_state_(true);
+
   this->request_recompute_();
   this->calculate_control_(true);
   this->update_action_();
@@ -506,6 +509,38 @@ void PidThermostat::save_number_value_(NumberKind kind, float value) {
   }
 }
 
+void PidThermostat::restore_integral_state_() {
+  if (!this->integral_pref_initialized_) {
+    this->integral_pref_ = this->make_entity_preference<float>(0x49B1A123UL);
+    this->integral_pref_initialized_ = true;
+  }
+
+  float restored_integral = NAN;
+  if (this->integral_pref_.load(&restored_integral) && !std::isnan(restored_integral)) {
+    this->integral_ = std::clamp(restored_integral, this->i_min_, this->i_max_);
+    this->pid_i_ = this->integral_;
+    this->last_saved_integral_ = this->integral_;
+    ESP_LOGD(TAG, "Restored integral state = %.3f", this->integral_);
+    return;
+  }
+
+  this->last_saved_integral_ = this->integral_;
+}
+
+void PidThermostat::save_integral_state_(bool force) {
+  if (!this->integral_pref_initialized_) {
+    this->integral_pref_ = this->make_entity_preference<float>(0x49B1A123UL);
+    this->integral_pref_initialized_ = true;
+  }
+
+  if (!force && this->last_saved_integral_ == this->integral_) {
+    return;
+  }
+
+  this->integral_pref_.save(&this->integral_);
+  this->last_saved_integral_ = this->integral_;
+}
+
 void PidThermostat::set_kp(float value) {
   this->kp_ = value;
   this->save_number_value_(NUMBER_KIND_KP, this->kp_);
@@ -534,6 +569,9 @@ void PidThermostat::set_i_min(float value) {
     this->i_max_ = this->i_min_;
     this->save_number_value_(NUMBER_KIND_I_MAX, this->i_max_);
   }
+  this->integral_ = std::clamp(this->integral_, this->i_min_, this->i_max_);
+  this->pid_i_ = this->integral_;
+  this->save_integral_state_();
   this->request_recompute_();
   this->publish_child_states_();
 }
@@ -545,6 +583,9 @@ void PidThermostat::set_i_max(float value) {
     this->i_min_ = this->i_max_;
     this->save_number_value_(NUMBER_KIND_I_MIN, this->i_min_);
   }
+  this->integral_ = std::clamp(this->integral_, this->i_min_, this->i_max_);
+  this->pid_i_ = this->integral_;
+  this->save_integral_state_();
   this->request_recompute_();
   this->publish_child_states_();
 }
@@ -799,6 +840,7 @@ void PidThermostat::calculate_control_(bool force) {
   // every calculation step, even while the output is clamped or blocked.
   const float integral_candidate = this->integral_ + this->ki_ * error * dt;
   this->integral_ = std::clamp(integral_candidate, this->i_min_, this->i_max_);
+  this->save_integral_state_();
 
   this->unclamped_output_ = this->pid_p_ + this->integral_ + this->pid_d_;
 
@@ -810,12 +852,14 @@ void PidThermostat::calculate_control_(bool force) {
     output = std::clamp(output, this->pwm_min_, this->pwm_max_);
   }
 
+  // A tolerance of 0 disables the hard cut-off, so the PID alone (P + I + D)
+  // decides the output around the setpoint.
   if (!heating) {
-    if (this->current_temperature <= effective_target - this->cold_tolerance_) {
+    if (this->cold_tolerance_ > 0.0f && this->current_temperature <= effective_target - this->cold_tolerance_) {
       output = 0.0f;
     }
   } else {
-    if (this->current_temperature >= effective_target + this->hot_tolerance_) {
+    if (this->hot_tolerance_ > 0.0f && this->current_temperature >= effective_target + this->hot_tolerance_) {
       output = 0.0f;
     }
   }
@@ -879,6 +923,7 @@ void PidThermostat::update_valve_output_(bool force) {
     this->last_dt_seconds_ = 0.0f;
     this->unclamped_output_ = 0.0f;
     this->pwm_cycle_start_ms_ = now;
+    this->save_integral_state_(true);
     this->request_recompute_();
     this->update_action_();
     this->publish_child_states_();
@@ -970,11 +1015,11 @@ const char *PidThermostat::get_output_reason_() const {
     return "sensor_missing";
   }
 
-  if (this->mode == climate::CLIMATE_MODE_HEAT &&
+  if (this->mode == climate::CLIMATE_MODE_HEAT && this->hot_tolerance_ > 0.0f &&
       this->current_temperature >= this->effective_target_temperature_ + this->hot_tolerance_) {
     return "blocked_hot_tolerance";
   }
-  if (this->mode == climate::CLIMATE_MODE_COOL &&
+  if (this->mode == climate::CLIMATE_MODE_COOL && this->cold_tolerance_ > 0.0f &&
       this->current_temperature <= this->effective_target_temperature_ - this->cold_tolerance_) {
     return "blocked_cold_tolerance";
   }

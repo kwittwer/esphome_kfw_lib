@@ -65,7 +65,7 @@ The component publishes the following diagnostic entities:
 - In heating mode, the controller uses `effective_target - current_temperature` as the error.
 - In cooling mode, the controller uses `current_temperature - effective_target` as the error.
 - Cooling mode also raises the effective target to `dew_point + dew_point_offset` when needed.
-- `cold_tolerance` and `hot_tolerance` are used as final cut-off thresholds to avoid unnecessary output near the target.
+- `cold_tolerance` and `hot_tolerance` are used as final cut-off thresholds (output is forced to 0 beyond `target +/- tolerance`). A value of `0` disables the cut-off, so only the PID result (P + I + D, limited to `pwm_min`/`pwm_max`) drives the output.
 
 ## Configuration notes
 

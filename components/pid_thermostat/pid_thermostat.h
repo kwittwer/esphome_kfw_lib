@@ -215,6 +215,8 @@ class PidThermostat : public climate::Climate, public Component {
   void publish_child_states_();
   void restore_number_values_();
   void save_number_value_(NumberKind kind, float value);
+  void restore_integral_state_();
+  void save_integral_state_(bool force = false);
   float calculate_dew_point_() const;
   float get_effective_control_output_() const;
 
@@ -242,10 +244,12 @@ class PidThermostat : public climate::Climate, public Component {
   PidThermostatTextSensor *humidity_source_text_sensor_{nullptr};
   PidThermostatTextSensor *output_reason_text_sensor_{nullptr};
   std::vector<PidThermostatNumber *> number_entities_{};
+  ESPPreferenceObject integral_pref_{};
 
   optional<std::function<bool()>> valve_control_enabled_func_{};
   bool valve_control_enabled_value_{true};
   bool restoring_{false};
+  bool integral_pref_initialized_{false};
 
   uint32_t sensor_timeout_ms_{600000};
   uint32_t fallback_sensor_timeout_ms_{600000};
@@ -285,6 +289,7 @@ class PidThermostat : public climate::Climate, public Component {
   float pid_i_{0.0f};
   float pid_d_{0.0f};
   float integral_{0.0f};
+  float last_saved_integral_{NAN};
   float last_error_{0.0f};
   float last_dt_seconds_{0.0f};
   float effective_target_temperature_{NAN};
