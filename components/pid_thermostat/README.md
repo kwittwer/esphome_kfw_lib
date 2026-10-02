@@ -125,8 +125,8 @@ climate:
     kd: 500.0
     i_min: -100.0
     i_max: 100.0
-    cold_tolerance: 0.3
-    hot_tolerance: 0.3
+    cold_tolerance: 5.0
+    hot_tolerance: 5.0
     pwm: 15min
     pwm_min: 0.0
     pwm_max: 100.0
