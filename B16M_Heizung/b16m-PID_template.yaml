@@ -1416,8 +1416,8 @@ select:
   #     min_cycle_duration: 0s  # Typ: Zeitwert. Mindestdauer, die das Ventil nach dem Einschalten an bleiben soll. Laufzeitfaehig.
   #     min_off_cycle_duration: 0s  # Typ: Zeitwert. Mindestdauer, die das Ventil nach dem Ausschalten aus bleiben soll. Laufzeitfaehig.
   #
-  #     cold_tolerance: 0.3  # Typ: Temperaturwert in °C/K. Abschalt-/Ruhebereich im Kuehlmodus nahe Sollwert. Laufzeitfaehig.
-  #     hot_tolerance: 0.3  # Typ: Temperaturwert in °C/K. Abschalt-/Ruhebereich im Heizmodus nahe Sollwert. Laufzeitfaehig.
+  #     cold_tolerance: 5.0  # Typ: Temperaturwert in °C/K. Abschalt-/Ruhebereich im Kuehlmodus nahe Sollwert. Laufzeitfaehig.
+  #     hot_tolerance: 5.0  # Typ: Temperaturwert in °C/K. Abschalt-/Ruhebereich im Heizmodus nahe Sollwert. Laufzeitfaehig.
   #     dew_point_offset: 1.0  # Typ: float in K. Sicherheitsabstand ueber dem Taupunkt im Kuehlmodus. Laufzeitfaehig.
   #     output_safety: 5.0  # Typ: float 0..100 %. Sicherheitsausgang, falls keine gueltige Temperaturquelle verfuegbar ist. Laufzeitfaehig.
   #     debug: false  # Typ: bool. Aktiviert zusaetzliche Regler-Debugausgaben im Log.

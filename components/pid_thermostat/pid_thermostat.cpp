@@ -19,6 +19,19 @@ void PidThermostatNumber::init_and_restore() {
 
   float restored_value = NAN;
   if (this->pref_.load(&restored_value) && !std::isnan(restored_value)) {
+    const bool migrate_legacy_cold_tolerance =
+        this->kind_ == NUMBER_KIND_COLD_TOLERANCE && restored_value == 0.3f && this->parent_->get_cold_tolerance() == 5.0f;
+    const bool migrate_legacy_hot_tolerance =
+        this->kind_ == NUMBER_KIND_HOT_TOLERANCE && restored_value == 0.3f && this->parent_->get_hot_tolerance() == 5.0f;
+
+    if (migrate_legacy_cold_tolerance || migrate_legacy_hot_tolerance) {
+      const float migrated_value = this->kind_ == NUMBER_KIND_COLD_TOLERANCE ? this->parent_->get_cold_tolerance()
+                                                                              : this->parent_->get_hot_tolerance();
+      this->pref_.save(&migrated_value);
+      restored_value = migrated_value;
+      ESP_LOGI(TAG, "Migrated legacy '%s' default from 0.3 to %.1f", this->get_name().c_str(), migrated_value);
+    }
+
     switch (this->kind_) {
       case NUMBER_KIND_KP:
         this->parent_->set_kp(restored_value);
