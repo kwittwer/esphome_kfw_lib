@@ -1,0 +1,92 @@
+esphome:
+  name: modbus-bridge
+  friendly_name: RS485 Modbus Bridge
+  # Ensures the RS485 channel-enable pin is driven high before anything
+  # else tries to use the bus.
+#   on_boot:
+#     priority: 600
+#     then:
+#       - switch.turn_on: rs485_enable
+
+esp32:
+  variant: esp32
+  framework:
+    type: esp-idf
+
+# ethernet:
+#   type: LAN8720
+#   mdc_pin: GPIO23
+#   mdio_pin: GPIO18
+#   clk_mode: GPIO17_OUT
+#   phy_addr: 0
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  # Static IP recommended so the gateway's address never changes under
+  # whatever Modbus client (Home Assistant, etc.) you point at it.
+#   manual_ip:
+#     static_ip: 192.168.1.50      # <-- change to your network
+#     gateway: 192.168.1.1         # <-- change to your network
+#     subnet: 255.255.255.0
+  power_save_mode: none
+  fast_connect: true
+
+logger:
+  level: DEBUG
+
+api:
+
+ota:
+  - platform: esphome
+    # Recommended: set a password once your setup is stable.
+    # password: !secret ota_password
+
+# --- RS485 channel enable (GPIO47) ---
+# On this board, GPIO47 must be HIGH to enable the RS485 transceiver.
+# restore_mode: ALWAYS_ON re-asserts this on every boot automatically.
+switch:
+  - platform: gpio
+    name: "a2-light1"
+    pin: 15
+    inverted: False
+  - platform: gpio
+    name: "a2-light2"
+    pin: 2
+    inverted: False
+
+binary_sensor:
+  - platform: gpio
+    name: "a2-input1"
+    pin:
+      number: 36
+      inverted: true
+  - platform: gpio
+    name: "a2-input2"
+    pin:
+      number: 39
+      inverted: true
+
+uart:
+  - id: uart_bus
+    tx_pin: GPIO32
+    rx_pin: GPIO35
+    baud_rate: 9600          # match your RS485 device's settings
+    data_bits: 8
+    parity: NONE
+    stop_bits: 1
+    #flow_control_pin: GPIO21   # RS485 DE/RE pin on this board
+
+# --- Modbus TCP-to-RTU gateway component ---
+# https://github.com/rosenrot00/esphome_modbus_bridge
+external_components:
+  - source:
+      type: git
+      url: https://github.com/rosenrot00/esphome_modbus_bridge
+    components: [modbus_bridge]
+    refresh: 0s
+
+modbus_bridge:
+  id: mb_bridge
+  uart_id: uart_bus
+  # Default TCP port is 502 (standard Modbus TCP port)
