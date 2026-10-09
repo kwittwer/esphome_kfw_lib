@@ -1,0 +1,58 @@
+substitutions:
+  serial_baud_rate: "9600"
+  serial_parity: "NONE"
+  serial_stop_bits: "1"
+
+esphome:
+  name: kincony-a2-usb-rs485
+  friendly_name: KinCony A2 USB RS485
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+  baud_rate: 0
+  level: WARN
+
+uart:
+  - id: usb_uart
+    tx_pin: GPIO1
+    rx_pin: GPIO3
+    baud_rate: ${serial_baud_rate}
+    data_bits: 8
+    parity: ${serial_parity}
+    stop_bits: ${serial_stop_bits}
+    rx_buffer_size: 1024
+    rx_full_threshold: 1
+    rx_timeout: 1
+    debug:
+      direction: RX
+      dummy_receiver: true
+      after:
+        bytes: 256
+        timeout: 5ms
+      sequence:
+        - lambda: |-
+            id(rs485_uart).write_array(bytes.data(), bytes.size());
+
+  - id: rs485_uart
+    tx_pin: GPIO32
+    rx_pin: GPIO35
+    baud_rate: ${serial_baud_rate}
+    data_bits: 8
+    parity: ${serial_parity}
+    stop_bits: ${serial_stop_bits}
+    rx_buffer_size: 1024
+    rx_full_threshold: 1
+    rx_timeout: 1
+    debug:
+      direction: RX
+      dummy_receiver: true
+      after:
+        bytes: 256
+        timeout: 5ms
+      sequence:
+        - lambda: |-
+            id(usb_uart).write_array(bytes.data(), bytes.size());
