@@ -1,0 +1,173 @@
+modbus:
+  - name: drs_100_3p_mod
+    type: tcp
+    host: "IP_DER_BRIDGE"
+    port: 502
+    timeout: 5
+    message_wait_milliseconds: 100
+    sensors:
+      - name: "DRS100 Spannung L1"
+        unique_id: drs100_voltage_l1
+        slave: &drs100_slave 1
+        address: 0
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        precision: 1
+        scan_interval: 15
+
+      - name: "DRS100 Spannung L2"
+        unique_id: drs100_voltage_l2
+        slave: *drs100_slave
+        address: 2
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        precision: 1
+        scan_interval: 15
+
+      - name: "DRS100 Spannung L3"
+        unique_id: drs100_voltage_l3
+        slave: *drs100_slave
+        address: 4
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "V"
+        device_class: voltage
+        state_class: measurement
+        precision: 1
+        scan_interval: 15
+
+      - name: "DRS100 Strom L1"
+        unique_id: drs100_current_l1
+        slave: *drs100_slave
+        address: 6
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        precision: 3
+        scan_interval: 15
+
+      - name: "DRS100 Strom L2"
+        unique_id: drs100_current_l2
+        slave: *drs100_slave
+        address: 8
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        precision: 3
+        scan_interval: 15
+
+      - name: "DRS100 Strom L3"
+        unique_id: drs100_current_l3
+        slave: *drs100_slave
+        address: 10
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "A"
+        device_class: current
+        state_class: measurement
+        precision: 3
+        scan_interval: 15
+
+      - name: "DRS100 Wirkleistung L1"
+        unique_id: drs100_power_l1
+        slave: *drs100_slave
+        address: 12
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        precision: 1
+        scan_interval: 15
+
+      - name: "DRS100 Wirkleistung L2"
+        unique_id: drs100_power_l2
+        slave: *drs100_slave
+        address: 14
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        precision: 1
+        scan_interval: 15
+
+      - name: "DRS100 Wirkleistung L3"
+        unique_id: drs100_power_l3
+        slave: *drs100_slave
+        address: 16
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        precision: 1
+        scan_interval: 15
+
+      - name: "DRS100 Wirkleistung Gesamt"
+        unique_id: drs100_power_total
+        slave: *drs100_slave
+        address: 52
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        precision: 1
+        scan_interval: 15
+
+      - name: "DRS100 Leistungsfaktor Gesamt"
+        unique_id: drs100_power_factor_total
+        slave: *drs100_slave
+        address: 62
+        input_type: input
+        data_type: float32
+        state_class: measurement
+        precision: 3
+        scan_interval: 15
+
+      - name: "DRS100 Frequenz"
+        unique_id: drs100_frequency
+        slave: *drs100_slave
+        address: 70
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "Hz"
+        device_class: frequency
+        state_class: measurement
+        precision: 2
+        scan_interval: 30
+
+      - name: "DRS100 Energie Bezug"
+        unique_id: drs100_energy_import
+        slave: *drs100_slave
+        address: 72
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        precision: 3
+        scan_interval: 60
+
+      - name: "DRS100 Energie Einspeisung"
+        unique_id: drs100_energy_export
+        slave: *drs100_slave
+        address: 74
+        input_type: input
+        data_type: float32
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total_increasing
+        precision: 3
+        scan_interval: 60
