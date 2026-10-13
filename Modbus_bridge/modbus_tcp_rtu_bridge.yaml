@@ -62,7 +62,23 @@ external_components:
       url: https://github.com/rosenrot00/esphome_modbus_bridge
     components: [modbus_bridge]
     refresh: 0s
+  - source:
+      type: local
+      path: ../components
+    components: [espectre]
+
 
 modbus_bridge:
   id: mb_bridge
   uart_id: uart_bus
+
+espectre:
+  peer_mac: "8C:4F:00:27:73:14"
+  traffic_generator_rate: 0
+  presence_off_delay: 60s
+  movement_sensor:
+    name: "ESPectre Movement"
+  motion_sensor:
+    name: "ESPectre Motion"
+  presence_sensor:
+    name: "ESPectre Presence"
