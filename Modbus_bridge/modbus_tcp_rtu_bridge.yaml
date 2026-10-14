@@ -1,7 +1,7 @@
 esphome:
   name: modbus-tcp-rtu-bridge
   friendly_name: Modbus TCP to RTU Bridge
-  min_version: 2026.10.0b4
+  min_version: 2026.7.0
 
 esp32:
   variant: esp32
@@ -47,14 +47,6 @@ binary_sensor:
     pin:
       number: 39
       inverted: true
-  - platform: espectre
-    espectre_id: espectre_csi
-    motion:
-      name: "ESPectre Motion"
-      filters:
-        - delayed_off: 60s
-    calibrating:
-      name: "ESPectre Calibrating"
 
 uart:
   - id: uart_bus
@@ -71,25 +63,17 @@ external_components:
       url: https://github.com/rosenrot00/esphome_modbus_bridge
     components: [modbus_bridge]
     refresh: 0s
+  - source:
+      type: git
+      url: http://homeassistant.local:8090/tommy-esphome
+      ref: main
+    components: [sensor_tommy]
+    refresh: 1d
 
 
 modbus_bridge:
   id: mb_bridge
   uart_id: uart_bus
 
-espectre:
-  id: espectre_csi
-  detection_algorithm: lightweight
-  csi_capture_profile: auto
-  traffic_generator_mode: dns
-
-sensor:
-  - platform: espectre
-    espectre_id: espectre_csi
-    movement:
-      name: "ESPectre Movement"
-
-button:
-  - platform: espectre
-    espectre_id: espectre_csi
-    name: "ESPectre Recalibrate"
+sensor_tommy:
+  discovery: mdns
