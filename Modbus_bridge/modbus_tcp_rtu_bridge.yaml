@@ -1,6 +1,7 @@
 esphome:
   name: modbus-tcp-rtu-bridge
   friendly_name: Modbus TCP to RTU Bridge
+  min_version: 2026.10.0b4
 
 esp32:
   variant: esp32
@@ -46,6 +47,14 @@ binary_sensor:
     pin:
       number: 39
       inverted: true
+  - platform: espectre
+    espectre_id: espectre_csi
+    motion:
+      name: "ESPectre Motion"
+      filters:
+        - delayed_off: 60s
+    calibrating:
+      name: "ESPectre Calibrating"
 
 uart:
   - id: uart_bus
@@ -62,10 +71,6 @@ external_components:
       url: https://github.com/rosenrot00/esphome_modbus_bridge
     components: [modbus_bridge]
     refresh: 0s
-  - source:
-      type: local
-      path: ../components
-    components: [espectre]
 
 
 modbus_bridge:
@@ -73,12 +78,18 @@ modbus_bridge:
   uart_id: uart_bus
 
 espectre:
-  peer_mac: "8C:4F:00:27:73:14"
-  traffic_generator_rate: 0
-  presence_off_delay: 60s
-  movement_sensor:
-    name: "ESPectre Movement"
-  motion_sensor:
-    name: "ESPectre Motion"
-  presence_sensor:
-    name: "ESPectre Presence"
+  id: espectre_csi
+  detection_algorithm: lightweight
+  csi_capture_profile: auto
+  traffic_generator_mode: dns
+
+sensor:
+  - platform: espectre
+    espectre_id: espectre_csi
+    movement:
+      name: "ESPectre Movement"
+
+button:
+  - platform: espectre
+    espectre_id: espectre_csi
+    name: "ESPectre Recalibrate"
